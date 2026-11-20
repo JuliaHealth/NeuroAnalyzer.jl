@@ -160,18 +160,10 @@ function pca_reconstruct(
     pc::Array{Float64, 3},
     pc_model::MultivariateStats.PCA{Float64},
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    pca_reconstruct!(obj_new; ch = ch, pc = pc, pc_model = pc_model)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] =
-        _pca_reconstruct(@view(obj_tmp.data[ch, :, :]); pc = pc, pc_model = pc_model)
-    push!(obj_tmp.history, "pca_reconstruct(obj; ch=$ch)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -196,10 +188,13 @@ function pca_reconstruct!(
     pc::Array{Float64, 3},
     pc_model::MultivariateStats.PCA{Float64},
 )::Nothing
-    obj_tmp = pca_reconstruct(obj; ch = ch, pc = pc, pc_model = pc_model)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] =
+        _pca_reconstruct(@view(obj.data[ch, :, :]); pc = pc, pc_model = pc_model)
+    push!(obj.history, "pca_reconstruct(obj; ch=$ch)")
 
     return nothing
 end

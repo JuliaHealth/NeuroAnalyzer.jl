@@ -88,23 +88,13 @@ function tconv(
     ch::Union{String, Vector{String}, Regex},
     kernel::AbstractVector,
 )::Union{NeuroAnalyzer.NEURO, Array{ComplexF64, 3}}
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    # complex kernel: the complex result is returned, obj is not modified (no copy needed)
+    eltype(kernel) == ComplexF64 && return tconv!(obj; ch = ch, kernel = kernel)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    _info(
-        "Output aligned with the input: group delay of $(_group_delay(kernel)) samples removed",
-    )
+    obj_new = deepcopy(obj)
+    tconv!(obj_new; ch = ch, kernel = kernel)
 
-    if eltype(kernel) == ComplexF64
-        return _tconv(obj.data[ch, :, :]; kernel = kernel)
-    else
-        obj_tmp.data[ch, :, :] = _tconv(obj.data[ch, :, :]; kernel = kernel)
-        push!(obj_tmp.history, "tconv(obj; ch=$ch, kernel=kernel)")
-        return obj_tmp
-    end
+    return obj_new
 end
 
 """
@@ -123,14 +113,18 @@ function tconv!(
     ch::Union{String, Vector{String}, Regex},
     kernel::AbstractVector,
 )::Union{Nothing, Array{ComplexF64, 3}}
-    if eltype(kernel) == ComplexF64
-        # complex result: returned, obj is not modified
-        return tconv(obj; ch = ch, kernel = kernel)
-    else
-        obj_tmp = tconv(obj; ch = ch, kernel = kernel)
-        obj.data = obj_tmp.data
-        obj.history = obj_tmp.history
-        obj_tmp = nothing
-        return nothing
-    end
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    _info(
+        "Output aligned with the input: group delay of $(_group_delay(kernel)) samples removed",
+    )
+    # complex result: returned, obj is not modified
+    eltype(kernel) == ComplexF64 && return _tconv(obj.data[ch, :, :]; kernel = kernel)
+
+    obj.data[ch, :, :] = _tconv(obj.data[ch, :, :]; kernel = kernel)
+    push!(obj.history, "tconv(obj; ch=$ch, kernel=kernel)")
+
+    return nothing
 end

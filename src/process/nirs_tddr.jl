@@ -62,22 +62,10 @@ function tddr(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
 )::NeuroAnalyzer.NEURO
-    # validate
-    _check_datatype(obj, "nirs")
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    any(==("nirs_int"), obj.header.recording[:channel_type][ch]) &&
-        _warn("TDDR should be applied to OD or concentration channels, not to the raw intensity.")
+    obj_new = deepcopy(obj)
+    tddr!(obj_new; ch = ch)
 
-    obj_tmp = deepcopy(obj)
-    fs = sr(obj)
-    Threads.@threads :static for idx in CartesianIndices((length(ch), nepochs(obj)))
-        c, ep = ch[idx[1]], idx[2]
-        obj_tmp.data[c, :, ep] = _tddr(@view(obj.data[c, :, ep]), fs)
-    end
-    push!(obj_tmp.history, "tddr(obj; ch=$(labels(obj)[ch]))")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -98,9 +86,19 @@ function tddr!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
 )::Nothing
-    obj_tmp = tddr(obj; ch = ch)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
+    # validate
+    _check_datatype(obj, "nirs")
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+    any(==("nirs_int"), obj.header.recording[:channel_type][ch]) &&
+        _warn("TDDR should be applied to OD or concentration channels, not to the raw intensity.")
+
+    fs = sr(obj)
+    Threads.@threads :static for idx in CartesianIndices((length(ch), nepochs(obj)))
+        c, ep = ch[idx[1]], idx[2]
+        obj.data[c, :, ep] = _tddr(@view(obj.data[c, :, ep]), fs)
+    end
+    push!(obj.history, "tddr(obj; ch=$(labels(obj)[ch]))")
 
     return nothing
 end

@@ -78,17 +78,10 @@ function taper(
     ch::Union{String, Vector{String}, Regex},
     t::Vector{<:Real},
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    taper!(obj_new; ch = ch, t = t)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _taper(obj.data[ch, :, :]; t = t)
-    push!(obj_tmp.history, "taper(obj; ch=$ch, t=$t)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -111,10 +104,12 @@ function taper!(
     ch::Union{String, Vector{String}, Regex},
     t::Vector{<:Real},
 )::Nothing
-    obj_tmp = taper(obj; ch = ch, t = t)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _taper(obj.data[ch, :, :]; t = t)
+    push!(obj.history, "taper(obj; ch=$ch, t=$t)")
 
     return nothing
 end

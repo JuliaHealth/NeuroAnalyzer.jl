@@ -567,6 +567,17 @@ sel = [3, 1]
 @test NeuroAnalyzer._veqlen([1, 2], [3, 4]) == ([1, 2], [3, 4])
 @test NeuroAnalyzer._vint2str([97, 98, 0, 32]) == "ab"
 @test NeuroAnalyzer._fmem() > 0
+# sample blocks: contiguous, covering 1:n exactly once; ≥ min_len samples per block
+for (n, ep_n) in ((100_000, 1), (100_000, 64), (1_000, 1), (1, 1))
+    b = NeuroAnalyzer._sample_blocks(n, ep_n)
+    @test reduce(vcat, collect.(b)) == collect(1:n)
+    @test length(b) <= max(1, cld(Threads.nthreads(), ep_n))
+    length(b) > 1 && @test all(length.(b[1:(end - 1)]) .>= 4096)
+end
+# threaded map gives the same result as a comprehension, in order
+@test NeuroAnalyzer._tmap(i -> i^2, 10) == [i^2 for i = 1:10]
+@test NeuroAnalyzer._tmap(i -> i^2, 10; threaded = false) == [i^2 for i = 1:10]
+@test NeuroAnalyzer._tmap(i -> 2i, 1) == [2]
 @test NeuroAnalyzer._s2i("3") == 3
 @test NeuroAnalyzer._s2i("[2:4]") == [2, 3, 4]
 @test_throws ArgumentError NeuroAnalyzer._s2i("a")

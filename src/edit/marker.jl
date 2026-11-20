@@ -80,19 +80,10 @@ Delete a marker.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
-    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
+    obj_new = deepcopy(obj)
+    delete_marker!(obj_new; n = n)
 
-    nn = DataFrames.nrow(obj.markers)
-    _in(n, (1, nn), "n")
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    deleteat!(obj_tmp.markers, n)
-
-    push!(obj_tmp.history, "delete_marker(obj; n=$n)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -110,10 +101,14 @@ Delete a marker in-place.
 - `Nothing`
 """
 function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
-    obj_tmp = delete_marker(obj; n = n)
-    obj.history = obj_tmp.history
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
+
+    nn = DataFrames.nrow(obj.markers)
+    _in(n, (1, nn), "n")
+
+    deleteat!(obj.markers, n)
+
+    push!(obj.history, "delete_marker(obj; n=$n)")
 
     return nothing
 end
@@ -144,37 +139,10 @@ function add_marker(
     value::String,
     ch::Int64 = 0,
 )::NeuroAnalyzer.NEURO
-    # validate
-    start >= 0 || throw(ArgumentError("start must be ≥ 0."))
-    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
-    start <= obj.time_pts[end] ||
-        throw(ArgumentError("start must be ≤ $(obj.time_pts[end])."))
-    start + len <= obj.time_pts[end] ||
-        throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
-    # 0 = marker for all channels
-    0 <= ch <= nchannels(obj) ||
-        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+    obj_new = deepcopy(obj)
+    add_marker!(obj_new; id = id, start = start, len = len, value = value, ch = ch)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    append!(
-        obj_tmp.markers,
-        DataFrame(
-            :id => id,
-            :start => start,
-            :length => len,
-            :value => value,
-            :channel => ch,
-        ),
-    )
-    sort!(obj_tmp.markers, :start)
-
-    push!(
-        obj_tmp.history,
-        "add_marker(obj; id=$id, start=$start, len=$len, value=$value, ch=$ch)",
-    )
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -203,10 +171,33 @@ function add_marker!(
     value::String,
     ch::Int64 = 0,
 )::Nothing
-    obj_tmp = add_marker(obj; id = id, start = start, len = len, value = value, ch = ch)
-    obj.history = obj_tmp.history
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    # validate
+    start >= 0 || throw(ArgumentError("start must be ≥ 0."))
+    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
+    start <= obj.time_pts[end] ||
+        throw(ArgumentError("start must be ≤ $(obj.time_pts[end])."))
+    start + len <= obj.time_pts[end] ||
+        throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
+    # 0 = marker for all channels
+    0 <= ch <= nchannels(obj) ||
+        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+
+    append!(
+        obj.markers,
+        DataFrame(
+            :id => id,
+            :start => start,
+            :length => len,
+            :value => value,
+            :channel => ch,
+        ),
+    )
+    sort!(obj.markers, :start)
+
+    push!(
+        obj.history,
+        "add_marker(obj; id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+    )
 
     return nothing
 end
@@ -239,32 +230,12 @@ function edit_marker(
     value::String,
     ch::Int64 = 0,
 )::NeuroAnalyzer.NEURO
-    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
-    start >= 0 || throw(ArgumentError("start must be > 0."))
-    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
-    start < signal_len(obj) / sr(obj) ||
-        throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
-    start + len <= signal_len(obj) / sr(obj) ||
-        throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
-
-    nn = size(obj.markers, 1)
-    1 <= n <= nn || throw(ArgumentError("n must be in [1, $nn]."))
-    0 <= ch <= nchannels(obj) ||
-        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.markers[n, :] = Dict(
-        :id => id, :start => start, :length => len, :value => value, :channel => ch,
-    )
-    sort!(obj_tmp.markers, :start)
-    push!(
-        obj_tmp.history,
-        "edit_marker(obj; n=$n, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+    obj_new = deepcopy(obj)
+    edit_marker!(
+        obj_new; n = n, id = id, start = start, len = len, value = value, ch = ch,
     )
 
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -295,12 +266,27 @@ function edit_marker!(
     value::String,
     ch::Int64 = 0,
 )::Nothing
-    obj_tmp = edit_marker(
-        obj; n = n, id = id, start = start, len = len, value = value, ch = ch,
+    _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
+    start >= 0 || throw(ArgumentError("start must be > 0."))
+    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
+    start < signal_len(obj) / sr(obj) ||
+        throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
+    start + len <= signal_len(obj) / sr(obj) ||
+        throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
+
+    nn = size(obj.markers, 1)
+    1 <= n <= nn || throw(ArgumentError("n must be in [1, $nn]."))
+    0 <= ch <= nchannels(obj) ||
+        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+
+    obj.markers[n, :] = Dict(
+        :id => id, :start => start, :length => len, :value => value, :channel => ch,
     )
-    obj.history = obj_tmp.history
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    sort!(obj.markers, :start)
+    push!(
+        obj.history,
+        "edit_marker(obj; n=$n, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+    )
 
     return nothing
 end
@@ -329,7 +315,36 @@ function channel2marker(
     id::String = "",
     value::String = "",
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    channel2marker!(obj_new; ch = ch, v = v, id = id, value = value)
 
+    return obj_new
+end
+
+"""
+    channel2marker!(obj; <keyword arguments>)
+
+Convert an event channel to markers in-place.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel name; must resolve to exactly one channel
+- `v::Real=1.0`: signal value interpreted as an event
+- `id::String`: prefix for generated marker IDs (default: channel name + `"_"`)
+- `value::String=""`: marker value string (default: channel label)
+
+# Returns
+
+- `Nothing`
+"""
+function channel2marker!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    v::Real = 1.0,
+    id::String = "",
+    value::String = "",
+)::Nothing
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -380,9 +395,8 @@ function channel2marker(
 
     _info("$(length(ev_start)) events found and added as markers")
 
-    obj_tmp = deepcopy(obj)
     append!(
-        obj_tmp.markers,
+        obj.markers,
         DataFrame(
             :id      => ev_id,
             :start   => ev_start ./ sr(obj),
@@ -391,41 +405,9 @@ function channel2marker(
             :channel => ev_ch_v,
         ),
     )
-    sort!(obj_tmp.markers, :start)
+    sort!(obj.markers, :start)
 
-    push!(obj_tmp.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value)")
-
-    return obj_tmp
-end
-
-"""
-    channel2marker!(obj; <keyword arguments>)
-
-Convert an event channel to markers in-place.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel name; must resolve to exactly one channel
-- `v::Real=1.0`: signal value interpreted as an event
-- `id::String`: prefix for generated marker IDs (default: channel name + `"_"`)
-- `value::String=""`: marker value string (default: channel label)
-
-# Returns
-
-- `Nothing`
-"""
-function channel2marker!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    v::Real = 1.0,
-    id::String = "",
-    value::String = "",
-)::Nothing
-    obj_tmp = channel2marker(obj; ch = ch, v = v, id = id, value = value)
-    obj.history = obj_tmp.history
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    push!(obj.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value)")
 
     return nothing
 end

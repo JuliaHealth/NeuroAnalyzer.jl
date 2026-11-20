@@ -87,14 +87,15 @@ function _denoise_wien(
 
     s_new = similar(s, Float64)
     if ref === :channels
-        Threads.@threads :static for ep_idx = 1:ep_n
-            x = @view s[:, :, ep_idx]
-            m = vec(mean(x; dims = 1))
-            S = pw(m)
-            for ch_idx = 1:ch_n
-                N = pw(x[ch_idx, :] .- m)
-                s_new[ch_idx, :, ep_idx] = flt(x[ch_idx, :], _wien_gain(S, N, ch_n))
-            end
+        # signal estimate (mean of the channels) of each epoch, then channels × epochs in
+        # parallel (also for continuous, single-epoch data)
+        m = _tmap(ep_idx -> vec(mean(@view(s[:, :, ep_idx]); dims = 1)), ep_n)
+        S = _tmap(ep_idx -> pw(m[ep_idx]), ep_n)
+        Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = Tuple(idx)
+            x = s[ch_idx, :, ep_idx]
+            N = pw(x .- m[ep_idx])
+            s_new[ch_idx, :, ep_idx] = flt(x, _wien_gain(S[ep_idx], N, ch_n))
         end
     else
         Threads.@threads :static for ch_idx = 1:ch_n
@@ -138,19 +139,10 @@ function denoise_wien(
     ref::Symbol = :channels,
     fsmooth::Real = 2,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    denoise_wien!(obj_new; ch = ch, ref = ref, fsmooth = fsmooth)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _denoise_wien(
-        @view(obj.data[ch, :, :]); fs = sr(obj), ref = ref, fsmooth = fsmooth,
-    )
-    push!(obj_tmp.history, "denoise_wien(obj; ch=$ch, ref=$ref, fsmooth=$fsmooth)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -175,10 +167,14 @@ function denoise_wien!(
     ref::Symbol = :channels,
     fsmooth::Real = 2,
 )::Nothing
-    obj_tmp = denoise_wien(obj; ch = ch, ref = ref, fsmooth = fsmooth)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _denoise_wien(
+        @view(obj.data[ch, :, :]); fs = sr(obj), ref = ref, fsmooth = fsmooth,
+    )
+    push!(obj.history, "denoise_wien(obj; ch=$ch, ref=$ref, fsmooth=$fsmooth)")
 
     return nothing
 end

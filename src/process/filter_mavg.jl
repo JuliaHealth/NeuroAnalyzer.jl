@@ -126,30 +126,10 @@ function filter_mavg(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    filter_mavg!(obj_new; ch = ch, k = k, t = t, ww = ww)
 
-    # sampling rate
-    fs = sr(obj)
-
-    # window length
-    wlen = 2 * k + 1
-    _info("Window length: $wlen samples")
-    _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits = 2)) Hz")
-    for z = 1:4
-        _info("Zero $z at: $(round(z * fs / wlen, digits = 2)) Hz")
-    end
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _filter_mavg(
-        @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
-    )
-    push!(obj_tmp.history, "filter_mavg(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -176,10 +156,25 @@ function filter_mavg!(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::Nothing
-    obj_tmp = filter_mavg(obj; ch = ch, k = k, t = t, ww = ww)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    # sampling rate
+    fs = sr(obj)
+
+    # window length
+    wlen = 2 * k + 1
+    _info("Window length: $wlen samples")
+    _info("Approximate cutoff: $(round(0.442947 / sqrt(wlen^2 - 1) * fs, digits = 2)) Hz")
+    for z = 1:4
+        _info("Zero $z at: $(round(z * fs / wlen, digits = 2)) Hz")
+    end
+
+    obj.data[ch, :, :] = _filter_mavg(
+        @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
+    )
+    push!(obj.history, "filter_mavg(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
 
     return nothing
 end

@@ -116,43 +116,10 @@ function trim(
     seg::Tuple{Real, Real},
     keep::Bool = false,
 )::NeuroAnalyzer.NEURO
-    # validate
-    nepochs(obj) == 1 ||
-        throw(ArgumentError("trim() must be applied to continuous object."))
-    NeuroAnalyzer._check_segment(obj, seg)
+    obj_new = deepcopy(obj)
+    trim!(obj_new; seg = seg, keep = keep)
 
-    # first and last sample of the segment
-    s1, s2 = vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts)
-
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn(
-        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
-    )
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data = _trim(obj_tmp.data; seg = (s1, s2), keep = keep)
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-
-    fs = sr(obj)
-    if keep
-        # keep the markers inside the segment, relative to its start
-        obj_tmp.markers =
-            _remap_markers(obj.markers, fs, s -> s1 <= s <= s2 ? s - s1 + 1 : nothing)
-    else
-        # drop the markers inside the removed segment, shift the later ones back
-        n_del = s2 - s1 + 1
-        obj_tmp.markers = _remap_markers(
-            obj.markers, fs, s -> s < s1 ? s : (s > s2 ? s - n_del : nothing),
-        )
-        # mark the position of the cut (the last sample if the end was removed)
-        s_cut = min(s1, size(obj_tmp.data, 2))
-        push!(obj_tmp.markers, ("NA", s2t(s_cut, fs), 0.0, "DELETED", 0))
-        obj_tmp.markers = sort(unique(obj_tmp.markers), :start)
-    end
-
-    push!(obj_tmp.history, "trim(obj, seg=$seg, keep=$keep)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -177,15 +144,37 @@ function trim!(
 )::Nothing
     # validate
     nepochs(obj) == 1 ||
-        throw(ArgumentError("trim!() must be applied to continuous object."))
+        throw(ArgumentError("trim() must be applied to continuous object."))
+    NeuroAnalyzer._check_segment(obj, seg)
 
-    obj_tmp = trim(obj; seg = seg, keep = keep)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    # first and last sample of the segment
+    s1, s2 = vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts)
+
+    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn(
+        "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
+    )
+
+    obj.data = _trim(obj.data; seg = (s1, s2), keep = keep)
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+
+    fs = sr(obj)
+    if keep
+        # keep the markers inside the segment, relative to its start
+        obj.markers =
+            _remap_markers(obj.markers, fs, s -> s1 <= s <= s2 ? s - s1 + 1 : nothing)
+    else
+        # drop the markers inside the removed segment, shift the later ones back
+        n_del = s2 - s1 + 1
+        obj.markers = _remap_markers(
+            obj.markers, fs, s -> s < s1 ? s : (s > s2 ? s - n_del : nothing),
+        )
+        # mark the position of the cut (the last sample if the end was removed)
+        s_cut = min(s1, size(obj.data, 2))
+        push!(obj.markers, ("NA", s2t(s_cut, fs), 0.0, "DELETED", 0))
+        obj.markers = sort(unique(obj.markers), :start)
+    end
+
+    push!(obj.history, "trim(obj, seg=$seg, keep=$keep)")
 
     return nothing
 end

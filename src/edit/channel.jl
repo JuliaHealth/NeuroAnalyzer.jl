@@ -90,22 +90,10 @@ function set_channel_type(
     ch::String,
     type::String,
 )::NeuroAnalyzer.NEURO
-    # validate
-    type = lowercase(type)
-    _check_var(type, string.(channel_types), "type")
-    ch_idx = _single_channel(obj, ch)
+    obj_new = deepcopy(obj)
+    set_channel_type!(obj_new; ch = ch, type = type)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    rec = obj_tmp.header.recording
-
-    rec[:channel_type][ch_idx] = type
-    rec[:channel_order] = _sort_channels(rec[:channel_type])
-    datatype(obj) in _MEG_LIKE_DATA && _update_meg_sensor_lists!(rec, ch_idx, type)
-
-    push!(obj_tmp.history, "set_channel_type(obj; ch=$(labels(obj)[ch_idx]), type=$type)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -123,10 +111,23 @@ Set the type of one channel in-place.
 
 - `Nothing`
 """
-function set_channel_type!(obj::NeuroAnalyzer.NEURO; ch::String, type::String)::Nothing
-    obj_tmp = set_channel_type(obj; ch = ch, type = type)
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
+function set_channel_type!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    type::String,
+)::Nothing
+    # validate
+    type = lowercase(type)
+    _check_var(type, string.(channel_types), "type")
+    ch_idx = _single_channel(obj, ch)
+
+    rec = obj.header.recording
+
+    rec[:channel_type][ch_idx] = type
+    rec[:channel_order] = _sort_channels(rec[:channel_type])
+    datatype(obj) in _MEG_LIKE_DATA && _update_meg_sensor_lists!(rec, ch_idx, type)
+
+    push!(obj.history, "set_channel_type(obj; ch=$(labels(obj)[ch_idx]), type=$type)")
 
     return nothing
 end
@@ -151,18 +152,10 @@ function rename_channel(
     ch::String,
     name::String,
 )::NeuroAnalyzer.NEURO
-    isempty(name) && throw(ArgumentError("name cannot be empty."))
-    name in labels(obj) && throw(ArgumentError("Channel \"$name\" already exists."))
-    ch_idx = _single_channel(obj, ch)
-    old = labels(obj)[ch_idx]
+    obj_new = deepcopy(obj)
+    rename_channel!(obj_new; ch = ch, name = name)
 
-    obj_tmp = deepcopy(obj)
-    obj_tmp.header.recording[:label][ch_idx] = name
-    _rename_locs!(obj_tmp.locs, old, name)
-
-    push!(obj_tmp.history, "rename_channel(obj; ch=$old, name=$name)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -180,11 +173,20 @@ Rename one channel in-place.
 
 - `Nothing`
 """
-function rename_channel!(obj::NeuroAnalyzer.NEURO; ch::String, name::String)::Nothing
-    obj_tmp = rename_channel(obj; ch = ch, name = name)
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj.locs = obj_tmp.locs
+function rename_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    name::String,
+)::Nothing
+    isempty(name) && throw(ArgumentError("name cannot be empty."))
+    name in labels(obj) && throw(ArgumentError("Channel \"$name\" already exists."))
+    ch_idx = _single_channel(obj, ch)
+    old = labels(obj)[ch_idx]
+
+    obj.header.recording[:label][ch_idx] = name
+    _rename_locs!(obj.locs, old, name)
+
+    push!(obj.history, "rename_channel(obj; ch=$old, name=$name)")
 
     return nothing
 end
@@ -211,21 +213,10 @@ function edit_channel(
     field::Symbol,
     value::String,
 )::NeuroAnalyzer.NEURO
-    # validate
-    isempty(value) && throw(ArgumentError("value cannot be empty."))
-    _check_var(field, [:channel_type, :label], "field")
-    ch_idx = _single_channel(obj, ch)
+    obj_new = deepcopy(obj)
+    edit_channel!(obj_new; ch = ch, field = field, value = value)
 
-    obj_tmp = if field == :label
-        rename_channel(obj; ch = ch, name = value)
-    else
-        set_channel_type(obj; ch = ch, type = value)
-    end
-
-    # record the user's call instead of the delegated one
-    obj_tmp.history[end] = "edit_channel(obj; ch=$(labels(obj)[ch_idx]), field=$field, value=$value)"
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -250,10 +241,21 @@ function edit_channel!(
     field::Symbol,
     value::String,
 )::Nothing
-    obj_tmp = edit_channel(obj; ch = ch, field = field, value = value)
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj.locs = obj_tmp.locs
+    # validate
+    isempty(value) && throw(ArgumentError("value cannot be empty."))
+    _check_var(field, [:channel_type, :label], "field")
+    ch_idx = _single_channel(obj, ch)
+
+    # label before renaming (history)
+    lbl = labels(obj)[ch_idx]
+    if field == :label
+        rename_channel!(obj; ch = ch, name = value)
+    else
+        set_channel_type!(obj; ch = ch, type = value)
+    end
+
+    # record the user's call instead of the delegated one
+    obj.history[end] = "edit_channel(obj; ch=$lbl, field=$field, value=$value)"
 
     return nothing
 end
@@ -278,25 +280,10 @@ function replace_channel(
     ch::String,
     s::AbstractArray,
 )::NeuroAnalyzer.NEURO
-    # validate that the input is a proper 3-D array (channels, samples, epochs)
-    _chk3d(s)
-    size(s) == (1, epoch_len(obj), nepochs(obj)) || throw(
-        ArgumentError(
-            "data size ($(size(s, 1)) × $(size(s, 2)) × $(size(s, 3))) must be 1 × $(epoch_len(obj)) × $(nepochs(obj)).",
-        ),
-    )
-    ch_idx = _single_channel(obj, ch)
+    obj_new = deepcopy(obj)
+    replace_channel!(obj_new; ch = ch, s = s)
 
-    _has_ssp(obj) && obj.header.recording[:ssp_channels][ch_idx] &&
-        _warn("Channel is part of SSP projections; apply them before modifying data.")
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[ch_idx, :, :] = s
-
-    push!(obj_tmp.history, "replace_channel(obj; ch=$(labels(obj)[ch_idx]), s)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -314,11 +301,26 @@ Replace one channel's data in-place.
 
 - `Nothing`
 """
-function replace_channel!(obj::NeuroAnalyzer.NEURO; ch::String, s::AbstractArray)::Nothing
-    obj_tmp = replace_channel(obj; ch = ch, s = s)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
+function replace_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    s::AbstractArray,
+)::Nothing
+    # validate that the input is a proper 3-D array (channels, samples, epochs)
+    _chk3d(s)
+    size(s) == (1, epoch_len(obj), nepochs(obj)) || throw(
+        ArgumentError(
+            "data size ($(size(s, 1)) × $(size(s, 2)) × $(size(s, 3))) must be 1 × $(epoch_len(obj)) × $(nepochs(obj)).",
+        ),
+    )
+    ch_idx = _single_channel(obj, ch)
+
+    _has_ssp(obj) && obj.header.recording[:ssp_channels][ch_idx] &&
+        _warn("Channel is part of SSP projections; apply them before modifying data.")
+
+    obj.data[ch_idx, :, :] = s
+
+    push!(obj.history, "replace_channel(obj; ch=$(labels(obj)[ch_idx]), s)")
 
     return nothing
 end
@@ -338,26 +340,10 @@ Return a copy of `obj` with channel labels replaced. Labels in `obj.locs` are re
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_label(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::NeuroAnalyzer.NEURO
-    # validate
-    length(clabels) == nchannels(obj) ||
-        throw(ArgumentError("clabels length must be $(nchannels(obj))."))
-    any(isempty, clabels) && throw(ArgumentError("clabels cannot contain empty labels."))
-    allunique(clabels) || throw(ArgumentError("clabels must be unique."))
+    obj_new = deepcopy(obj)
+    add_label!(obj_new; clabels = clabels)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    old = labels(obj)
-    obj_tmp.header.recording[:label] = copy(clabels)
-
-    # rename locs in one pass (avoids clashes when labels are permuted)
-    if nrow(obj_tmp.locs) > 0
-        mapping = Dict(zip(old, clabels))
-        obj_tmp.locs[!, :label] = [get(mapping, l, l) for l in obj_tmp.locs[!, :label]]
-    end
-
-    push!(obj_tmp.history, "add_label(obj, clabels=$clabels)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -375,10 +361,22 @@ Replace channel labels in-place.
 - `Nothing`
 """
 function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
-    obj_tmp = add_label(obj; clabels = clabels)
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj.locs = obj_tmp.locs
+    # validate
+    length(clabels) == nchannels(obj) ||
+        throw(ArgumentError("clabels length must be $(nchannels(obj))."))
+    any(isempty, clabels) && throw(ArgumentError("clabels cannot contain empty labels."))
+    allunique(clabels) || throw(ArgumentError("clabels must be unique."))
+
+    old = labels(obj)
+    obj.header.recording[:label] = copy(clabels)
+
+    # rename locs in one pass (avoids clashes when labels are permuted)
+    if nrow(obj.locs) > 0
+        mapping = Dict(zip(old, clabels))
+        obj.locs[!, :label] = [get(mapping, l, l) for l in obj.locs[!, :label]]
+    end
+
+    push!(obj.history, "add_label(obj, clabels=$clabels)")
 
     return nothing
 end
@@ -411,6 +409,36 @@ function add_channel(
     type::Union{String, Vector{String}},
     unit::Union{String, Vector{String}},
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    add_channel!(obj_new; data = data, label = label, type = type, unit = unit)
+
+    return obj_new
+end
+
+"""
+    add_channel!(obj; <keyword arguments>)
+
+Add new channel(s) in-place.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `data::Array{<:Number, 3}`: channel data, shape (ch_n, epoch_len, epoch_n)
+- `label::Union{String, Vector{String}}`: channel label(s)
+- `type::Union{String, Vector{String}}`: channel type(s)
+- `unit::Union{String, Vector{String}}`: channel unit(s)
+
+# Returns
+
+- `Nothing`
+"""
+function add_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+)::Nothing
     ch_n = size(data, 1)
     ch_n > 0 || throw(ArgumentError("data must contain at least one channel."))
 
@@ -454,9 +482,7 @@ function add_channel(
         t in string.(channel_types) || throw(ArgumentError("Unknown channel type \"$t\"."))
     end
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    r = obj_tmp.header.recording
+    r = obj.header.recording
     n_old = has_data ? nchannels(obj) : 0
 
     # extend a per-channel field (or create it for an empty object)
@@ -466,7 +492,7 @@ function add_channel(
         return nothing
     end
 
-    obj_tmp.data = has_data ? cat(obj.data, data; dims = 1) : Array{Float64}(data)
+    obj.data = has_data ? cat(obj.data, data; dims = 1) : Array{Float64}(data)
     r[:label] = vcat(old_labels, label_v)
     r[:channel_type] = vcat(has_data ? r[:channel_type] : String[], type_v)
     r[:unit] = vcat(has_data ? r[:unit] : String[], unit_v)
@@ -512,48 +538,14 @@ function add_channel(
             throw(ArgumentError("Sampling rate must be set to initialize an empty object."))
         n_s = size(data, 2)
         n_e = size(data, 3)
-        obj_tmp.time_pts = _time_axis(n_s * n_e, fs)
-        obj_tmp.epoch_time = _time_axis(n_s, fs)
+        obj.time_pts = _time_axis(n_s * n_e, fs)
+        obj.epoch_time = _time_axis(n_s, fs)
     end
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "add_channel(obj; data, label=$label_v, type=$type_v, unit=$unit_v)",
     )
-
-    return obj_tmp
-end
-
-"""
-    add_channel!(obj; <keyword arguments>)
-
-Add new channel(s) in-place.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `data::Array{<:Number, 3}`: channel data, shape (ch_n, epoch_len, epoch_n)
-- `label::Union{String, Vector{String}}`: channel label(s)
-- `type::Union{String, Vector{String}}`: channel type(s)
-- `unit::Union{String, Vector{String}}`: channel unit(s)
-
-# Returns
-
-- `Nothing`
-"""
-function add_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    data::Array{<:Number, 3},
-    label::Union{String, Vector{String}},
-    type::Union{String, Vector{String}},
-    unit::Union{String, Vector{String}},
-)::Nothing
-    obj_tmp = add_channel(obj; data = data, label = label, type = type, unit = unit)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.history = obj_tmp.history
 
     return nothing
 end

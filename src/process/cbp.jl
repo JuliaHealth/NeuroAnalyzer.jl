@@ -63,34 +63,10 @@ function cbp(
     pad::Int64 = 0,
     frq::Real,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    cbp!(obj_new; ch = ch, pad = pad, frq = frq)
 
-    # number of channels
-    ch_n = length(ch)
-    # number of epochs
-    ep_n = nepochs(obj)
-    # sampling rate
-    fs = sr(obj)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-        ch_idx, ep_idx = idx[1], idx[2]
-        obj_tmp.data[ch[ch_idx], :, ep_idx] = _cbp(
-            @view(obj_tmp.data[ch[ch_idx], :, ep_idx]),
-            pad = pad,
-            frq = frq,
-            fs = fs,
-        )
-    end
-
-    push!(obj_tmp.history, "cbp(obj; ch=$ch, pad=$pad, frq=$frq)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -115,10 +91,29 @@ function cbp!(
     pad::Int64 = 0,
     frq::Real,
 )::Nothing
-    obj_tmp = cbp(obj; ch = ch, pad = pad, frq = frq)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    # number of channels
+    ch_n = length(ch)
+    # number of epochs
+    ep_n = nepochs(obj)
+    # sampling rate
+    fs = sr(obj)
+
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        obj.data[ch[ch_idx], :, ep_idx] = _cbp(
+            @view(obj.data[ch[ch_idx], :, ep_idx]),
+            pad = pad,
+            frq = frq,
+            fs = fs,
+        )
+    end
+
+    push!(obj.history, "cbp(obj; ch=$ch, pad=$pad, frq=$frq)")
 
     return nothing
 end

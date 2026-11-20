@@ -33,6 +33,43 @@ function mlinterpolate_channel(
     model::T,
     reset_bads::Bool = false,
 )::NeuroAnalyzer.NEURO where {T <: MLJ.Model}
+    obj_new = deepcopy(obj)
+    mlinterpolate_channel!(
+        obj_new; ch = ch, ep = ep, ep_ref = ep_ref, model = model, reset_bads = reset_bads,
+    )
+
+    return obj_new
+end
+
+"""
+    mlinterpolate_channel!(obj; <keyword arguments>)
+
+Interpolate a channel using an MLJ regression model, modifying `obj` in-place.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: name of the channel to interpolate
+- `ep::Int64`: index of the epoch to interpolate
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs for training; default is all epochs except `ep`
+- `model::T where T <: MLJ.Model`: any MLJ regressor (e.g. `RandomForestRegressor`)
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
+
+# Returns
+
+- `Nothing`
+"""
+function mlinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(
+        _c(nepochs(obj)),
+        ep,
+    ),
+    model::T,
+    reset_bads::Bool = false,
+)::Nothing where {T <: MLJ.Model}
     # signal channels: names (get_channel(; type) returns names) and numbers
     channel_labels = get_channel(obj; type = datatype(obj))
     channel_indices = [findfirst(==(l), labels(obj)) for l in channel_labels]
@@ -92,58 +129,17 @@ function mlinterpolate_channel(
     # ------------------------------------------------------------------ #
     # Predict the interpolated epoch                                     #
     # ------------------------------------------------------------------ #
-    obj_tmp = deepcopy(obj)
 
     # feature matrix for the epoch to reconstruct: the same channels, in the same order
     x_pred = MLJ.table(obj.data[channel_indices[ch_ref_pos], :, ep]')
-    obj_tmp.data[ch_idx, :, ep] = MLJ.predict(mach, x_pred)
+    obj.data[ch_idx, :, ep] = MLJ.predict(mach, x_pred)
 
-    reset_bads && (obj_tmp.header.recording[:bad_channel][ch_idx] = false)
+    reset_bads && (obj.header.recording[:bad_channel][ch_idx] = false)
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "mlinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, model=$(typeof(model)), reset_bads=$reset_bads)",
     )
-
-    return obj_tmp
-end
-
-"""
-    mlinterpolate_channel!(obj; <keyword arguments>)
-
-Interpolate a channel using an MLJ regression model, modifying `obj` in-place.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: name of the channel to interpolate
-- `ep::Int64`: index of the epoch to interpolate
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs for training; default is all epochs except `ep`
-- `model::T where T <: MLJ.Model`: any MLJ regressor (e.g. `RandomForestRegressor`)
-- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
-
-# Returns
-
-- `Nothing`
-"""
-function mlinterpolate_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(
-        _c(nepochs(obj)),
-        ep,
-    ),
-    model::T,
-    reset_bads::Bool = false,
-)::Nothing where {T <: MLJ.Model}
-    obj_tmp = mlinterpolate_channel(
-        obj; ch = ch, ep = ep, ep_ref = ep_ref, model = model, reset_bads = reset_bads,
-    )
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

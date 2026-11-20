@@ -32,6 +32,32 @@ function nirs_ssr(
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = ["nirs_hbo", "nirs_hbr"]),
     short_t::Real = 15,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    nirs_ssr!(obj_new; ch = ch, short_t = short_t)
+
+    return obj_new
+end
+
+"""
+    nirs_ssr!(obj; <keyword arguments>)
+
+Short-separation regression of NIRS signals. See `nirs_ssr()`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}=get_channel(obj; type = ["nirs_hbo", "nirs_hbr"])`: long channels to correct, default is all HbO and HbR channels
+- `short_t::Real=15`: channels with source-detector distance < `short_t` mm are short-separation channels
+
+# Returns
+
+- `Nothing`
+"""
+function nirs_ssr!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = ["nirs_hbo", "nirs_hbr"]),
+    short_t::Real = 15,
+)::Nothing
     # validate
     _check_datatype(obj, "nirs")
     short_t > 0 || throw(ArgumentError("short_t must be > 0."))
@@ -59,7 +85,6 @@ function nirs_ssr(
         ]
     end
 
-    obj_tmp = deepcopy(obj)
     pairs_used = String[]
     for c in ch
         d[c] < short_t && continue
@@ -80,38 +105,11 @@ function nirs_ssr(
             vx = sum(abs2, x)
             vx > 0 || continue
             b = sum(x .* (y .- mean(y))) / vx
-            obj_tmp.data[c, :, ep] = y .- b .* x
+            obj.data[c, :, ep] = y .- b .* x
         end
     end
     isempty(pairs_used) || _info("Short-separation regression: $(join(pairs_used, ", "))")
-    push!(obj_tmp.history, "nirs_ssr(obj; ch=$(labels(obj)[ch]), short_t=$short_t)")
-
-    return obj_tmp
-end
-
-"""
-    nirs_ssr!(obj; <keyword arguments>)
-
-Short-separation regression of NIRS signals. See `nirs_ssr()`.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}=get_channel(obj; type = ["nirs_hbo", "nirs_hbr"])`: long channels to correct, default is all HbO and HbR channels
-- `short_t::Real=15`: channels with source-detector distance < `short_t` mm are short-separation channels
-
-# Returns
-
-- `Nothing`
-"""
-function nirs_ssr!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = ["nirs_hbo", "nirs_hbr"]),
-    short_t::Real = 15,
-)::Nothing
-    obj_tmp = nirs_ssr(obj; ch = ch, short_t = short_t)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
+    push!(obj.history, "nirs_ssr(obj; ch=$(labels(obj)[ch]), short_t=$short_t)")
 
     return nothing
 end

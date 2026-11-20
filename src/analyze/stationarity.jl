@@ -169,16 +169,17 @@ function stationarity(
         window_n >= 2 ||
             throw(ArgumentError("For :cov method, the epoch must contain ≥ 2 windows."))
         s = zeros(window_n - 1, ep_n)
+        # fewer epochs than threads (e.g. continuous data): windows in parallel
+        inner = ep_n < Threads.nthreads()
         @inbounds Threads.@threads :dynamic for ep_idx = 1:ep_n
             # channel covariance matrix of each window
-            cm = [
+            cm = _tmap(window_n; threaded = inner) do w
                 cov(
                     permutedims(
                         @view(obj.data[ch, ((w - 1) * window + 1):(w * window), ep_idx]),
                     ),
-                ) for
-                w = 1:window_n
-            ]
+                )
+            end
             # Euclidean distance between the covariance matrices of adjacent windows
             for w = 2:window_n
                 s[w - 1, ep_idx] = euclidean(cm[w - 1], cm[w])

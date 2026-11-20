@@ -42,6 +42,53 @@ Channel locations:
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    load_locs!(obj_new; file_name = file_name)
+
+    return obj_new
+end
+
+"""
+    load_locs!(obj; <keyword arguments>)
+
+Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame.
+
+Accepted formats:
+
+  - CED
+  - LOCS
+  - ELC
+  - TSV
+  - SFP
+  - CSD
+  - GEO
+  - MAT
+  - TXT
+  - DAT
+  - ASC
+  - CSV
+
+Channel locations:
+
+- `loc_theta`: polar angle
+- `loc_radius`: polar radius
+- `loc_x`: spherical Cartesian x
+- `loc_y`: spherical Cartesian y
+- `loc_z`: spherical Cartesian z
+- `loc_radius_sph`: spherical radius
+- `loc_theta_sph`: spherical horizontal angle
+- `loc_phi_sph`: spherical azimuth angle
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `file_name::String`: name of the file to load
+
+# Return
+
+- `Nothing`
+"""
+function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
     isfile(file_name) ||
         throw(ArgumentError("File $file_name cannot be loaded."))
     length(obj.header.recording[:label]) > 0 ||
@@ -231,66 +278,15 @@ function load_locs(obj::NeuroAnalyzer.NEURO; file_name::String)::NeuroAnalyzer.N
         "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS file.",
     )
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
+    obj.locs = Base.filter(:label => in(labels(obj)), locs)
 
-    obj_tmp.locs = Base.filter(:label => in(labels(obj)), locs)
-
-    _locs_remove_nans!(obj_tmp.locs)
+    _locs_remove_nans!(obj.locs)
 
     # keep order consistent with labels
-    locs_idx = indexin(obj_tmp.locs[:, :label], labels(obj_tmp))
-    obj_tmp.locs = obj_tmp.locs[sortperm(locs_idx), :]
+    locs_idx = indexin(obj.locs[:, :label], labels(obj))
+    obj.locs = obj.locs[sortperm(locs_idx), :]
 
-    push!(obj_tmp.history, "load_locs(obj, file_name=$file_name)")
-
-    return obj_tmp
-end
-
-"""
-    load_locs!(obj; <keyword arguments>)
-
-Load channel locations from `file_name` and return `NeuroAnalyzer.NEURO` object with `locs` data frame.
-
-Accepted formats:
-
-  - CED
-  - LOCS
-  - ELC
-  - TSV
-  - SFP
-  - CSD
-  - GEO
-  - MAT
-  - TXT
-  - DAT
-  - ASC
-  - CSV
-
-Channel locations:
-
-- `loc_theta`: polar angle
-- `loc_radius`: polar radius
-- `loc_x`: spherical Cartesian x
-- `loc_y`: spherical Cartesian y
-- `loc_z`: spherical Cartesian z
-- `loc_radius_sph`: spherical radius
-- `loc_theta_sph`: spherical horizontal angle
-- `loc_phi_sph`: spherical azimuth angle
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `file_name::String`: name of the file to load
-
-# Return
-
-- `Nothing`
-"""
-function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
-    obj_tmp = load_locs(obj; file_name = file_name)
-    obj.locs = obj_tmp.locs
-    obj_tmp = nothing
+    push!(obj.history, "load_locs(obj, file_name=$file_name)")
 
     return nothing
 end

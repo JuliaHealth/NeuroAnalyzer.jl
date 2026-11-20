@@ -116,18 +116,10 @@ function wbp(
     frq::Real,
     ncyc::Int64 = 6,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    wbp!(obj_new; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] =
-        _wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
-    push!(obj_tmp.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -154,10 +146,13 @@ function wbp!(
     frq::Real,
     ncyc::Int64 = 6,
 )::Nothing
-    obj_tmp = wbp(obj; ch = ch, pad = pad, frq = frq, ncyc = ncyc)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] =
+        _wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
+    push!(obj.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
 
     return nothing
 end

@@ -70,6 +70,45 @@ function sphinterpolate_channel(
     lambda::Real = 1e-5,
     reset_bads::Bool = false,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    sphinterpolate_channel!(
+        obj_new; ch = ch, ep = ep, seg = seg, m = m, n = n, lambda = lambda,
+        reset_bads = reset_bads,
+    )
+
+    return obj_new
+end
+
+"""
+    sphinterpolate_channel!(obj; <keyword arguments>)
+
+Interpolate EEG channel(s) using spherical splines in-place (see `sphinterpolate_channel()`).
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be of type `"eeg"` with channel locations
+- `ch::Union{String, Vector{String}, Regex}`: channel(s) to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
+- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch(s)
+- `m::Int64=4`: spline flexibility constant; must be in `[2, 10]`
+- `n::Int64=50`: number of Legendre terms; must be ≥ 1
+- `lambda::Real=1e-5`: regularization of the spline fit; must be ≥ 0
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
+
+# Returns
+
+- `Nothing`
+"""
+function sphinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
+    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
+    m::Int64 = 4,
+    n::Int64 = 50,
+    lambda::Real = 1e-5,
+    reset_bads::Bool = false,
+)::Nothing
     # validate
     _check_datatype(obj, "eeg")
     _has_locs(obj)
@@ -121,60 +160,16 @@ function sphinterpolate_channel(
     B = [_sph_g(xyz_int, xyz_good; m = m, n = n) ones(length(ch_int))]
     W = (B / A)[:, 1:ng]
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
     @inbounds for ep_idx in ep
-        obj_tmp.data[ch_int, t_rng, ep_idx] = W * @view(obj.data[ch_good, t_rng, ep_idx])
+        obj.data[ch_int, t_rng, ep_idx] = W * @view(obj.data[ch_good, t_rng, ep_idx])
     end
 
-    reset_bads && (obj_tmp.header.recording[:bad_channel][ch_int] .= false)
+    reset_bads && (obj.header.recording[:bad_channel][ch_int] .= false)
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "sphinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, m=$m, n=$n, lambda=$lambda, reset_bads=$reset_bads)",
     )
-
-    return obj_tmp
-end
-
-"""
-    sphinterpolate_channel!(obj; <keyword arguments>)
-
-Interpolate EEG channel(s) using spherical splines in-place (see `sphinterpolate_channel()`).
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be of type `"eeg"` with channel locations
-- `ch::Union{String, Vector{String}, Regex}`: channel(s) to interpolate
-- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
-- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch(s)
-- `m::Int64=4`: spline flexibility constant; must be in `[2, 10]`
-- `n::Int64=50`: number of Legendre terms; must be ≥ 1
-- `lambda::Real=1e-5`: regularization of the spline fit; must be ≥ 0
-- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
-
-# Returns
-
-- `Nothing`
-"""
-function sphinterpolate_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
-    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
-    m::Int64 = 4,
-    n::Int64 = 50,
-    lambda::Real = 1e-5,
-    reset_bads::Bool = false,
-)::Nothing
-    obj_tmp = sphinterpolate_channel(
-        obj; ch = ch, ep = ep, seg = seg, m = m, n = n, lambda = lambda,
-        reset_bads = reset_bads,
-    )
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

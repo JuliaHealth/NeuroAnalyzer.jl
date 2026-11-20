@@ -36,65 +36,10 @@ function csd(
     n::Int64 = 8,
     lambda::Float64 = 10^-5,
 )::NeuroAnalyzer.NEURO
-    # validate
-    _check_datatype(obj, "eeg")
-    _has_locs(obj)
-    (m >= 2 && m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
-    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
-    lambda > 0 || throw(ArgumentError("lambda must be > 0."))
+    obj_new = deepcopy(obj)
+    csd!(obj_new; m = m, n = n, lambda = lambda)
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    _check_ch_locs(ch, labels(obj), obj.locs.label)
-    # locations in the order of the channels
-    locs = obj.locs[[findfirst(==(l), obj.locs.label) for l in labels(obj)[ch]], :]
-
-    # number of channels
-    ch_n = DataFrames.nrow(locs)
-    # number of epochs
-    ep_n = nepochs(obj)
-
-    G, H = gh(locs; m = m, n = n)
-
-    # regularized G matrix and its inverse
-    Gs = G + I(ch_n) * lambda
-    Gs_inv = inv(Gs)
-
-    # row sums of the inverse and their total - used for the zero-sum constraint
-    Gs_rs = vec(sum(Gs_inv; dims = 2))
-    Gs_inv_sum = sum(Gs_rs)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    @inbounds for ep_idx = 1:ep_n
-        # data: (ch_n × samples)
-        data = @view obj.data[ch, :, ep_idx]
-
-        # solve Gs * C_unconstrained = data for each time point
-        # (samples × ch_n): spline coefficients (unconstrained)
-        dataGs = (Gs \ data)'
-        # enforce the zero-sum constraint on the coefficients (Gs C + c0 = V, Σ C = 0):
-        # c0 = 1ᵀGs⁻¹V / 1ᵀGs⁻¹1, C = Gs⁻¹V - c0 Gs⁻¹1
-        # C[t, i] = dataGs[t, i] - (Σ_j dataGs[t, j]) / Gs_inv_sum * Gs_rs[i]
-        # (samples,)
-        correction = vec(sum(dataGs; dims = 2)) / Gs_inv_sum
-        # (samples × ch_n)
-        C = dataGs .- correction .* Gs_rs'
-
-        # surface Laplacian via H matrix
-        # back to (ch_n × samples)
-        obj_tmp.data[ch, :, ep_idx] = (C * H')'
-    end
-
-    obj_tmp.header.recording[:data_type] = "csd"
-    obj_tmp.header.recording[:channel_type][ch] .= "csd"
-    obj_tmp.header.recording[:unit][ch] .= "μV/m²"
-
-    push!(obj_tmp.history, "csd(obj, m=$m, n=$n, lambda=$lambda)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -124,11 +69,60 @@ function csd!(
     n::Int64 = 8,
     lambda::Float64 = 10^-5,
 )::Nothing
-    obj_tmp = csd(obj; m = m, n = n, lambda = lambda)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # validate
+    _check_datatype(obj, "eeg")
+    _has_locs(obj)
+    (m >= 2 && m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
+    n >= 1 || throw(ArgumentError("n must be ≥ 1."))
+    lambda > 0 || throw(ArgumentError("lambda must be > 0."))
+
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+    _check_ch_locs(ch, labels(obj), obj.locs.label)
+    # locations in the order of the channels
+    locs = obj.locs[[findfirst(==(l), obj.locs.label) for l in labels(obj)[ch]], :]
+
+    # number of channels
+    ch_n = DataFrames.nrow(locs)
+    # number of epochs
+    ep_n = nepochs(obj)
+
+    G, H = gh(locs; m = m, n = n)
+
+    # regularized G matrix and its inverse
+    Gs = G + I(ch_n) * lambda
+    Gs_inv = inv(Gs)
+
+    # row sums of the inverse and their total - used for the zero-sum constraint
+    Gs_rs = vec(sum(Gs_inv; dims = 2))
+    Gs_inv_sum = sum(Gs_rs)
+
+    @inbounds for ep_idx = 1:ep_n
+        # data: (ch_n × samples)
+        data = @view obj.data[ch, :, ep_idx]
+
+        # solve Gs * C_unconstrained = data for each time point
+        # (samples × ch_n): spline coefficients (unconstrained)
+        dataGs = (Gs \ data)'
+        # enforce the zero-sum constraint on the coefficients (Gs C + c0 = V, Σ C = 0):
+        # c0 = 1ᵀGs⁻¹V / 1ᵀGs⁻¹1, C = Gs⁻¹V - c0 Gs⁻¹1
+        # C[t, i] = dataGs[t, i] - (Σ_j dataGs[t, j]) / Gs_inv_sum * Gs_rs[i]
+        # (samples,)
+        correction = vec(sum(dataGs; dims = 2)) / Gs_inv_sum
+        # (samples × ch_n)
+        C = dataGs .- correction .* Gs_rs'
+
+        # surface Laplacian via H matrix
+        # back to (ch_n × samples)
+        obj.data[ch, :, ep_idx] = (C * H')'
+    end
+
+    obj.header.recording[:data_type] = "csd"
+    obj.header.recording[:channel_type][ch] .= "csd"
+    obj.header.recording[:unit][ch] .= "μV/m²"
+
+    push!(obj.history, "csd(obj, m=$m, n=$n, lambda=$lambda)")
 
     return nothing
 end

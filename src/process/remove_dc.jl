@@ -118,17 +118,10 @@ function remove_dc(
     ch::Union{String, Vector{String}, Regex},
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    remove_dc!(obj_new; ch = ch, n = n)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _remove_dc(@view(obj.data[ch, :, :]), n)
-    push!(obj_tmp.history, "remove_dc(obj; ch=$ch, n=$n)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -151,10 +144,12 @@ function remove_dc!(
     ch::Union{String, Vector{String}, Regex},
     n::Union{Int64, Tuple{Int64, Int64}} = 0,
 )::Nothing
-    obj_tmp = remove_dc(obj; ch = ch, n = n)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _remove_dc(@view(obj.data[ch, :, :]), n)
+    push!(obj.history, "remove_dc(obj; ch=$ch, n=$n)")
 
     return nothing
 end

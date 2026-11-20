@@ -111,17 +111,10 @@ function denoise_fft(
     pad::Int64 = 0,
     t::Real = 0,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    denoise_fft!(obj_new; ch = ch, pad = pad, t = t)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
-    push!(obj_tmp.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -146,10 +139,12 @@ function denoise_fft!(
     pad::Int64 = 0,
     t::Real = 0,
 )::Nothing
-    obj_tmp = denoise_fft(obj; ch = ch, pad = pad, t = t)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
+    push!(obj.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
 
     return nothing
 end

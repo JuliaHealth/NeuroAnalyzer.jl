@@ -47,37 +47,39 @@ function _reject_stat(
     w::Int64,
     tkeo_method::Symbol = :pow,
     z::Real = 3.5,
+    threaded::Bool = false,
 )::Vector{Float64}
     ch_n, n = size(s)
+    # per-channel statistics, in parallel for continuous data (see _reject_flags())
+    chmap(f) = Vector{Float64}(_tmap(f, ch_n; threaded = threaded))
     # small offset: the logarithm of 0 (flat signal) stays finite
     lg(x) = log(x + 1e-12)
     if method in (:rmse, :rmsd, :euclid)
         # distance from the median signal of all channels
         m = vec(median(s; dims = 1))
         d = s .- m'
-        method === :rmse && return [lg(sqrt(mean(abs2, @view(d[i, :])))) for i = 1:ch_n]
+        method === :rmse && return chmap(i -> lg(sqrt(mean(abs2, @view(d[i, :])))))
         # :rmsd ignores a constant offset between the channel and the median signal
-        method === :rmsd && return [lg(std(@view(d[i, :]))) for i = 1:ch_n]
-        return [lg(sqrt(sum(abs2, @view(d[i, :])))) for i = 1:ch_n]
+        method === :rmsd && return chmap(i -> lg(std(@view(d[i, :]))))
+        return chmap(i -> lg(sqrt(sum(abs2, @view(d[i, :])))))
     elseif method === :var
-        return [lg(var(@view(s[i, :]))) for i = 1:ch_n]
+        return chmap(i -> lg(var(@view(s[i, :]))))
     elseif method === :p2p
         win = _reject_windows(n, w)
-        return [
-            lg(maximum(maximum(@view(s[i, r])) - minimum(@view(s[i, r])) for r in win))
-            for i = 1:ch_n
-        ]
+        return chmap(
+            i -> lg(maximum(maximum(@view(s[i, r])) - minimum(@view(s[i, r])) for r in win)),
+        )
     elseif method === :kurt
         # excess kurtosis; a flat signal (undefined kurtosis) gets the median of the other
         # channels, so that it is not flagged
-        k = [kurtosis(@view(s[i, :])) for i = 1:ch_n]
+        k = chmap(i -> kurtosis(@view(s[i, :])))
         k[isnan.(k)] .= all(isnan, k) ? 0.0 : median(filter(!isnan, k))
         return k
     elseif method === :tkeo
-        return [lg(mean(abs.(_tkeo(s[i, :]; method = tkeo_method)))) for i = 1:ch_n]
+        return chmap(i -> lg(mean(abs.(_tkeo(s[i, :]; method = tkeo_method)))))
     elseif method === :z
         # fraction of outlying samples: robust z-score within the channel > z
-        return [count(abs.(_robust_z(@view(s[i, :]))) .> z) / n for i = 1:ch_n]
+        return chmap(i -> count(abs.(_robust_z(@view(s[i, :]))) .> z) / n)
     end
     return throw(ArgumentError("Unknown method :$method."))
 end
@@ -96,17 +98,18 @@ function _reject_absolute(
     amp_t::Real,
     z::Real,
     p::Real,
+    threaded::Bool = false,
 )::Vector{Bool}
     ch_n, n = size(s)
+    chmap(f) = Vector{Bool}(_tmap(f, ch_n; threaded = threaded))
     if method === :flat
         # fraction of windows in which the signal is (nearly) constant
         win = _reject_windows(n, w)
-        return [
-            count(std(@view(s[i, r])) < flat_tol for r in win) / length(win) > flat_fr
-            for i = 1:ch_n
-        ]
+        return chmap(
+            i -> count(std(@view(s[i, r])) < flat_tol for r in win) / length(win) > flat_fr,
+        )
     elseif method === :amp
-        return [maximum(abs, @view(s[i, :])) > amp_t for i = 1:ch_n]
+        return chmap(i -> maximum(abs, @view(s[i, :])) > amp_t)
     end
     return throw(ArgumentError("Unknown method :$method."))
 end
@@ -120,12 +123,13 @@ function _reject_neighbors(
     s::AbstractMatrix,
     xyz::AbstractMatrix;
     w::Int64,
+    threaded::Bool = false,
 )::Vector{Float64}
     ch_n, n = size(s)
     k = min(3, ch_n - 1)
     win = _reject_windows(n, w)
-    rc = zeros(ch_n)
-    for i = 1:ch_n
+    # channels in parallel for continuous data (see _reject_flags())
+    rc = _tmap(ch_n; threaded = threaded) do i
         d = [
             i == j ? Inf : sqrt(sum(abs2, @view(xyz[i, :]) .- @view(xyz[j, :]))) for
             j = 1:ch_n
@@ -136,9 +140,9 @@ function _reject_neighbors(
         r = [cor(@view(s[i, rw]), @view(pred[rw])) for rw in win]
         # a constant window (e.g. flat channel) has no correlation
         r[isnan.(r)] .= 0.0
-        rc[i] = median(r)
+        median(r)
     end
-    return rc
+    return Vector{Float64}(rc)
 end
 
 """
@@ -166,6 +170,9 @@ function _reject_flags(
     # Matrix{Bool}, not a BitMatrix: elements are written from several threads, and
     # neighbouring bits of a BitMatrix share a machine word (concurrent writes are lost)
     flags = fill(false, ch_n, ep_n)
+    # fewer epochs than threads (e.g. continuous data): channels are processed in parallel
+    # within each epoch
+    inner = ep_n < Threads.nthreads()
 
     if method === :z && across === :epochs
         # fraction of samples of each epoch outlying from the whole channel (robust z-score
@@ -184,7 +191,7 @@ function _reject_flags(
         Threads.@threads :static for ep_idx = 1:ep_n
             st[:, ep_idx] = _reject_stat(
                 @view(obj.data[ch, :, ep_idx]), method; w = w,
-                tkeo_method = tkeo_method, z = z,
+                tkeo_method = tkeo_method, z = z, threaded = inner,
             )
         end
         rz = similar(st)
@@ -210,7 +217,9 @@ function _reject_flags(
         xyz = Matrix{Float64}(obj.locs[Vector{Int64}(loc_idx), [:loc_x, :loc_y, :loc_z]])
         rc = zeros(ch_n, ep_n)
         Threads.@threads :static for ep_idx = 1:ep_n
-            rc[:, ep_idx] = _reject_neighbors(@view(obj.data[ch, :, ep_idx]), xyz; w = w)
+            rc[:, ep_idx] = _reject_neighbors(
+                @view(obj.data[ch, :, ep_idx]), xyz; w = w, threaded = inner,
+            )
         end
         # abnormally low correlation compared with the other channels (or epochs) and below ransac_r
         rz = similar(rc)
@@ -229,7 +238,7 @@ function _reject_flags(
             flags[:, ep_idx] = _reject_absolute(
                 @view(obj.data[ch, :, ep_idx]), method;
                 w = w, flat_tol = flat_tol, flat_fr = flat_fr, amp_t = amp_t, z = z,
-                p = p,
+                p = p, threaded = inner,
             )
         end
     end

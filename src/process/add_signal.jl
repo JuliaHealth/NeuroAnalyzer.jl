@@ -43,32 +43,10 @@ function add_signal(
     ch::Union{String, Vector{String}, Regex},
     s::AbstractVector,
 )::NeuroAnalyzer.NEURO
-    # validate s length against epoch length before any allocation
-    length(s) == epoch_len(obj) ||
-        throw(ArgumentError("Length of s must equal epoch_len(obj) ($(epoch_len(obj)))."))
+    obj_new = deepcopy(obj)
+    add_signal!(obj_new; ch = ch, s = s)
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-
-    # number of channels
-    ch_n = length(ch)
-    # number of epochs
-    ep_n = nepochs(obj)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-        ch_idx, ep_idx = idx[1], idx[2]
-        obj_tmp.data[ch[ch_idx], :, ep_idx] =
-            _add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
-    end
-
-    push!(obj_tmp.history, "add_signal(obj; ch=$ch)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -91,10 +69,27 @@ function add_signal!(
     ch::Union{String, Vector{String}, Regex},
     s::AbstractVector,
 )::Nothing
-    obj_tmp = add_signal(obj; ch = ch, s = s)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # validate s length against epoch length before any allocation
+    length(s) == epoch_len(obj) ||
+        throw(ArgumentError("Length of s must equal epoch_len(obj) ($(epoch_len(obj)))."))
+
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    # number of channels
+    ch_n = length(ch)
+    # number of epochs
+    ep_n = nepochs(obj)
+
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        obj.data[ch[ch_idx], :, ep_idx] =
+            _add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
+    end
+
+    push!(obj.history, "add_signal(obj; ch=$ch)")
 
     return nothing
 end

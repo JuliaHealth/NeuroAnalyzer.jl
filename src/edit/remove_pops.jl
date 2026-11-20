@@ -233,60 +233,31 @@ function remove_pops(
     a_min::Real = 5,
     r2_min::Real = 0.8,
 )::Union{Tuple{NeuroAnalyzer.NEURO, DataFrame}, DataFrame}
-    # validate
-    nepochs(obj) == 1 ||
-        throw(ArgumentError("remove_pops() must be applied to continuous object."))
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    wlen = round(Int64, window * sr(obj))
-    2 * r + 1 <= wlen <= signal_len(obj) ||
-        throw(
-            ArgumentError(
-                "window must be ≥ $((2 * r + 1) / sr(obj)) and ≤ $(signal_len(obj) / sr(obj)) s.",
-            ),
-        )
-
-    obj_tmp = repair ? deepcopy(obj) : obj
-    pops = DataFrame(
-        :channel => String[],
-        :sample => Int64[],
-        :time => Float64[],
-        :amplitude => Float64[],
-        :tau => Float64[],
+    # detection only: obj is not modified (no copy needed)
+    repair || return remove_pops!(
+        obj;
+        ch = ch,
+        window = window,
+        r = r,
+        z = z,
+        a_min = a_min,
+        r2_min = r2_min,
+        repair = false,
     )
 
-    for c in ch
-        p = _remove_pops(
-            @view(obj.data[c, :, 1]);
-            r = r,
-            z = z,
-            wlen = wlen,
-            a_min = a_min,
-            r2_min = r2_min,
-            repair = repair,
-        )
-        repair && (obj_tmp.data[c, :, 1] = p.s)
-        for i in eachindex(p.pop_loc)
-            push!(
-                pops,
-                (
-                    labels(obj)[c],
-                    p.pop_loc[i],
-                    obj.time_pts[p.pop_loc[i]],
-                    p.amp[i],
-                    p.tau[i] / sr(obj),
-                ),
-            )
-        end
-    end
-
-    repair || return pops
-    push!(
-        obj_tmp.history,
-        "remove_pops(obj; ch=$ch, repair=true, window=$window, r=$r, z=$z, a_min=$a_min, r2_min=$r2_min)",
+    obj_new = deepcopy(obj)
+    pops = remove_pops!(
+        obj_new;
+        ch = ch,
+        window = window,
+        r = r,
+        z = z,
+        a_min = a_min,
+        r2_min = r2_min,
+        repair = true,
     )
 
-    return obj_tmp, pops
+    return obj_new, pops
 end
 
 """
@@ -319,28 +290,57 @@ function remove_pops!(
     a_min::Real = 5,
     r2_min::Real = 0.8,
 )::DataFrame
-    repair || return remove_pops(
-        obj;
-        ch = ch,
-        repair = false,
-        window = window,
-        r = r,
-        z = z,
-        a_min = a_min,
-        r2_min = r2_min,
+    # validate
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("remove_pops() must be applied to continuous object."))
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+    wlen = round(Int64, window * sr(obj))
+    2 * r + 1 <= wlen <= signal_len(obj) ||
+        throw(
+            ArgumentError(
+                "window must be ≥ $((2 * r + 1) / sr(obj)) and ≤ $(signal_len(obj) / sr(obj)) s.",
+            ),
+        )
+
+    pops = DataFrame(
+        :channel => String[],
+        :sample => Int64[],
+        :time => Float64[],
+        :amplitude => Float64[],
+        :tau => Float64[],
     )
-    obj_tmp, pops = remove_pops(
-        obj;
-        ch = ch,
-        repair = true,
-        window = window,
-        r = r,
-        z = z,
-        a_min = a_min,
-        r2_min = r2_min,
+
+    for c in ch
+        p = _remove_pops(
+            @view(obj.data[c, :, 1]);
+            r = r,
+            z = z,
+            wlen = wlen,
+            a_min = a_min,
+            r2_min = r2_min,
+            repair = repair,
+        )
+        repair && (obj.data[c, :, 1] = p.s)
+        for i in eachindex(p.pop_loc)
+            push!(
+                pops,
+                (
+                    labels(obj)[c],
+                    p.pop_loc[i],
+                    obj.time_pts[p.pop_loc[i]],
+                    p.amp[i],
+                    p.tau[i] / sr(obj),
+                ),
+            )
+        end
+    end
+
+    repair || return pops
+    push!(
+        obj.history,
+        "remove_pops(obj; ch=$ch, repair=true, window=$window, r=$r, z=$z, a_min=$a_min, r2_min=$r2_min)",
     )
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
 
     return pops
 end

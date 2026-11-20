@@ -23,6 +23,30 @@ function delete_optode(
     obj::NeuroAnalyzer.NEURO;
     opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    delete_optode!(obj_new; opt = opt)
+
+    return obj_new
+end
+
+"""
+    delete_optode!(obj; <keyword arguments>)
+
+Delete optode(s) in-place.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: optode number(s) to be removed
+
+# Returns
+
+- `Nothing`
+"""
+function delete_optode!(
+    obj::NeuroAnalyzer.NEURO;
+    opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+)::Nothing
     # validate
     _check_datatype(obj, "nirs")
     # highest index first, so that lower indices stay valid while deleting
@@ -39,18 +63,16 @@ function delete_optode(
         ),
     )
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    rec = obj_tmp.header.recording
+    rec = obj.header.recording
 
     # remove channel locations
     for idx in opt_vec
-        lbl = optode_labels(obj)[idx] # use original obj - obj_tmp changes each iteration
-        loc_result = _find_bylabel(obj_tmp.locs, lbl)
+        lbl = optode_labels(obj)[idx] # optode labels (header) are not changed in this loop
+        loc_result = _find_bylabel(obj.locs, lbl)
         if loc_result isa Int64
-            deleteat!(obj_tmp.locs, loc_result)
+            deleteat!(obj.locs, loc_result)
         elseif !isempty(loc_result)
-            deleteat!(obj_tmp.locs, sort(loc_result))
+            deleteat!(obj.locs, sort(loc_result))
         end
     end
 
@@ -77,44 +99,15 @@ function delete_optode(
         rec[:optode_pairs][:, col] = chp
     end
 
-    push!(obj_tmp.history, "delete_optode(obj; opt=$opt)")
+    push!(obj.history, "delete_optode(obj; opt=$opt)")
     chs_to_delete = sort(unique(chs_to_delete))
     if !isempty(chs_to_delete)
-        _info("Deleting NIRS channels: $(labels(obj_tmp)[chs_to_delete])")
+        _info("Deleting NIRS channels: $(labels(obj)[chs_to_delete])")
         # by index: the channels are identified by their optode pairs, not by labels
-        h = obj_tmp.history
-        obj_tmp = _delete_channel(obj_tmp, chs_to_delete)
-        obj_tmp.history = h
+        h = copy(obj.history)
+        _delete_channel!(obj, chs_to_delete)
+        obj.history = h
     end
-
-    return obj_tmp
-end
-
-"""
-    delete_optode!(obj; <keyword arguments>)
-
-Delete optode(s) in-place.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: optode number(s) to be removed
-
-# Returns
-
-- `Nothing`
-"""
-function delete_optode!(
-    obj::NeuroAnalyzer.NEURO;
-    opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
-)::Nothing
-    obj_tmp = delete_optode(obj; opt = opt)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.locs = obj_tmp.locs
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
 
     return nothing
 end
@@ -137,6 +130,30 @@ function delete_pair(
     obj::NeuroAnalyzer.NEURO;
     pair::Union{String, Vector{String}},
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    delete_pair!(obj_new; pair = pair)
+
+    return obj_new
+end
+
+"""
+    delete_pair!(obj; <keyword arguments>)
+
+Delete all channels of the specified NIRS source-detector pair(s) in-place. See `delete_pair()`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `pair::Union{String, Vector{String}}`: pair(s) given as `"source_detector"` labels, e.g. `"S1_D2"`
+
+# Returns
+
+- `Nothing`
+"""
+function delete_pair!(
+    obj::NeuroAnalyzer.NEURO;
+    pair::Union{String, Vector{String}},
+)::Nothing
     # validate
     _check_datatype(obj, "nirs")
     pairs = pair isa String ? [pair] : pair
@@ -162,36 +179,8 @@ function delete_pair(
         append!(ch_idx, idx)
     end
 
-    obj_tmp = _delete_channel(obj, ch_idx)
-    obj_tmp.history[end] = "delete_pair(obj; pair=$pairs)"
-
-    return obj_tmp
-end
-
-"""
-    delete_pair!(obj; <keyword arguments>)
-
-Delete all channels of the specified NIRS source-detector pair(s) in-place. See `delete_pair()`.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `pair::Union{String, Vector{String}}`: pair(s) given as `"source_detector"` labels, e.g. `"S1_D2"`
-
-# Returns
-
-- `Nothing`
-"""
-function delete_pair!(
-    obj::NeuroAnalyzer.NEURO;
-    pair::Union{String, Vector{String}},
-)::Nothing
-    obj_tmp = delete_pair(obj; pair = pair)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.locs = obj_tmp.locs
-    obj.markers = obj_tmp.markers
+    _delete_channel!(obj, ch_idx)
+    obj.history[end] = "delete_pair(obj; pair=$pairs)"
 
     return nothing
 end

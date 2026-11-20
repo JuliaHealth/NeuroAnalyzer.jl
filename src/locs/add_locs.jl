@@ -30,32 +30,10 @@ Locations are stored as given, in their original units.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function add_locs(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::NeuroAnalyzer.NEURO
-    no_match = setdiff(labels(obj), locs[!, :label])
-    length(no_match) > 0 && _warn(
-        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.",
-    )
-    locs = Base.filter(:label => in(labels(obj)), locs)
+    obj_new = deepcopy(obj)
+    add_locs!(obj_new; locs = locs)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # update channels that already have a location, add the others
-    for idx = 1:DataFrames.nrow(locs)
-        lidx = findfirst(isequal(locs[idx, :label]), obj_tmp.locs[!, :label])
-        if isa(lidx, Int64)
-            obj_tmp.locs[lidx, :] = locs[idx, :]
-        else
-            push!(obj_tmp.locs, locs[idx, :]; cols = :intersect)
-        end
-    end
-
-    # keep order consistent with labels
-    locs_idx = indexin(obj_tmp.locs[:, :label], labels(obj_tmp))
-    obj_tmp.locs = obj_tmp.locs[sortperm(locs_idx), :]
-
-    push!(obj_tmp.history, "add_locs(obj, locs)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -85,10 +63,27 @@ Electrode locations:
 - `Nothing`
 """
 function add_locs!(obj::NeuroAnalyzer.NEURO; locs::DataFrame)::Nothing
-    obj_tmp = add_locs(obj; locs = locs)
-    obj.history = obj_tmp.history
-    obj.locs = obj_tmp.locs
-    obj_tmp = nothing
+    no_match = setdiff(labels(obj), locs[!, :label])
+    length(no_match) > 0 && _warn(
+        "Location$(_pl(no_match)): $(uppercase.(no_match)) could not be found in the LOCS object.",
+    )
+    locs = Base.filter(:label => in(labels(obj)), locs)
+
+    # update channels that already have a location, add the others
+    for idx = 1:DataFrames.nrow(locs)
+        lidx = findfirst(isequal(locs[idx, :label]), obj.locs[!, :label])
+        if isa(lidx, Int64)
+            obj.locs[lidx, :] = locs[idx, :]
+        else
+            push!(obj.locs, locs[idx, :]; cols = :intersect)
+        end
+    end
+
+    # keep order consistent with labels
+    locs_idx = indexin(obj.locs[:, :label], labels(obj))
+    obj.locs = obj.locs[sortperm(locs_idx), :]
+
+    push!(obj.history, "add_locs(obj, locs)")
 
     return nothing
 end

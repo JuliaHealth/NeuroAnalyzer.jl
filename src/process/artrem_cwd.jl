@@ -92,32 +92,10 @@ function artrem_cwd(
     fseg::Tuple{Real, Real},
     type::Symbol = :pd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
+    obj_new = deepcopy(obj)
+    artrem_cwd!(obj_new; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
 
-    _check_epochs(obj, ep)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, ep] = _artrem_cwd(
-        @view(obj.data[ch, :, ep]),
-        obj.epoch_time;
-        fs = sr(obj),
-        wt = wt,
-        tseg = tseg,
-        fseg = fseg,
-        type = type,
-    )
-    push!(
-        obj_tmp.history,
-        "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)",
-    )
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -151,11 +129,27 @@ function artrem_cwd!(
     fseg::Tuple{Real, Real},
     type::Symbol = :pd,
 )::Nothing where {T <: CWT}
-    obj_tmp =
-        artrem_cwd(obj; ch = ch, ep = ep, wt = wt, tseg = tseg, fseg = fseg, type = type)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    ch = ch[1]
+
+    _check_epochs(obj, ep)
+
+    obj.data[ch, :, ep] = _artrem_cwd(
+        @view(obj.data[ch, :, ep]),
+        obj.epoch_time;
+        fs = sr(obj),
+        wt = wt,
+        tseg = tseg,
+        fseg = fseg,
+        type = type,
+    )
+    push!(
+        obj.history,
+        "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)",
+    )
 
     return nothing
 end

@@ -145,26 +145,10 @@ function apply_ssp_projectors(
     obj::NeuroAnalyzer.NEURO;
     pidx::Union{Int64, Vector{Int64}} = 0,
 )::NeuroAnalyzer.NEURO
-    # validate
-    _check_datatype(obj, "meg")
+    obj_new = deepcopy(obj)
+    apply_ssp_projectors!(obj_new; pidx = pidx)
 
-    # generate the projector matrix and the noise-subspace basis U
-    ssp_projectors, U = generate_ssp_projectors(obj; pidx = pidx)
-    _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # project all samples of all epochs at once: (n_ssp_ch × n_samples·n_epochs)
-    ssp_idx = findall(obj.header.recording[:ssp_channels])
-    n_s = size(obj.data, 2)
-    n_e = size(obj.data, 3)
-    x = reshape(obj.data[ssp_idx, :, :], length(ssp_idx), n_s * n_e)
-    obj_tmp.data[ssp_idx, :, :] = reshape(ssp_projectors * x, length(ssp_idx), n_s, n_e)
-
-    push!(obj_tmp.history, "apply_ssp_projectors(obj, pidx=$pidx)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -185,10 +169,21 @@ function apply_ssp_projectors!(
     obj::NeuroAnalyzer.NEURO;
     pidx::Union{Int64, Vector{Int64}} = 0,
 )::Nothing
-    obj_tmp = apply_ssp_projectors(obj; pidx = pidx)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # validate
+    _check_datatype(obj, "meg")
+
+    # generate the projector matrix and the noise-subspace basis U
+    ssp_projectors, U = generate_ssp_projectors(obj; pidx = pidx)
+    _info("Applying $(size(U, 2)) SSP projection$(_pl(size(U, 2)))")
+
+    # project all samples of all epochs at once: (n_ssp_ch × n_samples·n_epochs)
+    ssp_idx = findall(obj.header.recording[:ssp_channels])
+    n_s = size(obj.data, 2)
+    n_e = size(obj.data, 3)
+    x = reshape(obj.data[ssp_idx, :, :], length(ssp_idx), n_s * n_e)
+    obj.data[ssp_idx, :, :] = reshape(ssp_projectors * x, length(ssp_idx), n_s, n_e)
+
+    push!(obj.history, "apply_ssp_projectors(obj, pidx=$pidx)")
 
     return nothing
 end

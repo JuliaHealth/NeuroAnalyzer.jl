@@ -230,39 +230,10 @@ function normalize(
     bych::Bool = false,
     n::Real = 1,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    normalize!(obj_new; ch = ch, method = method, bych = bych, n = n)
 
-    ch_n = length(ch)
-    ep_n = nepochs(obj)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    if bych
-        # normalize each (channel, epoch) slice independently
-        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-            ch_idx, ep_idx = idx[1], idx[2]
-            obj_tmp.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer._normalize(
-                @view(obj_tmp.data[ch[ch_idx], :, ep_idx]),
-                n,
-                method = method,
-            )
-        end
-    else
-        # normalize the entire selected channel block at once
-        obj_tmp.data[ch, :, :] = NeuroAnalyzer._normalize(
-            obj_tmp.data[ch, :, :],
-            n;
-            method = method,
-            bych = false,
-        )
-    end
-
-    push!(obj_tmp.history, "normalize(obj; ch=$ch, method=$method, n=$n)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -307,10 +278,34 @@ function normalize!(
     bych::Bool = false,
     n::Real = 1,
 )::Nothing
-    obj_tmp = NeuroAnalyzer.normalize(obj; ch = ch, method = method, bych = bych, n = n)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    ch_n = length(ch)
+    ep_n = nepochs(obj)
+
+    if bych
+        # normalize each (channel, epoch) slice independently
+        @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+            ch_idx, ep_idx = idx[1], idx[2]
+            obj.data[ch[ch_idx], :, ep_idx] = NeuroAnalyzer._normalize(
+                @view(obj.data[ch[ch_idx], :, ep_idx]),
+                n,
+                method = method,
+            )
+        end
+    else
+        # normalize the entire selected channel block at once
+        obj.data[ch, :, :] = NeuroAnalyzer._normalize(
+            obj.data[ch, :, :],
+            n;
+            method = method,
+            bych = false,
+        )
+    end
+
+    push!(obj.history, "normalize(obj; ch=$ch, method=$method, n=$n)")
 
     return nothing
 end

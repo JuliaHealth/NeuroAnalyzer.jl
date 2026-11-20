@@ -243,42 +243,10 @@ function ica_remove(
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
 )::NeuroAnalyzer.NEURO
-    # validate
-    nepochs(obj) == 1 ||
-        throw(ArgumentError("ica_remove() must be applied to continuous object."))
+    obj_new = deepcopy(obj)
+    ica_remove!(obj_new; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    size(ic_mw, 1) == length(ch) ||
-        throw(
-            ArgumentError(
-                "ic_mw has $(size(ic_mw, 1)) rows, $(length(ch)) channels are selected.",
-            ),
-        )
-    size(ic, 2) == epoch_len(obj) ||
-        throw(ArgumentError("ic has $(size(ic, 2)) samples, OBJ has $(epoch_len(obj))."))
-    size(ic, 1) == size(ic_mw, 2) ||
-        throw(
-            ArgumentError(
-                "Dimension mismatch between ic $(size(ic)) and ic_mw $(size(ic_mw)).",
-            ),
-        )
-    all(1 .<= ic_idx .<= size(ic_mw, 2)) ||
-        throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
-
-    # components to remove
-    rm_idx = keep ? setdiff(1:size(ic_mw, 2), ic_idx) : unique(collect(ic_idx))
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # subtract the back-projection of the removed components
-    obj_tmp.data[ch, :, 1] = obj.data[ch, :, 1] .- ic_mw[:, rm_idx] * ic[rm_idx, :]
-
-    push!(obj_tmp.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -307,10 +275,37 @@ function ica_remove!(
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
 )::Nothing
-    obj_tmp = ica_remove(obj; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # validate
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("ica_remove() must be applied to continuous object."))
+
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+    size(ic_mw, 1) == length(ch) ||
+        throw(
+            ArgumentError(
+                "ic_mw has $(size(ic_mw, 1)) rows, $(length(ch)) channels are selected.",
+            ),
+        )
+    size(ic, 2) == epoch_len(obj) ||
+        throw(ArgumentError("ic has $(size(ic, 2)) samples, OBJ has $(epoch_len(obj))."))
+    size(ic, 1) == size(ic_mw, 2) ||
+        throw(
+            ArgumentError(
+                "Dimension mismatch between ic $(size(ic)) and ic_mw $(size(ic_mw)).",
+            ),
+        )
+    all(1 .<= ic_idx .<= size(ic_mw, 2)) ||
+        throw(ArgumentError("ic_idx must be in [1, $(size(ic_mw, 2))]."))
+
+    # components to remove
+    rm_idx = keep ? setdiff(1:size(ic_mw, 2), ic_idx) : unique(collect(ic_idx))
+
+    # subtract the back-projection of the removed components
+    obj.data[ch, :, 1] = obj.data[ch, :, 1] .- ic_mw[:, rm_idx] * ic[rm_idx, :]
+
+    push!(obj.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
 
     return nothing
 end

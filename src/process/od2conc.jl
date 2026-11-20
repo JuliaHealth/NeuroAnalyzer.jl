@@ -83,6 +83,34 @@ function od2conc(
     ppf::Union{Nothing, Vector{<:Real}} = nothing,
     age::Union{Nothing, Real} = nothing,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    od2conc!(obj_new; ch = ch, ppf = ppf, age = age)
+
+    return obj_new
+end
+
+"""
+    od2conc!(obj; <keyword arguments>)
+
+Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT) using the modified Beer-Lambert law. See `od2conc()` for details.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_od"))`: list of channels, default is all NIRS OD channels
+- `ppf::Union{Nothing, Vector{<:Real}}=nothing`: partial path length factors for each wavelength
+- `age::Union{Nothing, Real}=nothing`: age of the subject in years, used to calculate the DPF; cannot be used together with `ppf`
+
+# Returns
+
+- `Nothing`
+"""
+function od2conc!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
+    ppf::Union{Nothing, Vector{<:Real}} = nothing,
+    age::Union{Nothing, Real} = nothing,
+)::Nothing
     # validate
     _check_datatype(obj, "nirs")
     length(get_channel(obj; type = "nirs_od")) > 0 || throw(
@@ -164,15 +192,17 @@ function od2conc(
 
     # concentration changes: (HbO, HbR, HbT) × samples × pairs × epochs
     dc = zeros(3, ep_len, length(lst), ep_n)
-    @inbounds for ep_idx = 1:ep_n
-        dod = @view(obj.data[ch, :, ep_idx])
-        for (idx, idx1) in enumerate(lst)
-            idx_all = vcat(idx1, other_wl(idx1))
-            # path length factor of each OD channel (by its wavelength)
-            l = rho[idx] .* pf[wl_idx[idx_all]]
-            dc[1:2, :, idx, ep_idx] = einv * (dod[idx_all, :] ./ l)
+    # pairs × epochs in parallel (also for continuous, single-epoch data)
+    Threads.@threads :static for k in CartesianIndices((length(lst), ep_n))
+        idx, ep_idx = Tuple(k)
+        idx1 = lst[idx]
+        idx_all = vcat(idx1, other_wl(idx1))
+        # path length factor of each OD channel (by its wavelength)
+        l = rho[idx] .* pf[wl_idx[idx_all]]
+        @inbounds begin
+            dc[1:2, :, idx, ep_idx] = einv * (obj.data[ch[idx_all], :, ep_idx] ./ l)
+            @views dc[3, :, idx, ep_idx] .= dc[1, :, idx, ep_idx] .+ dc[2, :, idx, ep_idx]
         end
-        dc[3, :, :, ep_idx] = dc[1, :, :, ep_idx] + dc[2, :, :, ep_idx]
     end
     # M → μM
     dc .*= 10^6
@@ -198,9 +228,8 @@ function od2conc(
     n_opt = length(rec[:wavelength_index])
     opt = 1:n_opt
     rest = (n_opt + 1):size(obj.data, 1)
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data = vcat(obj.data[opt, :, :], hb_data, obj.data[rest, :, :])
-    r = obj_tmp.header.recording
+    obj.data = vcat(obj.data[opt, :, :], hb_data, obj.data[rest, :, :])
+    r = obj.header.recording
     r[:channel_type] = vcat(rec[:channel_type][opt], hb_type, rec[:channel_type][rest])
     r[:unit] = vcat(rec[:unit][opt], hb_unit, rec[:unit][rest])
     r[:label] = vcat(rec[:label][opt], hb_label, rec[:label][rest])
@@ -211,40 +240,9 @@ function od2conc(
     r[:channel_order] = _sort_channels(r[:channel_type])
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "od2conc(obj; ch=$ch, ppf=$(isnothing(ppf) ? "nothing" : ppf), age=$(isnothing(age) ? "nothing" : age))",
     )
-
-    return obj_tmp
-end
-
-"""
-    od2conc!(obj; <keyword arguments>)
-
-Convert NIRS optical density (OD) to concentration (HbO, HbR, HbT) using the modified Beer-Lambert law. See `od2conc()` for details.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_od"))`: list of channels, default is all NIRS OD channels
-- `ppf::Union{Nothing, Vector{<:Real}}=nothing`: partial path length factors for each wavelength
-- `age::Union{Nothing, Real}=nothing`: age of the subject in years, used to calculate the DPF; cannot be used together with `ppf`
-
-# Returns
-
-- `Nothing`
-"""
-function od2conc!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
-    ppf::Union{Nothing, Vector{<:Real}} = nothing,
-    age::Union{Nothing, Real} = nothing,
-)::Nothing
-    obj_tmp = od2conc(obj; ch = ch, ppf = ppf, age = age)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

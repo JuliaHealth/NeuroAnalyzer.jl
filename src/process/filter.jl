@@ -707,67 +707,20 @@ function filter_apply(
     bw::Union{Nothing, Real} = nothing,
     fcheck::AbstractVector{<:Real} = Float64[],
 )::NeuroAnalyzer.NEURO
-    # validate
-    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
-
-    # filter properties: always measured (for history), printed if report=true
-    r = filter_report(
-        flt;
-        fs = sr(obj),
+    obj_new = deepcopy(obj)
+    filter_apply!(
+        obj_new;
+        ch = ch,
+        flt = flt,
         dir = dir,
+        report = report,
         ftype = ftype,
         cutoff = cutoff,
         bw = bw,
         fcheck = fcheck,
-        n = 2^14,
-        verbose = report,
     )
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-
-    ch_n = length(ch)
-    ep_n = nepochs(obj)
-
-    ep_n > 1 && _warn("filter_apply() should preferably be used on a continuous signal.")
-    _info("Taper the signal before filtering to reduce edge artifacts")
-    dir === :twopass &&
-        _info("Two-pass filtering: magnitude response is squared (gains in dB doubled)")
-    dir === :twopass &&
-        flt isa Vector{Float64} &&
-        size(obj.data, 2) < length(flt) &&
-        throw(
-            ArgumentError(
-                "Epoch length ($(size(obj.data, 2)) samples) must be at least as long as the filter ($(length(flt)) taps) for two-pass filtering.",
-            ),
-        )
-    if flt isa Vector{Float64} && size(obj.data, 2) <= 3 * (length(flt) - 1)
-        _warn(
-            "Epoch length ($(size(obj.data, 2)) samples) is short relative to the filter ($(length(flt)) taps): " *
-            "edge transients will affect a large part of each epoch.",
-        )
-    end
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # initialize progress bar
-    progbar =
-        Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
-
-    # calculate over channel and epochs
-    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
-        ch_idx, ep_idx = idx[1], idx[2]
-        obj_tmp.data[ch[ch_idx], :, ep_idx] = _filter_one(obj, ch[ch_idx], ep_idx, flt, dir)
-        # update progress bar
-        progress_bar && next!(progbar)
-    end
-    progress_bar && finish!(progbar)
-
-    push!(obj_tmp.history, "filter_apply(obj; ch=$ch, dir=:$dir) [$(r.summary)]")
-
-    return obj_tmp
+    return obj_new
 end
 
 # per-channel/epoch worker (avoids repeating the length warning in every thread)
@@ -816,20 +769,62 @@ function filter_apply!(
     bw::Union{Nothing, Real} = nothing,
     fcheck::AbstractVector{<:Real} = Float64[],
 )::Nothing
-    obj_tmp = filter_apply(
-        obj;
-        ch = ch,
-        flt = flt,
+    # validate
+    _check_var(dir, [:twopass, :onepass, :reverse], "dir")
+
+    # filter properties: always measured (for history), printed if report=true
+    r = filter_report(
+        flt;
+        fs = sr(obj),
         dir = dir,
-        report = report,
         ftype = ftype,
         cutoff = cutoff,
         bw = bw,
         fcheck = fcheck,
+        n = 2^14,
+        verbose = report,
     )
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    ch_n = length(ch)
+    ep_n = nepochs(obj)
+
+    ep_n > 1 && _warn("filter_apply() should preferably be used on a continuous signal.")
+    _info("Taper the signal before filtering to reduce edge artifacts")
+    dir === :twopass &&
+        _info("Two-pass filtering: magnitude response is squared (gains in dB doubled)")
+    dir === :twopass &&
+        flt isa Vector{Float64} &&
+        size(obj.data, 2) < length(flt) &&
+        throw(
+            ArgumentError(
+                "Epoch length ($(size(obj.data, 2)) samples) must be at least as long as the filter ($(length(flt)) taps) for two-pass filtering.",
+            ),
+        )
+    if flt isa Vector{Float64} && size(obj.data, 2) <= 3 * (length(flt) - 1)
+        _warn(
+            "Epoch length ($(size(obj.data, 2)) samples) is short relative to the filter ($(length(flt)) taps): " *
+            "edge transients will affect a large part of each epoch.",
+        )
+    end
+
+    # initialize progress bar
+    progbar =
+        Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
+
+    # calculate over channel and epochs
+    @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
+        ch_idx, ep_idx = idx[1], idx[2]
+        obj.data[ch[ch_idx], :, ep_idx] = _filter_one(obj, ch[ch_idx], ep_idx, flt, dir)
+        # update progress bar
+        progress_bar && next!(progbar)
+    end
+    progress_bar && finish!(progbar)
+
+    push!(obj.history, "filter_apply(obj; ch=$ch, dir=:$dir) [$(r.summary)]")
 
     return nothing
 end
@@ -883,6 +878,75 @@ function filter(
     fcheck::AbstractVector{<:Real} = Float64[],
     preview::Bool = false,
 )::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
+    # preview: the filter response only, the signal is not filtered (no copy needed)
+    preview && return filter!(
+        obj;
+        ch = ch,
+        fprototype = fprototype,
+        ftype = ftype,
+        cutoff = cutoff,
+        order = order,
+        rp = rp,
+        rs = rs,
+        bw = bw,
+        w = w,
+        window = window,
+        dir = dir,
+        report = report,
+        fcheck = fcheck,
+        preview = true,
+    )
+
+    obj_new = deepcopy(obj)
+    filter!(
+        obj_new;
+        ch = ch,
+        fprototype = fprototype,
+        ftype = ftype,
+        cutoff = cutoff,
+        order = order,
+        rp = rp,
+        rs = rs,
+        bw = bw,
+        w = w,
+        window = window,
+        dir = dir,
+        report = report,
+        fcheck = fcheck,
+    )
+
+    return obj_new
+end
+
+"""
+    filter!(obj; <keyword arguments>)
+
+Design and apply a digital filter in-place to selected channels of a NEURO object.
+
+Arguments as in `filter`. When `preview=true`, the filter frequency response is plotted and returned without modifying the signal.
+
+# Returns
+
+- `Nothing` when `preview=false`
+- `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
+"""
+function filter!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    fprototype::Symbol,
+    ftype::Union{Symbol, Nothing} = nothing,
+    cutoff::Union{Real, Tuple{Real, Real}},
+    order::Union{Nothing, Int64} = nothing,
+    rp::Union{Nothing, Real} = nothing,
+    rs::Union{Nothing, Real} = nothing,
+    bw::Union{Nothing, Real} = nothing,
+    w::Union{Nothing, AbstractVector} = nothing,
+    window::Symbol = :hamming,
+    dir::Symbol = :twopass,
+    report::Bool = true,
+    fcheck::AbstractVector{<:Real} = Float64[],
+    preview::Bool = false,
+)::Union{Nothing, GLMakie.Figure}
     fs = sr(obj)
 
     if preview
@@ -955,7 +1019,7 @@ function filter(
 
     # design parameters, then measured response (printed by filter_apply)
     # report && _info(desc)
-    obj_tmp = filter_apply(
+    filter_apply!(
         obj;
         ch = ch,
         flt = flt,
@@ -967,61 +1031,7 @@ function filter(
         fcheck = fcheck,
     )
     # history: design line followed by the filter_apply line with the measured summary
-    insert!(obj_tmp.history, length(obj_tmp.history), desc)
-
-    return obj_tmp
-end
-
-"""
-    filter!(obj; <keyword arguments>)
-
-Design and apply a digital filter in-place to selected channels of a NEURO object.
-
-Arguments as in `filter`. When `preview=true`, the filter frequency response is plotted and returned without modifying the signal.
-
-# Returns
-
-- `Nothing` when `preview=false`
-- `GLMakie.Figure`: filter frequency-response plot (when `preview=true`)
-"""
-function filter!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex},
-    fprototype::Symbol,
-    ftype::Union{Symbol, Nothing} = nothing,
-    cutoff::Union{Real, Tuple{Real, Real}},
-    order::Union{Nothing, Int64} = nothing,
-    rp::Union{Nothing, Real} = nothing,
-    rs::Union{Nothing, Real} = nothing,
-    bw::Union{Nothing, Real} = nothing,
-    w::Union{Nothing, AbstractVector} = nothing,
-    window::Symbol = :hamming,
-    dir::Symbol = :twopass,
-    report::Bool = true,
-    fcheck::AbstractVector{<:Real} = Float64[],
-    preview::Bool = false,
-)::Union{Nothing, GLMakie.Figure}
-    out = NeuroAnalyzer.filter(
-        obj;
-        ch = ch,
-        fprototype = fprototype,
-        ftype = ftype,
-        cutoff = cutoff,
-        order = order,
-        rp = rp,
-        rs = rs,
-        bw = bw,
-        w = w,
-        window = window,
-        dir = dir,
-        report = report,
-        fcheck = fcheck,
-        preview = preview,
-    )
-    preview && return out
-
-    obj.data = out.data
-    obj.history = out.history
+    insert!(obj.history, length(obj.history), desc)
 
     return nothing
 end

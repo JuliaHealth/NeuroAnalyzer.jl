@@ -163,26 +163,10 @@ function detrend(
     order::Int64 = 1,
     f::Float64 = 1.0,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    detrend!(obj_new; ch = ch, type = type, offset = offset, order = order, f = f)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _detrend(
-        @view(obj.data[ch, :, :]);
-        type = type,
-        offset = offset,
-        order = order,
-        f = f,
-    )
-    push!(
-        obj_tmp.history,
-        "detrend(obj; ch=$ch, type=$type, offset=$offset, order=$order, f=$f)",
-    )
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -217,10 +201,21 @@ function detrend!(
     order::Int64 = 1,
     f::Float64 = 1.0,
 )::Nothing
-    obj_tmp = detrend(obj; ch = ch, type = type, offset = offset, order = order, f = f)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _detrend(
+        @view(obj.data[ch, :, :]);
+        type = type,
+        offset = offset,
+        order = order,
+        f = f,
+    )
+    push!(
+        obj.history,
+        "detrend(obj; ch=$ch, type=$type, offset=$offset, order=$order, f=$f)",
+    )
 
     return nothing
 end

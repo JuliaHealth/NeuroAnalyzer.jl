@@ -91,17 +91,10 @@ Resample all channels to `new_sr` sampling frequency.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function resample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
-    # validate
-    new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
+    obj_new = deepcopy(obj)
+    resample!(obj_new; new_sr = new_sr)
 
-    if new_sr > sr(obj)
-        return upsample(obj; new_sr = new_sr)
-    elseif new_sr < sr(obj)
-        return downsample(obj; new_sr = new_sr)
-    else
-        # always a copy, never the input object
-        return deepcopy(obj)
-    end
+    return obj_new
 end
 
 """
@@ -119,13 +112,14 @@ Resample all channels to `new_sr` sampling frequency in-place.
 - `Nothing`
 """
 function resample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
-    obj_tmp = resample(obj; new_sr = new_sr)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj_tmp = nothing
+    # validate
+    new_sr >= 1 || throw(ArgumentError("new_sr must be ≥ 1."))
+
+    if new_sr > sr(obj)
+        upsample!(obj; new_sr = new_sr)
+    elseif new_sr < sr(obj)
+        downsample!(obj; new_sr = new_sr)
+    end
 
     return nothing
 end
@@ -145,34 +139,43 @@ Upsample all channels to `new_sr` sampling frequency.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function upsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
-    # validate
-    new_sr > sr(obj) ||
-        throw(ArgumentError("new_sr must be > $(sr(obj)) Hz (the current sampling rate)."))
+    obj_new = deepcopy(obj)
+    upsample!(obj_new; new_sr = new_sr)
 
-    return _resample_obj(obj, new_sr, "upsample")
+    return obj_new
 end
 
 # resampled copy of obj: data, sampling rate and time axes (markers are stored in seconds
 # and do not change)
-function _resample_obj(
+function _resample_obj!(
     obj::NeuroAnalyzer.NEURO,
     new_sr::Int64,
     fname::String,
-)::NeuroAnalyzer.NEURO
+)::Nothing
     r = new_sr // sr(obj)
     max(numerator(r), denominator(r)) > 1000 && _warn(
         "The resampling ratio $(numerator(r))/$(denominator(r)) is complex and slow; a sampling rate with a simpler ratio to $(sr(obj)) Hz is faster.",
     )
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
+    obj.data = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
     # the new sampling rate must be set before the time axes are rebuilt
-    obj_tmp.header.recording[:sampling_rate] = new_sr
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-    push!(obj_tmp.history, "$fname(obj, new_sr=$new_sr)")
+    obj.header.recording[:sampling_rate] = new_sr
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+    push!(obj.history, "$fname(obj, new_sr=$new_sr)")
 
-    return obj_tmp
+    return nothing
+end
+
+# out-of-place version of _resample_obj!()
+function _resample_obj(
+    obj::NeuroAnalyzer.NEURO,
+    new_sr::Int64,
+    fname::String,
+)::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    _resample_obj!(obj_new, new_sr, fname)
+
+    return obj_new
 end
 
 """
@@ -190,13 +193,11 @@ Upsample all channels to `new_sr` sampling frequency in-place.
 - `Nothing`
 """
 function upsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
-    obj_tmp = upsample(obj; new_sr = new_sr)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj_tmp = nothing
+    # validate
+    new_sr > sr(obj) ||
+        throw(ArgumentError("new_sr must be > $(sr(obj)) Hz (the current sampling rate)."))
+
+    _resample_obj!(obj, new_sr, "upsample")
 
     return nothing
 end
@@ -216,16 +217,10 @@ Downsample all channels to `new_sr` sampling frequency.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function downsample(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::NeuroAnalyzer.NEURO
-    # validate
-    1 <= new_sr < sr(obj) ||
-        throw(
-            ArgumentError(
-                "new_sr must be in [1, $(sr(obj) - 1)] Hz (below the current sampling rate).",
-            ),
-        )
+    obj_new = deepcopy(obj)
+    downsample!(obj_new; new_sr = new_sr)
 
-    # (the resampling filter is an anti-aliasing low-pass filter, cutoff: the new Nyquist frequency)
-    return _resample_obj(obj, new_sr, "downsample")
+    return obj_new
 end
 
 """
@@ -243,13 +238,16 @@ Downsample all channels to `new_sr` sampling frequency in-place.
 - `Nothing`
 """
 function downsample!(obj::NeuroAnalyzer.NEURO; new_sr::Int64)::Nothing
-    obj_tmp = downsample(obj; new_sr = new_sr)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj_tmp = nothing
+    # validate
+    1 <= new_sr < sr(obj) ||
+        throw(
+            ArgumentError(
+                "new_sr must be in [1, $(sr(obj) - 1)] Hz (below the current sampling rate).",
+            ),
+        )
+
+    # (the resampling filter is an anti-aliasing low-pass filter, cutoff: the new Nyquist frequency)
+    _resample_obj!(obj, new_sr, "downsample")
 
     return nothing
 end

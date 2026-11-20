@@ -51,6 +51,30 @@ function intensity2od(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_int"),
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    intensity2od!(obj_new; ch = ch)
+
+    return obj_new
+end
+
+"""
+    intensity2od!(obj; <keyword arguments>)
+
+Convert NIRS intensity channels to optical density in-place.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
+- `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
+
+# Returns
+
+- `Nothing`
+"""
+function intensity2od!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_int"),
+)::Nothing
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
@@ -91,19 +115,16 @@ function intensity2od(
         "Negative intensities in channel(s): $(join(rec[:label][ch[bad_n]], ", ")); absolute values are used.",
     )
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
     # new channel layout: [optical channels | OD(ch) | remaining channels], so that the
     # optical channels (including the new OD channels) stay described by the header
     opt = 1:n_opt
     rest = (n_opt + 1):size(obj.data, 1)
-    obj_tmp.data = vcat(
+    obj.data = vcat(
         obj.data[opt, :, :],
         _intensity2od(@view(obj.data[ch, :, :])),
         obj.data[rest, :, :],
     )
-    r = obj_tmp.header.recording
+    r = obj.header.recording
     # OD channels: same wavelength and optode pair as their intensity channels
     r[:wavelength_index] = vcat(rec[:wavelength_index], rec[:wavelength_index][ch])
     r[:optode_pairs] = vcat(rec[:optode_pairs], rec[:optode_pairs][ch, :])
@@ -118,34 +139,7 @@ function intensity2od(
         vcat(rec[:bad_channel][opt], rec[:bad_channel][ch], rec[:bad_channel][rest])
     r[:channel_order] = _sort_channels(r[:channel_type])
 
-    push!(obj_tmp.history, "intensity2od(obj; ch=$ch)")
-
-    return obj_tmp
-end
-
-"""
-    intensity2od!(obj; <keyword arguments>)
-
-Convert NIRS intensity channels to optical density in-place.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
-- `ch::Union{String, Vector{String}, Regex}=get_channel(obj, type="nirs_int"))`: list of channels, default is NIRS intensity channels
-
-# Returns
-
-- `Nothing`
-"""
-function intensity2od!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_int"),
-)::Nothing
-    obj_tmp = intensity2od(obj; ch = ch)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    push!(obj.history, "intensity2od(obj; ch=$ch)")
 
     return nothing
 end

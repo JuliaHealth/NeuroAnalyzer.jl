@@ -568,6 +568,54 @@ function maxwell_filter(
     mc_interp::Symbol = :hann,
     destination::Union{Nothing, AbstractMatrix{<:Real}, AbstractVector{<:Real}} = nothing,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    maxwell_filter!(
+        obj_new;
+        int_order = int_order,
+        ext_order = ext_order,
+        origin = origin,
+        coord_frame = coord_frame,
+        regularize = regularize,
+        mag_scale = mag_scale,
+        calibration = calibration,
+        cross_talk = cross_talk,
+        st_duration = st_duration,
+        st_correlation = st_correlation,
+        st_overlap = st_overlap,
+        head_pos = head_pos,
+        mc_interp = mc_interp,
+        destination = destination,
+    )
+
+    return obj_new
+end
+
+"""
+    maxwell_filter!(obj; <keyword arguments>)
+
+Apply Maxwell filtering (SSS / tSSS / movement compensation) in-place. See `maxwell_filter()` for arguments.
+
+# Returns
+
+- `Nothing`
+"""
+function maxwell_filter!(
+    obj::NeuroAnalyzer.NEURO;
+    int_order::Int64 = 8,
+    ext_order::Int64 = 3,
+    origin::Union{Symbol, Vector{<:Real}} = :auto,
+    coord_frame::Symbol = :head,
+    regularize::Symbol = :in,
+    mag_scale::Real = 100.0,
+    calibration::Union{Nothing, String} = nothing,
+    cross_talk::Union{Nothing, String} = nothing,
+    st_duration::Union{Nothing, Real} = nothing,
+    st_correlation::Real = 0.98,
+    st_overlap::Bool = true,
+    head_pos::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
+    mc_interp::Symbol = :hann,
+    destination::Union{Nothing, AbstractMatrix{<:Real}, AbstractVector{<:Real}} = nothing,
+)::Nothing
     # ------------------------------------------------------------------ #
     # validate                                                           #
     # ------------------------------------------------------------------ #
@@ -929,9 +977,8 @@ function maxwell_filter(
     # ------------------------------------------------------------------ #
     # output object                                                      #
     # ------------------------------------------------------------------ #
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[meg, :, 1] = out .* d_scale
-    r = obj_tmp.header.recording
+    obj.data[meg, :, 1] = out .* d_scale
+    r = obj.header.recording
 
     # bad MEG channels were reconstructed
     n_bad = count(bad)
@@ -975,27 +1022,9 @@ function maxwell_filter(
     )
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "maxwell_filter(obj; int_order=$int_order, ext_order=$ext_order, origin=$org, coord_frame=$coord_frame, regularize=$regularize, mag_scale=$mag_scale, calibration=$calibration, cross_talk=$cross_talk, st_duration=$st_duration, st_correlation=$st_correlation, st_overlap=$st_overlap, head_pos=$(isnothing(head_pos) ? nothing : "[…]"), mc_interp=$mc_interp, destination=$(isnothing(destination) ? nothing : "[…]"))",
     )
-
-    return obj_tmp
-end
-
-"""
-    maxwell_filter!(obj; <keyword arguments>)
-
-Apply Maxwell filtering (SSS / tSSS / movement compensation) in-place. See `maxwell_filter()` for arguments.
-
-# Returns
-
-- `Nothing`
-"""
-function maxwell_filter!(obj::NeuroAnalyzer.NEURO; kwargs...)::Nothing
-    obj_tmp = maxwell_filter(obj; kwargs...)
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
 
     return nothing
 end

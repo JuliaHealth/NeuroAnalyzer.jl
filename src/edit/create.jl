@@ -140,18 +140,10 @@ Return a copy of `obj` with time vectors built from a specified sampling rate.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function create_time(obj::NeuroAnalyzer.NEURO; fs::Int64)::NeuroAnalyzer.NEURO
-    # validate
-    length(obj.data) > 0 || throw(ArgumentError("OBJ does not contain data."))
-    fs > 0 || throw(ArgumentError("fs must be > 0."))
+    obj_new = deepcopy(obj)
+    create_time!(obj_new; fs = fs)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.header.recording[:sampling_rate] = fs
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-    push!(obj_tmp.history, "create_time(obj, fs=$fs)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -169,12 +161,13 @@ Build time vectors from a specified sampling rate in-place.
 - `Nothing`
 """
 function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
-    obj_tmp = create_time(obj; fs = fs)
-    obj.header = obj_tmp.header
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # validate
+    length(obj.data) > 0 || throw(ArgumentError("OBJ does not contain data."))
+    fs > 0 || throw(ArgumentError("fs must be > 0."))
+
+    obj.header.recording[:sampling_rate] = fs
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+    push!(obj.history, "create_time(obj, fs=$fs)")
 
     return nothing
 end
@@ -205,52 +198,10 @@ function create_data(
     fs::Int64,
     type::String,
 )::NeuroAnalyzer.NEURO
-    # validate
-    length(obj.data) == 0 || throw(ArgumentError("OBJ already contains data."))
-    length(obj.time_pts) == 0 || throw(ArgumentError("OBJ already has time points."))
-    _check_var(type, channel_types, "type")
-    fs > 0 || throw(ArgumentError("fs must be > 0."))
+    obj_new = deepcopy(obj)
+    create_data!(obj_new; data = data, fs = fs, type = type)
 
-    # number of channels
-    ch_n = size(data, 1)
-
-    # channel labels
-    clabels = ["ch-$i" for i = 1:ch_n]
-
-    # create new dataset
-    obj_tmp                                  = deepcopy(obj)
-    obj_tmp.data                             = data
-    obj_tmp.header.recording[:label]         = clabels
-    obj_tmp.header.recording[:channel_type]  = fill(type, ch_n)
-    obj_tmp.header.recording[:unit]          = fill(_ch_units(type), ch_n)
-    obj_tmp.header.recording[:channel_order] = collect(1:ch_n)
-    obj_tmp.header.recording[:bad_channel]   = zeros(Bool, ch_n)
-    obj_tmp.header.recording[:sampling_rate] = fs
-
-    # per-channel fields specific to the data type
-    rec = obj_tmp.header.recording
-    dt = rec[:data_type]
-    if dt in _EEG_LIKE_DATA
-        rec[:transducers] = fill("", ch_n)
-        rec[:prefiltering] = fill("", ch_n)
-        rec[:gain] = ones(ch_n)
-    elseif dt in _MEG_LIKE_DATA
-        rec[:prefiltering] = fill("", ch_n)
-        rec[:coil_type] = fill("", ch_n)
-        rec[:ssp_channels] = zeros(Bool, ch_n)
-        type == "mag" && (rec[:magnetometers] = collect(1:ch_n))
-        type == "grad" && (rec[:gradiometers] = collect(1:ch_n))
-    elseif dt in ("sensors", "eda", "tpt")
-        rec[:prefiltering] = fill("", ch_n)
-    elseif dt == "mep"
-        rec[:stimulation_intensity] = zeros(Int64, ch_n)
-        rec[:coil_type] = fill("", ch_n)
-    end
-
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-    push!(obj_tmp.history, "create_data(obj; data, fs=$fs, type=$type)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -275,13 +226,49 @@ function create_data!(
     fs::Int64,
     type::String,
 )::Nothing
-    obj_tmp = create_data(obj; data = data, fs = fs, type = type)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # validate
+    length(obj.data) == 0 || throw(ArgumentError("OBJ already contains data."))
+    length(obj.time_pts) == 0 || throw(ArgumentError("OBJ already has time points."))
+    _check_var(type, channel_types, "type")
+    fs > 0 || throw(ArgumentError("fs must be > 0."))
+
+    # number of channels
+    ch_n = size(data, 1)
+
+    # channel labels
+    clabels = ["ch-$i" for i = 1:ch_n]
+
+    # create new dataset
+    obj.data                             = data
+    obj.header.recording[:label]         = clabels
+    obj.header.recording[:channel_type]  = fill(type, ch_n)
+    obj.header.recording[:unit]          = fill(_ch_units(type), ch_n)
+    obj.header.recording[:channel_order] = collect(1:ch_n)
+    obj.header.recording[:bad_channel]   = zeros(Bool, ch_n)
+    obj.header.recording[:sampling_rate] = fs
+
+    # per-channel fields specific to the data type
+    rec = obj.header.recording
+    dt = rec[:data_type]
+    if dt in _EEG_LIKE_DATA
+        rec[:transducers] = fill("", ch_n)
+        rec[:prefiltering] = fill("", ch_n)
+        rec[:gain] = ones(ch_n)
+    elseif dt in _MEG_LIKE_DATA
+        rec[:prefiltering] = fill("", ch_n)
+        rec[:coil_type] = fill("", ch_n)
+        rec[:ssp_channels] = zeros(Bool, ch_n)
+        type == "mag" && (rec[:magnetometers] = collect(1:ch_n))
+        type == "grad" && (rec[:gradiometers] = collect(1:ch_n))
+    elseif dt in ("sensors", "eda", "tpt")
+        rec[:prefiltering] = fill("", ch_n)
+    elseif dt == "mep"
+        rec[:stimulation_intensity] = zeros(Int64, ch_n)
+        rec[:coil_type] = fill("", ch_n)
+    end
+
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+    push!(obj.history, "create_data(obj; data, fs=$fs, type=$type)")
 
     return nothing
 end

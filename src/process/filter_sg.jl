@@ -96,17 +96,10 @@ function filter_sg(
     order::Int64 = 6,
     window::Int64 = 11,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    filter_sg!(obj_new; ch = ch, order = order, window = window)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _filter_sg(obj.data[ch, :, :]; order = order, window = window)
-    push!(obj_tmp.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -131,10 +124,12 @@ function filter_sg!(
     order::Int64 = 6,
     window::Int64 = 11,
 )::Nothing
-    obj_tmp = filter_sg(obj; ch = ch, order = order, window = window)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _filter_sg(obj.data[ch, :, :]; order = order, window = window)
+    push!(obj.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
 
     return nothing
 end

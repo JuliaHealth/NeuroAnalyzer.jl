@@ -151,23 +151,10 @@ function filter_g(
     f::Real,
     gw::Real = 5,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    filter_g!(obj_new; ch = ch, pad = pad, f = f, gw = gw)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _filter_g(
-        @view(obj.data[ch, :, :]);
-        fs = sr(obj),
-        pad = pad,
-        f = f,
-        gw = gw,
-    )
-    push!(obj_tmp.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -194,10 +181,18 @@ function filter_g!(
     f::Real,
     gw::Real = 5,
 )::Nothing
-    obj_tmp = filter_g(obj; ch = ch, pad = pad, f = f, gw = gw)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _filter_g(
+        @view(obj.data[ch, :, :]);
+        fs = sr(obj),
+        pad = pad,
+        f = f,
+        gw = gw,
+    )
+    push!(obj.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
 
     return nothing
 end

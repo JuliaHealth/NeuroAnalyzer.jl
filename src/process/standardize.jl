@@ -54,17 +54,10 @@ function standardize(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Tuple{NeuroAnalyzer.NEURO, Vector{ZScoreTransform{Float64, Vector{Float64}}}}
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    scaler = standardize!(obj_new; ch = ch)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :], scaler = _standardize(obj.data[ch, :, :])
-    push!(obj_tmp.history, "standardize(obj)")
-
-    return obj_tmp, scaler
+    return obj_new, scaler
 end
 
 """
@@ -85,9 +78,12 @@ function standardize!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Vector{ZScoreTransform{Float64, Vector{Float64}}}
-    obj_tmp, scaler = standardize(obj; ch = ch)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :], scaler = _standardize(obj.data[ch, :, :])
+    push!(obj.history, "standardize(obj)")
 
     return scaler
 end

@@ -138,21 +138,10 @@ function filter_poly(
     order::Int64 = 8,
     window::Int64 = 10,
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    filter_poly!(obj_new; ch = ch, order = order, window = window)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _filter_poly(
-        @view(obj.data[ch, :, :]);
-        order = order,
-        window = window,
-    )
-    push!(obj_tmp.history, "filter_poly(obj; ch=$ch, order=$order, window=$window)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -177,10 +166,16 @@ function filter_poly!(
     order::Int64 = 8,
     window::Int64 = 10,
 )::Nothing
-    obj_tmp = filter_poly(obj; ch = ch, order = order, window = window)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _filter_poly(
+        @view(obj.data[ch, :, :]);
+        order = order,
+        window = window,
+    )
+    push!(obj.history, "filter_poly(obj; ch=$ch, order=$order, window=$window)")
 
     return nothing
 end

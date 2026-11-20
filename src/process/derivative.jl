@@ -91,17 +91,10 @@ function derivative(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    derivative!(obj_new; ch = ch)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _derivative(obj.data[ch, :, :])
-    push!(obj_tmp.history, "derivative(obj; ch=$ch)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -122,10 +115,12 @@ function derivative!(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
 )::Nothing
-    obj_tmp = derivative(obj; ch = ch)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _derivative(obj.data[ch, :, :])
+    push!(obj.history, "derivative(obj; ch=$ch)")
 
     return nothing
 end

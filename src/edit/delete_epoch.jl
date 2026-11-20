@@ -23,38 +23,10 @@ function delete_epoch(
     obj::NeuroAnalyzer.NEURO;
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
-    # validate
-    nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
-    ep = _n2v(ep)
-    ep_sorted = sort(collect(ep); rev = true)
-    length(ep_sorted) < nepochs(obj) || throw(
-        ArgumentError(
-            "Number of epochs to delete ($(length(ep_sorted))) must be less than " *
-            "the total number of epochs ($(nepochs(obj))).",
-        ),
-    )
-    _check_epochs(obj, ep_sorted)
+    obj_new = deepcopy(obj)
+    delete_epoch!(obj_new; ep = ep)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # remove epoch
-    obj_tmp.data = obj_tmp.data[:, :, setdiff(1:nepochs(obj), ep_sorted)]
-
-    # marker times are in seconds; epoch e spans [(e - 1) * ep_dur, e * ep_dur)
-    ep_dur = epoch_duration(obj)
-    # process latest epochs first to preserve offsets
-    for e in ep_sorted
-        t1 = (e - 1) * ep_dur
-        t2 = e * ep_dur
-        deleteat!(obj_tmp.markers, t1 .<= obj_tmp.markers.start .< t2)
-        obj_tmp.markers[obj_tmp.markers.start .>= t2, :start] .-= ep_dur
-    end
-
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-    push!(obj_tmp.history, "delete_epoch(obj; ep=$ep)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -72,16 +44,36 @@ Delete epoch(s) in-place.
 - `Nothing`
 """
 function delete_epoch!(
-    obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
+    obj::NeuroAnalyzer.NEURO;
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
-    obj_tmp = delete_epoch(obj; ep = ep)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    # validate
+    nepochs(obj) > 1 || throw(ArgumentError("You cannot delete the last epoch."))
+    ep = _n2v(ep)
+    ep_sorted = sort(collect(ep); rev = true)
+    length(ep_sorted) < nepochs(obj) || throw(
+        ArgumentError(
+            "Number of epochs to delete ($(length(ep_sorted))) must be less than " *
+            "the total number of epochs ($(nepochs(obj))).",
+        ),
+    )
+    _check_epochs(obj, ep_sorted)
+
+    # remove epoch
+    obj.data = obj.data[:, :, setdiff(1:nepochs(obj), ep_sorted)]
+
+    # marker times are in seconds; epoch e spans [(e - 1) * ep_dur, e * ep_dur)
+    ep_dur = epoch_duration(obj)
+    # process latest epochs first to preserve offsets
+    for e in ep_sorted
+        t1 = (e - 1) * ep_dur
+        t2 = e * ep_dur
+        deleteat!(obj.markers, t1 .<= obj.markers.start .< t2)
+        obj.markers[obj.markers.start .>= t2, :start] .-= ep_dur
+    end
+
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+    push!(obj.history, "delete_epoch(obj; ep=$ep)")
 
     return nothing
 end
@@ -106,17 +98,10 @@ function keep_epoch(
     obj::NeuroAnalyzer.NEURO;
     ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::NeuroAnalyzer.NEURO
-    # validate
-    nepochs(obj) > 1 || throw(ArgumentError("OBJ contains only one epoch."))
-    _check_epochs(obj, ep)
+    obj_new = deepcopy(obj)
+    keep_epoch!(obj_new; ep = ep)
 
-    ep_to_remove = setdiff(1:nepochs(obj), ep)
-    isempty(ep_to_remove) && return deepcopy(obj) # nothing to remove
-
-    obj_tmp = delete_epoch(obj; ep = ep_to_remove)
-    push!(obj_tmp.history, "keep_epoch(obj; ep=$ep)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -136,14 +121,15 @@ Keep only the specified epoch(s) in-place.
 function keep_epoch!(
     obj::NeuroAnalyzer.NEURO; ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
-    obj_tmp = keep_epoch(obj; ep = ep)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    # validate
+    nepochs(obj) > 1 || throw(ArgumentError("OBJ contains only one epoch."))
+    _check_epochs(obj, ep)
+
+    ep_to_remove = setdiff(1:nepochs(obj), ep)
+    isempty(ep_to_remove) && return nothing # nothing to remove
+
+    delete_epoch!(obj; ep = ep_to_remove)
+    push!(obj.history, "keep_epoch(obj; ep=$ep)")
 
     return nothing
 end

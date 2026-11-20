@@ -160,46 +160,10 @@ function reference_ce(
     ch::Union{String, Vector{String}, Regex},
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
-    # validate
-    _check_datatype(obj, "eeg")
+    obj_new = deepcopy(obj)
+    reference_ce!(obj_new; ch = ch, med = med)
 
-    # reference channel indices
-    ch == "" && throw(ArgumentError("No reference channels selected."))
-    ref_ch_idx = get_channel(obj; ch = ch)
-    isempty(ref_ch_idx) && throw(ArgumentError("No reference channels selected."))
-    single = length(ref_ch_idx) == 1
-
-    # channels to re-reference
-    sig_ch_idx = _eeg_ch_idx(obj)
-    ep_n = nepochs(obj)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # the reference is the same for all channels within an epoch
-    Threads.@threads :static for ep_idx = 1:ep_n
-        ref = if single
-            @view obj.data[ref_ch_idx[1], :, ep_idx]
-        else
-            src = @view obj.data[ref_ch_idx, :, ep_idx]
-            med ? vec(median(src; dims = 1)) : vec(mean(src; dims = 1))
-        end
-        for s_ch in sig_ch_idx
-            @views obj_tmp.data[s_ch, :, ep_idx] .= obj.data[s_ch, :, ep_idx] .- ref
-        end
-    end
-
-    suffix = single ? "-$(labels(obj)[ref_ch_idx[1]])" : (med ? "-cmed" : "-cavg")
-    _append_label_suffix!(obj_tmp, obj, sig_ch_idx, suffix)
-
-    obj_tmp.header.recording[:reference] = if single
-        "common ($(labels(obj)[ref_ch_idx[1]]))"
-    else
-        "common ($(Base.join(labels(obj)[ref_ch_idx], ", ")) $(med ? "median" : "averaged"))"
-    end
-    push!(obj_tmp.history, "reference_ce(obj; ch=$ch, med=$med)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -226,7 +190,49 @@ function reference_ce!(
     ch::Union{String, Vector{String}, Regex},
     med::Bool = false,
 )::Nothing
-    _copy_into!(obj, reference_ce(obj; ch = ch, med = med))
+    # validate
+    _check_datatype(obj, "eeg")
+
+    # reference channel indices
+    ch == "" && throw(ArgumentError("No reference channels selected."))
+    ref_ch_idx = get_channel(obj; ch = ch)
+    isempty(ref_ch_idx) && throw(ArgumentError("No reference channels selected."))
+    single = length(ref_ch_idx) == 1
+
+    # channels to re-reference
+    sig_ch_idx = _eeg_ch_idx(obj)
+    ep_n = nepochs(obj)
+
+    # the reference is the same for all channels within an epoch; samples are processed in
+    # blocks, so that continuous (single-epoch) data are also processed in parallel
+    blocks = _sample_blocks(size(obj.data, 2), ep_n)
+    Threads.@threads :static for idx in CartesianIndices((length(blocks), ep_n))
+        t = blocks[idx[1]]
+        ep_idx = idx[2]
+        # a copy: the reference channel may itself be re-referenced below
+        ref = if single
+            obj.data[ref_ch_idx[1], t, ep_idx]
+        else
+            src = @view obj.data[ref_ch_idx, t, ep_idx]
+            med ? vec(median(src; dims = 1)) : vec(mean(src; dims = 1))
+        end
+        for s_ch in sig_ch_idx
+            @views obj.data[s_ch, t, ep_idx] .-= ref
+        end
+    end
+
+    # reference labels, before the suffix is appended to the labels
+    ref_lbl = labels(obj)[ref_ch_idx]
+    suffix = single ? "-$(ref_lbl[1])" : (med ? "-cmed" : "-cavg")
+    _append_label_suffix!(obj, obj, sig_ch_idx, suffix)
+
+    obj.header.recording[:reference] = if single
+        "common ($(ref_lbl[1]))"
+    else
+        "common ($(Base.join(ref_lbl, ", ")) $(med ? "median" : "averaged"))"
+    end
+    push!(obj.history, "reference_ce(obj; ch=$ch, med=$med)")
+
     return nothing
 end
 
@@ -261,6 +267,50 @@ function reference_avg(
     med::Bool = false,
     weighted::Bool = false,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    reference_avg!(
+        obj_new;
+        exclude_fpo = exclude_fpo,
+        exclude_current = exclude_current,
+        average = average,
+        med = med,
+        weighted = weighted,
+    )
+
+    return obj_new
+end
+
+"""
+    reference_avg!(obj; <keyword arguments>)
+
+Re-reference EEG channels to the common average reference in-place. Only EEG-type channels are modified.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be of type `"eeg"`; modified in-place
+- `exclude_fpo::Bool=false`: exclude Fp1, Fp2 (due to eye blinks), O1, O2 (due to head movements) from the CAR calculation
+- `exclude_current::Bool=false`: exclude the current channel from its own CAR calculation
+- `average::Bool=true`: subtract the mean (or median) reference; if `false`, subtract the sum
+- `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`); ignored when `average=false`
+- `weighted::Bool=false`: weight reference channels by inverse planar distance in the 2-D topographic (polar) projection of electrode positions (requires polar channel locations)
+
+# Returns
+
+- `Nothing`
+
+# Notes
+
+- Weighted reference: `Σ wᵢxᵢ / Σ wᵢ` with `wᵢ = 1/dᵢ`; with `average=false` this is multiplied by the number of reference channels (weighted analogue of the sum).
+- With `weighted=true` the current channel (distance 0) and co-located channels always get weight 0.
+"""
+function reference_avg!(
+    obj::NeuroAnalyzer.NEURO;
+    exclude_fpo::Bool = false,
+    exclude_current::Bool = false,
+    average::Bool = true,
+    med::Bool = false,
+    weighted::Bool = false,
+)::Nothing
     # validate
     _check_datatype(obj, "eeg")
 
@@ -309,15 +359,19 @@ function reference_avg(
         average ? (med ? vec(median(X; dims = 1)) : vec(mean(X; dims = 1))) :
         vec(sum(X; dims = 1))
 
-    Threads.@threads :static for ep_idx = 1:ep_n
-        ref_shared = shared ? _ref(@view src[ref_rows[1], :, ep_idx]) : nothing
+    # samples are processed in blocks (parallel also for continuous, single-epoch data)
+    blocks = _sample_blocks(size(src, 2), ep_n)
+    Threads.@threads :static for idx in CartesianIndices((length(blocks), ep_n))
+        t = blocks[idx[1]]
+        ep_idx = idx[2]
+        ref_shared = shared ? _ref(@view src[ref_rows[1], t, ep_idx]) : nothing
         for i = 1:ch_n
             ref = if shared
                 ref_shared
             elseif weighted
                 rr = ref_rows[i]
                 w = W[i, rr]
-                X = @view src[rr, :, ep_idx]
+                X = @view src[rr, t, ep_idx]
                 if average && med
                     _wmedian_cols(X, w)
                 else
@@ -325,88 +379,41 @@ function reference_avg(
                     average ? r : r .* length(rr)
                 end
             else
-                _ref(@view src[ref_rows[i], :, ep_idx])
+                _ref(@view src[ref_rows[i], t, ep_idx])
             end
-            @views dst[i, :, ep_idx] .= src[i, :, ep_idx] .- ref
+            @views dst[i, t, ep_idx] .= src[i, t, ep_idx] .- ref
         end
     end
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[sig_ch_idx, :, :] = dst
+    obj.data[sig_ch_idx, :, :] = dst
 
     # med is ignored when average=false, so it only affects the averaged suffixes
     suffix = (weighted ? "-w" : "-") * (average ? (med ? "med" : "avg") : "sum")
-    _append_label_suffix!(obj_tmp, obj, sig_ch_idx, suffix)
+    _append_label_suffix!(obj, obj, sig_ch_idx, suffix)
 
-    obj_tmp.header.recording[:reference] = if average
+    obj.header.recording[:reference] = if average
         string(med ? "median" : "average", weighted ? " (weighted)" : "")
     else
         weighted ? "sum (weighted)" : "sum"
     end
     push!(
-        obj_tmp.history,
+        obj.history,
         "reference_avg(obj, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)",
     )
 
-    return obj_tmp
-end
-
-"""
-    reference_avg!(obj; <keyword arguments>)
-
-Re-reference EEG channels to the common average reference in-place. Only EEG-type channels are modified.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be of type `"eeg"`; modified in-place
-- `exclude_fpo::Bool=false`: exclude Fp1, Fp2 (due to eye blinks), O1, O2 (due to head movements) from the CAR calculation
-- `exclude_current::Bool=false`: exclude the current channel from its own CAR calculation
-- `average::Bool=true`: subtract the mean (or median) reference; if `false`, subtract the sum
-- `med::Bool=false`: use median instead of mean (weighted median when `weighted=true`); ignored when `average=false`
-- `weighted::Bool=false`: weight reference channels by inverse planar distance in the 2-D topographic (polar) projection of electrode positions (requires polar channel locations)
-
-# Returns
-
-- `Nothing`
-
-# Notes
-
-- Weighted reference: `Σ wᵢxᵢ / Σ wᵢ` with `wᵢ = 1/dᵢ`; with `average=false` this is multiplied by the number of reference channels (weighted analogue of the sum).
-- With `weighted=true` the current channel (distance 0) and co-located channels always get weight 0.
-"""
-function reference_avg!(
-    obj::NeuroAnalyzer.NEURO;
-    exclude_fpo::Bool = false,
-    exclude_current::Bool = false,
-    average::Bool = true,
-    med::Bool = false,
-    weighted::Bool = false,
-)::Nothing
-    _copy_into!(
-        obj,
-        reference_avg(
-            obj;
-            exclude_fpo = exclude_fpo,
-            exclude_current = exclude_current,
-            average = average,
-            med = med,
-            weighted = weighted,
-        ),
-    )
     return nothing
 end
 
 # ---------------------------------------------------------------------------
 # internal helper: auricular/mastoid reference, shared by reference_a and reference_m
 # ---------------------------------------------------------------------------
-function _reference_paired(
+function _reference_paired!(
     obj::NeuroAnalyzer.NEURO,
     r1::String,
     r2::String,
     type::Symbol,
     name::String,
-)::NeuroAnalyzer.NEURO
+)::Nothing
     # validate
     _check_datatype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
@@ -438,28 +445,44 @@ function _reference_paired(
     end
 
     s_ref = similar(obj.data, ch_n, size(obj.data, 2), ep_n)
-    Threads.@threads :static for ep_idx = 1:ep_n
-        a = @view obj.data[i1, :, ep_idx]
-        b = @view obj.data[i2, :, ep_idx]
+    # samples are processed in blocks (parallel also for continuous, single-epoch data)
+    blocks = _sample_blocks(size(obj.data, 2), ep_n)
+    Threads.@threads :static for idx in CartesianIndices((length(blocks), ep_n))
+        t = blocks[idx[1]]
+        ep_idx = idx[2]
+        a = @view obj.data[i1, t, ep_idx]
+        b = @view obj.data[i2, t, ep_idx]
         linked = (a .+ b) ./ 2
         for i = 1:ch_n
             ref = assign[i] == 0 ? linked : (assign[i] == 1 ? a : b)
-            @views s_ref[i, :, ep_idx] .= obj.data[ch[i], :, ep_idx] .- ref
+            @views s_ref[i, t, ep_idx] .= obj.data[ch[i], t, ep_idx] .- ref
         end
     end
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[ch, :, :] = s_ref
+    obj.data[ch, :, :] = s_ref
     sfx = ["-$r1$r2", "-$r1", "-$r2"]
-    _append_label_suffix!(obj_tmp, obj, ch, [sfx[k + 1] for k in assign])
-    obj_tmp.header.recording[:reference] = Dict(
+    _append_label_suffix!(obj, obj, ch, [sfx[k + 1] for k in assign])
+    obj.header.recording[:reference] = Dict(
         :l => "$name (linked)",
         :i => "$name (ipsilateral)",
         :c => "$name (contralateral)",
     )[type]
 
-    return obj_tmp
+    return nothing
+end
+
+# out-of-place version of _reference_paired!()
+function _reference_paired(
+    obj::NeuroAnalyzer.NEURO,
+    r1::String,
+    r2::String,
+    type::Symbol,
+    name::String,
+)::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    _reference_paired!(obj_new, r1, r2, type, name)
+
+    return obj_new
 end
 
 """
@@ -489,9 +512,10 @@ function reference_a(
     type::Symbol = :l,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
-    obj_tmp = _reference_paired(obj, "A1", "A2", type, "auricular")
-    push!(obj_tmp.history, "reference_a(obj, type=$type, med=$med)")
-    return obj_tmp
+    obj_new = deepcopy(obj)
+    reference_a!(obj_new; type = type, med = med)
+
+    return obj_new
 end
 
 """
@@ -521,7 +545,9 @@ function reference_a!(
     type::Symbol = :l,
     med::Bool = false,
 )::Nothing
-    _copy_into!(obj, reference_a(obj; type = type, med = med))
+    _reference_paired!(obj, "A1", "A2", type, "auricular")
+    push!(obj.history, "reference_a(obj, type=$type, med=$med)")
+
     return nothing
 end
 
@@ -552,9 +578,10 @@ function reference_m(
     type::Symbol = :l,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
-    obj_tmp = _reference_paired(obj, "M1", "M2", type, "mastoid")
-    push!(obj_tmp.history, "reference_m(obj, type=$type, med=$med)")
-    return obj_tmp
+    obj_new = deepcopy(obj)
+    reference_m!(obj_new; type = type, med = med)
+
+    return obj_new
 end
 
 """
@@ -584,7 +611,9 @@ function reference_m!(
     type::Symbol = :l,
     med::Bool = false,
 )::Nothing
-    _copy_into!(obj, reference_m(obj; type = type, med = med))
+    _reference_paired!(obj, "M1", "M2", type, "mastoid")
+    push!(obj.history, "reference_m(obj, type=$type, med=$med)")
+
     return nothing
 end
 
@@ -636,15 +665,19 @@ function _laplacian_reference(
     W = weighted ? [1 ./ d[i, nn_idx[i]] for i = 1:ch_n] : Vector{Vector{Float64}}()
 
     s_ref = similar(obj.data, ch_n, size(obj.data, 2), ep_n)
-    Threads.@threads :static for ep_idx = 1:ep_n
+    # samples are processed in blocks (parallel also for continuous, single-epoch data)
+    blocks = _sample_blocks(size(obj.data, 2), ep_n)
+    Threads.@threads :static for idx in CartesianIndices((length(blocks), ep_n))
+        t = blocks[idx[1]]
+        ep_idx = idx[2]
         for i = 1:ch_n
-            X = @view obj.data[ch[nn_idx[i]], :, ep_idx]
+            X = @view obj.data[ch[nn_idx[i]], t, ep_idx]
             ref = if weighted
                 med ? _wmedian_cols(X, W[i]) : vec(W[i]' * X) ./ sum(W[i])
             else
                 med ? vec(median(X; dims = 1)) : vec(mean(X; dims = 1))
             end
-            @views s_ref[i, :, ep_idx] .= obj.data[ch[i], :, ep_idx] .- ref
+            @views s_ref[i, t, ep_idx] .= obj.data[ch[i], t, ep_idx] .- ref
         end
     end
     return ch, s_ref
@@ -679,23 +712,10 @@ function reference_plap(
     weighted::Bool = false,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
-    ch, s_ref =
-        _laplacian_reference(
-            obj;
-            nn = nn,
-            weighted = weighted,
-            med = med,
-            spherical = false,
-        )
+    obj_new = deepcopy(obj)
+    reference_plap!(obj_new; nn = nn, weighted = weighted, med = med)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[ch, :, :] = s_ref
-    _append_label_suffix!(obj_tmp, obj, ch, _lap_suffix("plap", weighted, med))
-    obj_tmp.header.recording[:reference] = _lap_name("planar", nn, weighted, med)
-    push!(obj_tmp.history, "reference_plap(obj, nn=$nn, weighted=$weighted, med=$med)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -720,7 +740,20 @@ function reference_plap!(
     weighted::Bool = false,
     med::Bool = false,
 )::Nothing
-    _copy_into!(obj, reference_plap(obj; nn = nn, weighted = weighted, med = med))
+    ch, s_ref =
+        _laplacian_reference(
+            obj;
+            nn = nn,
+            weighted = weighted,
+            med = med,
+            spherical = false,
+        )
+
+    obj.data[ch, :, :] = s_ref
+    _append_label_suffix!(obj, obj, ch, _lap_suffix("plap", weighted, med))
+    obj.header.recording[:reference] = _lap_name("planar", nn, weighted, med)
+    push!(obj.history, "reference_plap(obj, nn=$nn, weighted=$weighted, med=$med)")
+
     return nothing
 end
 
@@ -746,17 +779,10 @@ function reference_slap(
     weighted::Bool = false,
     med::Bool = false,
 )::NeuroAnalyzer.NEURO
-    ch, s_ref =
-        _laplacian_reference(obj; nn = nn, weighted = weighted, med = med, spherical = true)
+    obj_new = deepcopy(obj)
+    reference_slap!(obj_new; nn = nn, weighted = weighted, med = med)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data[ch, :, :] = s_ref
-    _append_label_suffix!(obj_tmp, obj, ch, _lap_suffix("slap", weighted, med))
-    obj_tmp.header.recording[:reference] = _lap_name("spherical", nn, weighted, med)
-    push!(obj_tmp.history, "reference_slap(obj, nn=$nn, weighted=$weighted, med=$med)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -781,7 +807,14 @@ function reference_slap!(
     weighted::Bool = false,
     med::Bool = false,
 )::Nothing
-    _copy_into!(obj, reference_slap(obj; nn = nn, weighted = weighted, med = med))
+    ch, s_ref =
+        _laplacian_reference(obj; nn = nn, weighted = weighted, med = med, spherical = true)
+
+    obj.data[ch, :, :] = s_ref
+    _append_label_suffix!(obj, obj, ch, _lap_suffix("slap", weighted, med))
+    obj.header.recording[:reference] = _lap_name("spherical", nn, weighted, med)
+    push!(obj.history, "reference_slap(obj, nn=$nn, weighted=$weighted, med=$med)")
+
     return nothing
 end
 
@@ -860,42 +893,10 @@ function reference_rest(
     rdip::Real = 0.85,
     model::Symbol = :shell3,
 )::NeuroAnalyzer.NEURO
-    # validate
-    _check_datatype(obj, "eeg")
-    _check_var(model, [:shell3, :sphere], "model")
-    ndip >= 1 || throw(ArgumentError("ndip must be ≥ 1."))
-    rmax = model === :shell3 ? 0.87 : 1.0
-    0 < rdip < rmax || throw(ArgumentError("rdip must be in (0, $rmax)."))
+    obj_new = deepcopy(obj)
+    reference_rest!(obj_new; ndip = ndip, rdip = rdip, model = model)
 
-    ch = _eeg_ch_idx(obj)
-    ch_n = length(ch)
-    ch_n >= 3 || throw(ArgumentError("At least 3 EEG channels are needed."))
-
-    # unit vectors toward the electrodes
-    locs = _locs_ch_order(obj, ch)
-    U = hcat(Float64.(locs[!, :loc_x]), Float64.(locs[!, :loc_y]), Float64.(locs[!, :loc_z]))
-    r = sqrt.(sum(abs2, U; dims = 2))
-    any(iszero, r) && throw(
-        ArgumentError(
-            "Some channels have no Cartesian coordinates, use locs_sph2cart() first.",
-        ),
-    )
-    U ./= r
-
-    T = _rest_matrix(U; ndip = ndip, rdip = rdip, model = model)
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    for ep_idx = 1:nepochs(obj)
-        obj_tmp.data[ch, :, ep_idx] = T * @view(obj.data[ch, :, ep_idx])
-    end
-
-    _append_label_suffix!(obj_tmp, obj, ch, "-rest")
-    obj_tmp.header.recording[:reference] =
-        "REST ($(model === :shell3 ? "3-shell" : "homogeneous") sphere, $ndip dipoles)"
-    push!(obj_tmp.history, "reference_rest(obj, ndip=$ndip, rdip=$rdip, model=:$model)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -922,7 +923,39 @@ function reference_rest!(
     rdip::Real = 0.85,
     model::Symbol = :shell3,
 )::Nothing
-    _copy_into!(obj, reference_rest(obj; ndip = ndip, rdip = rdip, model = model))
+    # validate
+    _check_datatype(obj, "eeg")
+    _check_var(model, [:shell3, :sphere], "model")
+    ndip >= 1 || throw(ArgumentError("ndip must be ≥ 1."))
+    rmax = model === :shell3 ? 0.87 : 1.0
+    0 < rdip < rmax || throw(ArgumentError("rdip must be in (0, $rmax)."))
+
+    ch = _eeg_ch_idx(obj)
+    ch_n = length(ch)
+    ch_n >= 3 || throw(ArgumentError("At least 3 EEG channels are needed."))
+
+    # unit vectors toward the electrodes
+    locs = _locs_ch_order(obj, ch)
+    U = hcat(Float64.(locs[!, :loc_x]), Float64.(locs[!, :loc_y]), Float64.(locs[!, :loc_z]))
+    r = sqrt.(sum(abs2, U; dims = 2))
+    any(iszero, r) && throw(
+        ArgumentError(
+            "Some channels have no Cartesian coordinates, use locs_sph2cart() first.",
+        ),
+    )
+    U ./= r
+
+    T = _rest_matrix(U; ndip = ndip, rdip = rdip, model = model)
+
+    for ep_idx = 1:nepochs(obj)
+        obj.data[ch, :, ep_idx] = T * @view(obj.data[ch, :, ep_idx])
+    end
+
+    _append_label_suffix!(obj, obj, ch, "-rest")
+    obj.header.recording[:reference] =
+        "REST ($(model === :shell3 ? "3-shell" : "homogeneous") sphere, $ndip dipoles)"
+    push!(obj.history, "reference_rest(obj, ndip=$ndip, rdip=$rdip, model=:$model)")
+
     return nothing
 end
 
@@ -1031,68 +1064,10 @@ function reference_custom(
     ref_name::String = "longitudinal-BIP",
     loc::Symbol = :mid,
 )::NeuroAnalyzer.NEURO
-    _check_datatype(obj, "eeg")
-    isempty(ref_list) && throw(ArgumentError("ref_list must not be empty."))
-    _check_var(loc, [:mid, :first], "loc")
+    obj_new = deepcopy(obj)
+    reference_custom!(obj_new; ref_list = ref_list, ref_name = ref_name, loc = loc)
 
-    ch = _eeg_ch_idx(obj)
-    ch_lbls = labels(obj)[ch]
-    lbl2idx = Dict(l => ch[i] for (i, l) in enumerate(ch_lbls))
-    entries = [_parse_montage_entry(ref, ch_lbls) for ref in ref_list]
-
-    n_new = length(ref_list)
-    ep_n = nepochs(obj)
-    rec0 = obj.header.recording
-    s = zeros(n_new, epoch_len(obj), ep_n)
-    bad_new = zeros(Bool, n_new)
-    for (k, (a, b)) in enumerate(entries)
-        ia = lbl2idx[a]
-        if isnothing(b)
-            @views s[k, :, :] .= obj.data[ia, :, :]
-            bad_new[k] = rec0[:bad_channel][ia]
-        else
-            ib = lbl2idx[b]
-            @views s[k, :, :] .= obj.data[ia, :, :] .- obj.data[ib, :, :]
-            bad_new[k] = rec0[:bad_channel][ia] || rec0[:bad_channel][ib]
-        end
-    end
-
-    # rebuild the object: montage channels first, then the non-EEG channels
-    # (done directly instead of delete_channel(), which refuses to delete all channels)
-    keep = setdiff(1:nchannels(obj), ch)
-    obj_tmp = deepcopy(obj)
-    rec = obj_tmp.header.recording
-    obj_tmp.data = vcat(s, obj.data[keep, :, :])
-    rec[:label] = vcat(ref_list, rec0[:label][keep])
-    rec[:channel_type] = vcat(fill("eeg", n_new), rec0[:channel_type][keep])
-    for f in (:unit, :prefiltering, :transducers, :gain)
-        rec[f] = vcat(fill(rec0[f][ch[1]], n_new), rec0[f][keep])
-    end
-    rec[:bad_channel] = vcat(bad_new, collect(Bool, rec0[:bad_channel][keep]))
-    rec[:channel_order] = _sort_channels(rec[:channel_type])
-    rec[:reference] = ref_name
-
-    # montage channel locations replace the EEG channel locations
-    eeg_loc_rows = _find_bylabel(obj.locs, ch_lbls)
-    new_locs = filter(
-        !isnothing,
-        [
-            _montage_loc(obj.locs, ref_list[k], a, b, loc) for
-            (k, (a, b)) in enumerate(entries)
-        ],
-    )
-    obj_tmp.locs = vcat(
-        new_locs...,
-        obj.locs[setdiff(1:size(obj.locs, 1), eeg_loc_rows), :];
-        cols = :setequal,
-    )
-
-    push!(
-        obj_tmp.history,
-        "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name, loc=:$loc)",
-    )
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -1134,9 +1109,65 @@ function reference_custom!(
     ref_name::String = "longitudinal-BIP",
     loc::Symbol = :mid,
 )::Nothing
-    _copy_into!(
-        obj,
-        reference_custom(obj; ref_list = ref_list, ref_name = ref_name, loc = loc),
+    _check_datatype(obj, "eeg")
+    isempty(ref_list) && throw(ArgumentError("ref_list must not be empty."))
+    _check_var(loc, [:mid, :first], "loc")
+
+    ch = _eeg_ch_idx(obj)
+    ch_lbls = labels(obj)[ch]
+    lbl2idx = Dict(l => ch[i] for (i, l) in enumerate(ch_lbls))
+    entries = [_parse_montage_entry(ref, ch_lbls) for ref in ref_list]
+
+    n_new = length(ref_list)
+    ep_n = nepochs(obj)
+    rec0 = obj.header.recording
+    s = zeros(n_new, epoch_len(obj), ep_n)
+    bad_new = zeros(Bool, n_new)
+    for (k, (a, b)) in enumerate(entries)
+        ia = lbl2idx[a]
+        if isnothing(b)
+            @views s[k, :, :] .= obj.data[ia, :, :]
+            bad_new[k] = rec0[:bad_channel][ia]
+        else
+            ib = lbl2idx[b]
+            @views s[k, :, :] .= obj.data[ia, :, :] .- obj.data[ib, :, :]
+            bad_new[k] = rec0[:bad_channel][ia] || rec0[:bad_channel][ib]
+        end
+    end
+
+    # rebuild the object: montage channels first, then the non-EEG channels
+    # (done directly instead of delete_channel(), which refuses to delete all channels)
+    keep = setdiff(1:nchannels(obj), ch)
+    rec = obj.header.recording
+    obj.data = vcat(s, obj.data[keep, :, :])
+    rec[:label] = vcat(ref_list, rec0[:label][keep])
+    rec[:channel_type] = vcat(fill("eeg", n_new), rec0[:channel_type][keep])
+    for f in (:unit, :prefiltering, :transducers, :gain)
+        rec[f] = vcat(fill(rec0[f][ch[1]], n_new), rec0[f][keep])
+    end
+    rec[:bad_channel] = vcat(bad_new, collect(Bool, rec0[:bad_channel][keep]))
+    rec[:channel_order] = _sort_channels(rec[:channel_type])
+    rec[:reference] = ref_name
+
+    # montage channel locations replace the EEG channel locations
+    eeg_loc_rows = _find_bylabel(obj.locs, ch_lbls)
+    new_locs = filter(
+        !isnothing,
+        [
+            _montage_loc(obj.locs, ref_list[k], a, b, loc) for
+            (k, (a, b)) in enumerate(entries)
+        ],
     )
+    obj.locs = vcat(
+        new_locs...,
+        obj.locs[setdiff(1:size(obj.locs, 1), eeg_loc_rows), :];
+        cols = :setequal,
+    )
+
+    push!(
+        obj.history,
+        "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name, loc=:$loc)",
+    )
+
     return nothing
 end

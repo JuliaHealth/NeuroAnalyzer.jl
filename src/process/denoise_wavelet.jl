@@ -154,24 +154,10 @@ function denoise_cwd(
     w::Int64 = 5,
     type::Symbol = :pd,
 )::NeuroAnalyzer.NEURO where {T <: CWT}
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    denoise_cwd!(obj_new; ch = ch, wt = wt, nf = nf, w = w, type = type)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _denoise_cwd(
-        @view(obj.data[ch, :, :]);
-        fs = sr(obj),
-        wt = wt,
-        nf = nf,
-        w = w,
-        type = type,
-    )
-    push!(obj_tmp.history, "denoise_cwd(obj; ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -203,10 +189,19 @@ function denoise_cwd!(
     w::Int64 = 5,
     type::Symbol = :pd,
 )::Nothing where {T <: CWT}
-    obj_tmp = denoise_cwd(obj; ch = ch, wt = wt, nf = nf, w = w, type = type)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] = _denoise_cwd(
+        @view(obj.data[ch, :, :]);
+        fs = sr(obj),
+        wt = wt,
+        nf = nf,
+        w = w,
+        type = type,
+    )
+    push!(obj.history, "denoise_cwd(obj; ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
 
     return nothing
 end
@@ -333,26 +328,10 @@ function denoise_dwd(
     dnt::T2 = RelErrorShrink(SoftTH()),
     smooth::Symbol = :regular,
 )::NeuroAnalyzer.NEURO where {T1 <: DiscreteWavelet, T2 <: DNFT}
-    if l == 0
-        l = maxtransformlevels(obj.data[1, :, 1])
-        _info("Calculating DWD using maximum level: $l")
-    end
+    obj_new = deepcopy(obj)
+    denoise_dwd!(obj_new; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] =
-        @views _denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
-    push!(
-        obj_tmp.history,
-        "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth)",
-    )
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -383,10 +362,21 @@ function denoise_dwd!(
     dnt::T2 = RelErrorShrink(SoftTH()),
     smooth::Symbol = :regular,
 )::Nothing where {T1 <: DiscreteWavelet, T2 <: DNFT}
-    obj_tmp = denoise_dwd(obj; ch = ch, wt = wt, l = l, dnt = dnt, smooth = smooth)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    if l == 0
+        l = maxtransformlevels(obj.data[1, :, 1])
+        _info("Calculating DWD using maximum level: $l")
+    end
+
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    obj.data[ch, :, :] =
+        @views _denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
+    push!(
+        obj.history,
+        "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth)",
+    )
 
     return nothing
 end

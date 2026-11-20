@@ -52,12 +52,51 @@ function plinterpolate_channel(
     imethod::Symbol = :tp,
     reset_bads::Bool = false,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    plinterpolate_channel!(
+        obj_new;
+        ch = ch,
+        ep = ep,
+        seg = seg,
+        imethod = imethod,
+        reset_bads = reset_bads,
+    )
+
+    return obj_new
+end
+
+"""
+    plinterpolate_channel!(obj; <keyword arguments>)
+
+Interpolate channel using planar interpolation.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel to interpolate
+- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
+- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch(s)
+- `imethod::Symbol=:tp`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`), Sibson (`:sib`), Sibson-1 (`:sib1`), Laplace (`:lap`), Farin (`:far`), Hiyoshi (`:hiy`), Triangle (`:tri`), spherical spline (`:sph`, uses `sphinterpolate_channel()`)
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
+
+# Returns
+
+- `Nothing`
+"""
+function plinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
+    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
+    imethod::Symbol = :tp,
+    reset_bads::Bool = false,
+)::Nothing
     # validate
     _check_var(imethod, _IMETHODS, "imethod")
 
     # spherical spline: one fixed weight matrix for all samples instead of a fit per sample
     imethod === :sph &&
-        return sphinterpolate_channel(
+        return sphinterpolate_channel!(
             obj;
             ch = ch,
             ep = ep,
@@ -101,9 +140,6 @@ function plinterpolate_channel(
     target = [loc_x[end], loc_y[end]]
     loc_x, loc_y = loc_x[1:(end - 1)], loc_y[1:(end - 1)]
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
     # initialize progress bar
     progbar = Progress(
         length(ep) * length(t_rng); dt = 1, barlen = 20, color = :white,
@@ -120,55 +156,17 @@ function plinterpolate_channel(
             loc_y,
             @view(obj.data[ref_num, t_idx, ep[ep_idx]]),
         )
-        obj_tmp.data[ch_idx, t_idx, ep[ep_idx]] = itp(target[1:1], target[2:2])[1]
+        obj.data[ch_idx, t_idx, ep[ep_idx]] = itp(target[1:1], target[2:2])[1]
         progress_bar && next!(progbar)
     end
     progress_bar && finish!(progbar)
 
-    reset_bads && (obj_tmp.header.recording[:bad_channel][ch_idx] = false)
+    reset_bads && (obj.header.recording[:bad_channel][ch_idx] = false)
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "plinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, imethod=$imethod, reset_bads=$reset_bads)",
     )
-
-    return obj_tmp
-end
-
-"""
-    plinterpolate_channel!(obj; <keyword arguments>)
-
-Interpolate channel using planar interpolation.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel to interpolate
-- `ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj))`: epoch number(s) within to interpolate; default: all epochs
-- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch(s)
-- `imethod::Symbol=:tp`: interpolation method Shepard (`:sh`), Multiquadratic (`:mq`), InverseMultiquadratic (`:imq`), ThinPlate (`:tp`), NearestNeighbour (`:nn`), Gaussian (`:ga`), Sibson (`:sib`), Sibson-1 (`:sib1`), Laplace (`:lap`), Farin (`:far`), Hiyoshi (`:hiy`), Triangle (`:tri`), spherical spline (`:sph`, uses `sphinterpolate_channel()`)
-- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
-
-# Returns
-
-- `Nothing`
-"""
-function plinterpolate_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj)),
-    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
-    imethod::Symbol = :tp,
-    reset_bads::Bool = false,
-)::Nothing
-    obj_tmp =
-        plinterpolate_channel(
-            obj; ch = ch, ep = ep, seg = seg, imethod = imethod, reset_bads = reset_bads,
-        )
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

@@ -2147,4 +2147,46 @@ e_out, df_pl = remove_powerline(e_pl; ch = "Fp1", pl_frq = 60)
 @test_throws ArgumentError remove_powerline(e_pl; ch = "Fp1", pl_frq = 50, d = 0)
 @test_throws ArgumentError remove_powerline(epoch(eeg; ep_len = 10); ch = "Fp1")
 
+@info "Test: in-place and out-of-place versions"
+e_io = epoch(eeg; ep_len = 10)
+keep_epoch!(e_io; ep = 1:5)
+load_locs!(
+    e_io;
+    file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"),
+)
+# the in-place version modifies the object, the out-of-place version returns the same result
+# and does not modify its input
+for (f!, f, kw) in (
+    (reference_avg!, reference_avg, (;)),
+    (reference_ce!, reference_ce, (; ch = "Cz")),
+    (reference_a!, reference_a, (; type = :i)),
+    (reference_plap!, reference_plap, (;)),
+    (remove_dc!, remove_dc, (; ch = "eeg")),
+    (
+        NeuroAnalyzer.filter!,
+        NeuroAnalyzer.filter,
+        (; ch = "eeg", fprototype = :fir, ftype = :lp, cutoff = 30, bw = 5),
+    ),
+    (keep_channel!, keep_channel, (; ch = ["Fp1", "Cz"])),
+    (delete_epoch!, delete_epoch, (; ep = 2)),
+    (resample!, resample, (; new_sr = 128)),
+    (plinterpolate_channel!, plinterpolate_channel, (; ch = "Fp1", ep = 1)),
+    (sphinterpolate_channel!, sphinterpolate_channel, (; ch = "Fp1", ep = 1)),
+    (edit_channel!, edit_channel, (; ch = "Fp1", field = :label, value = "FP1")),
+)
+    e_in = deepcopy(e_io)
+    d0, l0, h0 = copy(e_io.data), copy(labels(e_io)), copy(e_io.history)
+    e_out = f(e_io; kw...)
+    @test e_io.data == d0 && labels(e_io) == l0 && e_io.history == h0
+    @test f!(e_in; kw...) === nothing
+    @test e_in.data == e_out.data
+    @test labels(e_in) == labels(e_out)
+    @test e_in.history == e_out.history
+    @test e_in.markers == e_out.markers
+end
+# reference_ce!: a reference channel that is also re-referenced (copied before subtraction)
+e_ce = reference_ce(e_io; ch = "Cz")
+@test all(iszero, e_ce.data[get_channel(e_ce; ch = "Cz-Cz"), :, :])
+@test e_ce.header.recording[:reference] == "common (Cz)"
+
 true

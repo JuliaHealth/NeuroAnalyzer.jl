@@ -19,6 +19,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 - `s::AbstractArray`: single-channel array (1, samples, epochs)
 - `t::Int64`: time point (sample number) at which ITPC is calculated
 - `w::Union{AbstractVector, Nothing}`: optional vector of epochs/trials weights for wITPC calculation
+- `threaded::Bool=false`: compute the phases of the epochs in parallel
 
 # Returns
 
@@ -37,6 +38,7 @@ function _itpc(
     s::AbstractArray;
     t::Int64,
     w::Union{AbstractVector, Nothing} = nothing,
+    threaded::Bool = false,
 )::@NamedTuple{
     itpcv::Float64,
     itpcz::Float64,
@@ -63,11 +65,12 @@ function _itpc(
         ),
     )
 
-    # compute instantaneous phase for every epoch
-    s_phase = zeros(size(s, 2), ep_n)
-    @inbounds for ep_idx = 1:ep_n
-        s_phase[:, ep_idx] = htransform(@view(s[1, :, ep_idx])).ph
-    end
+    # compute instantaneous phase for every epoch (in parallel if `threaded`, e.g. when
+    # the caller has fewer channels than threads)
+    s_phase = reduce(
+        hcat,
+        _tmap(ep_idx -> htransform(@view(s[1, :, ep_idx])).ph, ep_n; threaded = threaded),
+    )
 
     itpcph = s_phase[t, :]
 
@@ -152,6 +155,7 @@ function itpc(
                 ),
                 t = t_idx,
                 w = w,
+                threaded = ch_n < Threads.nthreads(),
             )
             itpcv[ch_idx] = itpc_data.itpcv
             itpcz[ch_idx] = itpc_data.itpcz

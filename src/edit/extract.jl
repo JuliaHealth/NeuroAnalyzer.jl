@@ -44,23 +44,10 @@ The returned object has a single epoch; time vectors are rebuilt consistently fr
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function extract_epoch(obj::NeuroAnalyzer.NEURO; ep::Int64)::NeuroAnalyzer.NEURO
-    # validate
-    _check_epochs(obj, ep)
+    obj_new = deepcopy(obj)
+    extract_epoch!(obj_new; ep = ep)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-    obj_tmp.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-
-    # keep the markers of the extracted epoch, relative to its start
-    el = epoch_len(obj)
-    obj_tmp.markers = _remap_markers(
-        obj.markers, sr(obj), s -> (s - 1) ÷ el + 1 == ep ? (s - 1) % el + 1 : nothing,
-    )
-
-    push!(obj_tmp.history, "extract_epoch(obj; ep=$ep)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -78,14 +65,19 @@ Extract epoch.
 - `Nothing`
 """
 function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
-    obj_tmp = extract_epoch(obj; ep = ep)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    # validate
+    _check_epochs(obj, ep)
+
+    obj.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+
+    # keep the markers of the extracted epoch, relative to its start
+    el = epoch_len(obj)
+    obj.markers = _remap_markers(
+        obj.markers, sr(obj), s -> (s - 1) ÷ el + 1 == ep ? (s - 1) % el + 1 : nothing,
+    )
+
+    push!(obj.history, "extract_epoch(obj; ep=$ep)")
 
     return nothing
 end

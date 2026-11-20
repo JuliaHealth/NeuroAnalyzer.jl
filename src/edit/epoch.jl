@@ -29,93 +29,10 @@ function epoch(
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
 )::NeuroAnalyzer.NEURO
-    # validate
-    nepochs(obj) == 1 ||
-        throw(ArgumentError("epoch() must be applied to continuous object."))
+    obj_new = deepcopy(obj)
+    epoch!(obj_new; marker = marker, offset = offset, ep_len = ep_len)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    # create ID for epochs
-    epoch_id = if marker != ""
-        marker
-    elseif !isnothing(ep_len)
-        "length_$(ep_len)s"
-    else
-        "full"
-    end
-
-    if marker != ""
-        # marker-based epoching
-        _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
-        _check_markers(obj, marker)
-        isnothing(ep_len) &&
-            throw(ArgumentError("ep_len must be specified for marker-based epoching."))
-
-        mrk_idx   = findall(obj_tmp.markers.value .== marker)
-        mrk_start = obj_tmp.markers[mrk_idx, :start]
-        mrk_len   = obj_tmp.markers[mrk_idx, :length]
-
-        # remove markers that would begin before the signal start
-        for idx = length(mrk_start):-1:1
-            if mrk_start[idx] - offset < obj.time_pts[1]
-                deleteat!(mrk_start, idx)
-                deleteat!(mrk_len, idx)
-            end
-        end
-
-        isempty(mrk_start) && throw(
-            ArgumentError(
-                "No markers remain after applying offset; all markers fall before signal start.",
-            ),
-        )
-
-        offset + ep_len >= maximum(mrk_len) || throw(
-            ArgumentError(
-                "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length).",
-            ),
-        )
-
-        epochs, obj_tmp.markers = _make_epochs_bymarkers(
-            obj_tmp.data;
-            marker  = marker,
-            markers = deepcopy(obj_tmp.markers),
-            # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
-            marker_start = t2s.(mrk_start, sr(obj)),
-            offset       = t2n(offset, sr(obj)),
-            ep_len       = t2n(ep_len, sr(obj)),
-            fs           = sr(obj),
-        )
-
-    else
-        # fixed-length epoching
-        if !isnothing(ep_len)
-            ep_len <= signal_len(obj) / sr(obj) || throw(
-                ArgumentError(
-                    "ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)) s).",
-                ),
-            )
-            ep_len = round(Int64, ep_len * sr(obj))
-        end
-
-        epochs = _make_epochs(obj.data; ep_len = ep_len)
-
-        # remove markers that fall outside the new epoch grid (trailing samples are dropped)
-        n_total = size(epochs, 2) * size(epochs, 3)
-        obj_tmp.markers = _remap_markers(
-            obj_tmp.markers, sr(obj), s -> 1 <= s <= n_total ? s : nothing,
-        )
-    end
-
-    obj_tmp.data = epochs
-    obj_tmp.header.recording[:epoch_id] = epoch_id
-    obj_tmp.header.recording[:bad_channel] = obj.header.recording[:bad_channel]
-    obj_tmp.time_pts, obj_tmp.epoch_time = _get_t(obj_tmp)
-    obj_tmp.epoch_time .-= offset
-
-    push!(obj_tmp.history, "epoch(obj; marker=$marker, offset=$offset, ep_len=$ep_len)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -142,14 +59,88 @@ function epoch!(
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
 )::Nothing
-    obj_tmp = epoch(obj; marker = marker, offset = offset, ep_len = ep_len)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+    # validate
+    nepochs(obj) == 1 ||
+        throw(ArgumentError("epoch() must be applied to continuous object."))
+
+    # create ID for epochs
+    epoch_id = if marker != ""
+        marker
+    elseif !isnothing(ep_len)
+        "length_$(ep_len)s"
+    else
+        "full"
+    end
+
+    if marker != ""
+        # marker-based epoching
+        _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
+        _check_markers(obj, marker)
+        isnothing(ep_len) &&
+            throw(ArgumentError("ep_len must be specified for marker-based epoching."))
+
+        mrk_idx   = findall(obj.markers.value .== marker)
+        mrk_start = obj.markers[mrk_idx, :start]
+        mrk_len   = obj.markers[mrk_idx, :length]
+
+        # remove markers that would begin before the signal start
+        for idx = length(mrk_start):-1:1
+            if mrk_start[idx] - offset < obj.time_pts[1]
+                deleteat!(mrk_start, idx)
+                deleteat!(mrk_len, idx)
+            end
+        end
+
+        isempty(mrk_start) && throw(
+            ArgumentError(
+                "No markers remain after applying offset; all markers fall before signal start.",
+            ),
+        )
+
+        offset + ep_len >= maximum(mrk_len) || throw(
+            ArgumentError(
+                "offset + ep_len must be ≥ $(maximum(mrk_len)) (maximum marker length).",
+            ),
+        )
+
+        epochs, obj.markers = _make_epochs_bymarkers(
+            obj.data;
+            marker  = marker,
+            markers = deepcopy(obj.markers),
+            # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
+            marker_start = t2s.(mrk_start, sr(obj)),
+            offset       = t2n(offset, sr(obj)),
+            ep_len       = t2n(ep_len, sr(obj)),
+            fs           = sr(obj),
+        )
+
+    else
+        # fixed-length epoching
+        if !isnothing(ep_len)
+            ep_len <= signal_len(obj) / sr(obj) || throw(
+                ArgumentError(
+                    "ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)) s).",
+                ),
+            )
+            ep_len = round(Int64, ep_len * sr(obj))
+        end
+
+        epochs = _make_epochs(obj.data; ep_len = ep_len)
+
+        # remove markers that fall outside the new epoch grid (trailing samples are dropped)
+        n_total = size(epochs, 2) * size(epochs, 3)
+        obj.markers = _remap_markers(
+            obj.markers, sr(obj), s -> 1 <= s <= n_total ? s : nothing,
+        )
+    end
+
+    obj.data = epochs
+    obj.header.recording[:epoch_id] = epoch_id
+    obj.header.recording[:bad_channel] = obj.header.recording[:bad_channel]
+    obj.time_pts, obj.epoch_time = _get_t(obj)
+    obj.epoch_time .-= offset
+
+    push!(obj.history, "epoch(obj; marker=$marker, offset=$offset, ep_len=$ep_len)")
 
     return nothing
 end
@@ -169,14 +160,10 @@ Return a copy of `obj` with the epoch time axis shifted by `ts` seconds.
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
 function epoch_ts(obj::NeuroAnalyzer.NEURO; ts::Real)::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    epoch_ts!(obj_new; ts = ts)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.epoch_time .+= ts
-    push!(obj_tmp.history, "epoch_ts(obj, ts=$ts)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -194,11 +181,9 @@ Shift the epoch time axis by `ts` seconds in-place.
 - `Nothing`
 """
 function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)::Nothing
-    obj_tmp = epoch_ts(obj; ts = ts)
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj_tmp = nothing
+
+    obj.epoch_time .+= ts
+    push!(obj.history, "epoch_ts(obj, ts=$ts)")
 
     return nothing
 end
@@ -223,39 +208,10 @@ function subepoch(
     ep_start::Real,
     ep_end::Real,
 )::NeuroAnalyzer.NEURO
-    # validate
-    ep_time = obj.epoch_time
-    ep_start >= ep_time[1] || throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
-    ep_end <= ep_time[end] || throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
-    ep_start < ep_end || throw(ArgumentError("ep_start must be < ep_end."))
+    obj_new = deepcopy(obj)
+    subepoch!(obj_new; ep_start = ep_start, ep_end = ep_end)
 
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    ep_start_idx = vsearch(ep_start, ep_time)
-    ep_end_idx   = vsearch(ep_end, ep_time)
-
-    obj_tmp.data = obj.data[:, ep_start_idx:ep_end_idx, :]
-    obj_tmp.epoch_time = ep_time[ep_start_idx:ep_end_idx]
-    obj_tmp.time_pts, _ = _get_t(obj_tmp)
-
-    # markers: keep those within the retained window of their epoch and move
-    # them to the corresponding sample of the trimmed epoch
-    l_old = epoch_len(obj)
-    l_new = ep_end_idx - ep_start_idx + 1
-    obj_tmp.markers = _remap_markers(
-        obj.markers,
-        sr(obj),
-        s -> begin
-            ep = (s - 1) ÷ l_old
-            w = (s - 1) % l_old + 1
-            ep_start_idx <= w <= ep_end_idx ? ep * l_new + w - ep_start_idx + 1 : nothing
-        end,
-    )
-
-    push!(obj_tmp.history, "subepoch(obj; ep_start=$ep_start, ep_end=$ep_end)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -273,15 +229,39 @@ Trim each epoch to a sub-range in-place.
 
 - `Nothing`
 """
-function subepoch!(obj::NeuroAnalyzer.NEURO; ep_start::Real, ep_end::Real)::Nothing
-    obj_tmp = subepoch(obj; ep_start = ep_start, ep_end = ep_end)
-    obj.header = obj_tmp.header
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj.time_pts = obj_tmp.time_pts
-    obj.epoch_time = obj_tmp.epoch_time
-    obj.markers = obj_tmp.markers
-    obj_tmp = nothing
+function subepoch!(
+    obj::NeuroAnalyzer.NEURO;
+    ep_start::Real,
+    ep_end::Real,
+)::Nothing
+    # validate
+    ep_time = obj.epoch_time
+    ep_start >= ep_time[1] || throw(ArgumentError("ep_start must be ≥ $(ep_time[1])."))
+    ep_end <= ep_time[end] || throw(ArgumentError("ep_end must be ≤ $(ep_time[end])."))
+    ep_start < ep_end || throw(ArgumentError("ep_start must be < ep_end."))
+
+    ep_start_idx = vsearch(ep_start, ep_time)
+    ep_end_idx   = vsearch(ep_end, ep_time)
+
+    obj.data = obj.data[:, ep_start_idx:ep_end_idx, :]
+    obj.epoch_time = ep_time[ep_start_idx:ep_end_idx]
+    obj.time_pts, _ = _get_t(obj)
+
+    # markers: keep those within the retained window of their epoch and move
+    # them to the corresponding sample of the trimmed epoch
+    l_old = epoch_len(obj)
+    l_new = ep_end_idx - ep_start_idx + 1
+    obj.markers = _remap_markers(
+        obj.markers,
+        sr(obj),
+        s -> begin
+            ep = (s - 1) ÷ l_old
+            w = (s - 1) % l_old + 1
+            ep_start_idx <= w <= ep_end_idx ? ep * l_new + w - ep_start_idx + 1 : nothing
+        end,
+    )
+
+    push!(obj.history, "subepoch(obj; ep_start=$ep_start, ep_end=$ep_end)")
 
     return nothing
 end

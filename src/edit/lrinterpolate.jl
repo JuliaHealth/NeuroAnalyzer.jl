@@ -30,6 +30,43 @@ function lrinterpolate_channel(
     seg::Union{Nothing, Tuple{Real, Real}} = nothing,
     reset_bads::Bool = false,
 )::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    lrinterpolate_channel!(
+        obj_new; ch = ch, ep = ep, ep_ref = ep_ref, seg = seg, reset_bads = reset_bads,
+    )
+
+    return obj_new
+end
+
+"""
+    lrinterpolate_channel!(obj; <keyword arguments>)
+
+Interpolate channel using linear regression.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::String`: channel to interpolate
+- `ep::Int64`: epoch index to interpolate (`1` for a continuous signal)
+- `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
+- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch
+- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
+
+# Returns
+
+- `Nothing`
+"""
+function lrinterpolate_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::String,
+    ep::Int64,
+    ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(
+        _c(nepochs(obj)),
+        ep,
+    ),
+    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
+    reset_bads::Bool = false,
+)::Nothing
     # resolve channel names to integer indices
     ch_idx = get_channel(obj; ch = ch)
     isempty(ch_idx) && throw(ArgumentError("No channels selected."))
@@ -90,57 +127,16 @@ function lrinterpolate_channel(
     _info(" MAE: $(round(mean(abs, err), digits = 3))")
 
     # predict ch in epoch ep (within the segment) from the other channels
-    obj_tmp = deepcopy(obj)
     df_ep =
         DataFrame(hcat(obj.data[ch_idx, t_rng, ep], obj.data[ch_ref, t_rng, ep]'), :auto)
-    obj_tmp.data[ch_idx, t_rng, ep] = GLM.predict(linear_regressor, df_ep)
+    obj.data[ch_idx, t_rng, ep] = GLM.predict(linear_regressor, df_ep)
 
-    reset_bads && (obj_tmp.header.recording[:bad_channel][ch_idx] = false)
+    reset_bads && (obj.header.recording[:bad_channel][ch_idx] = false)
 
     push!(
-        obj_tmp.history,
+        obj.history,
         "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, seg=$seg, reset_bads=$reset_bads)",
     )
-
-    return obj_tmp
-end
-
-"""
-    lrinterpolate_channel!(obj; <keyword arguments>)
-
-Interpolate channel using linear regression.
-
-# Arguments
-
-- `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `ch::String`: channel to interpolate
-- `ep::Int64`: epoch index to interpolate (`1` for a continuous signal)
-- `ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=setdiff(_c(nepochs(obj)), ep)`: reference epochs used for training; default is all epochs except `ep`
-- `seg::Union{Nothing, Tuple{Real, Real}}=nothing`: time segment (from, to) in seconds of the epoch time to interpolate; default: the whole epoch
-- `reset_bads::Bool=false`: if `true`, unmark the interpolated channel(s) as bad (`obj.header.recording[:bad_channel]`)
-
-# Returns
-
-- `Nothing`
-"""
-function lrinterpolate_channel!(
-    obj::NeuroAnalyzer.NEURO;
-    ch::String,
-    ep::Int64,
-    ep_ref::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = setdiff(
-        _c(nepochs(obj)),
-        ep,
-    ),
-    seg::Union{Nothing, Tuple{Real, Real}} = nothing,
-    reset_bads::Bool = false,
-)::Nothing
-    obj_tmp = lrinterpolate_channel(
-        obj; ch = ch, ep = ep, ep_ref = ep_ref, seg = seg, reset_bads = reset_bads,
-    )
-    obj.data = obj_tmp.data
-    obj.header = obj_tmp.header
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

@@ -57,38 +57,23 @@ function edit_locs(
         return isnothing(obj_new) ? deepcopy(obj) : obj_new
     end
 
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
-    loc_idx isa Int64 ||
-        throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
-
-    # type first: after renaming the old label no longer exists
-    type != "" && set_channel_type!(obj_tmp; ch = labels(obj)[ch], type = type)
-    name != "" && rename_channel!(obj_tmp; ch = labels(obj)[ch], name = name)
-
-    x !== nothing && (obj_tmp.locs[loc_idx, :loc_x] = x)
-    y !== nothing && (obj_tmp.locs[loc_idx, :loc_y] = y)
-    z !== nothing && (obj_tmp.locs[loc_idx, :loc_z] = z)
-    theta !== nothing && (obj_tmp.locs[loc_idx, :loc_theta] = theta)
-    radius !== nothing && (obj_tmp.locs[loc_idx, :loc_radius] = radius)
-    theta_sph !== nothing && (obj_tmp.locs[loc_idx, :loc_theta_sph] = theta_sph)
-    radius_sph !== nothing && (obj_tmp.locs[loc_idx, :loc_radius_sph] = radius_sph)
-    phi_sph !== nothing && (obj_tmp.locs[loc_idx, :loc_phi_sph] = phi_sph)
-
-    push!(
-        obj_tmp.history,
-        "edit_locs(obj; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)",
+    obj_new = deepcopy(obj)
+    edit_locs!(
+        obj_new;
+        ch = ch,
+        x = x,
+        y = y,
+        z = z,
+        theta = theta,
+        radius = radius,
+        theta_sph = theta_sph,
+        radius_sph = radius_sph,
+        phi_sph = phi_sph,
+        name = name,
+        type = type,
     )
 
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -143,25 +128,33 @@ function edit_locs!(
         return nothing
     end
 
-    obj_tmp = edit_locs(
-        obj;
-        ch = ch,
-        x = x,
-        y = y,
-        z = z,
-        theta = theta,
-        radius = radius,
-        theta_sph = theta_sph,
-        radius_sph = radius_sph,
-        phi_sph = phi_sph,
-        name = name,
-        type = type,
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    ch = ch[1]
+
+    loc_idx = _find_bylabel(obj.locs, labels(obj)[ch])
+    loc_idx isa Int64 ||
+        throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
+
+    # type first: after renaming the old label no longer exists
+    type != "" && set_channel_type!(obj; ch = labels(obj)[ch], type = type)
+    name != "" && rename_channel!(obj; ch = labels(obj)[ch], name = name)
+
+    x !== nothing && (obj.locs[loc_idx, :loc_x] = x)
+    y !== nothing && (obj.locs[loc_idx, :loc_y] = y)
+    z !== nothing && (obj.locs[loc_idx, :loc_z] = z)
+    theta !== nothing && (obj.locs[loc_idx, :loc_theta] = theta)
+    radius !== nothing && (obj.locs[loc_idx, :loc_radius] = radius)
+    theta_sph !== nothing && (obj.locs[loc_idx, :loc_theta_sph] = theta_sph)
+    radius_sph !== nothing && (obj.locs[loc_idx, :loc_radius_sph] = radius_sph)
+    phi_sph !== nothing && (obj.locs[loc_idx, :loc_phi_sph] = phi_sph)
+
+    push!(
+        obj.history,
+        "edit_locs(obj; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)",
     )
-    # the channel may have been renamed / retyped (header)
-    obj.header = obj_tmp.header
-    obj.locs = obj_tmp.locs
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
 
     return nothing
 end

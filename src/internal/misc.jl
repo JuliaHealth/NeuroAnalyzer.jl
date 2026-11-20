@@ -325,3 +325,29 @@ end
 Return the amount of free system memory in megabytes.
 """
 _fmem()::Float64 = Sys.free_memory() / 2^20
+
+"""
+    _sample_blocks(n, ep_n; min_len = 4096)
+
+Split the samples `1:n` of an epoch into contiguous blocks, so that blocks × epochs gives at least as many tasks as there are threads. Loops over `(block, epoch)` then run in parallel also for continuous (single-epoch) data; for operations that are independent across samples (e.g. re-referencing), the result does not depend on the blocks. Blocks are at least `min_len` samples long (a single block for short epochs).
+
+# Returns
+
+- `Vector{UnitRange{Int64}}`
+"""
+function _sample_blocks(n::Int64, ep_n::Int64; min_len::Int64 = 4096)::Vector{UnitRange{Int64}}
+    nb = clamp(cld(Threads.nthreads(), max(ep_n, 1)), 1, max(1, n ÷ min_len))
+    len = cld(n, nb)
+    return [i:min(i + len - 1, n) for i = 1:len:n]
+end
+
+"""
+    _tmap(f, n; threaded = true)
+
+Return `[f(i) for i in 1:n]`, evaluated in parallel tasks if `threaded` is `true` and more than one thread is available. Used for per-channel computations when there are too few epochs to parallelize over (e.g. continuous data); `f(i)` must not write to shared state.
+"""
+function _tmap(f, n::Int64; threaded::Bool = true)::Vector
+    (threaded && n > 1 && Threads.nthreads() > 1) || return [f(i) for i = 1:n]
+    tasks = [Threads.@spawn f(i) for i = 1:n]
+    return [fetch(t) for t in tasks]
+end

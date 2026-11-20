@@ -130,23 +130,10 @@ function filter_mmed(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::NeuroAnalyzer.NEURO
-    # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
-    isempty(ch) && throw(ArgumentError("No channels selected."))
+    obj_new = deepcopy(obj)
+    filter_mmed!(obj_new; ch = ch, k = k, t = t, ww = ww)
 
-    # window length
-    wlen = 2 * k + 1
-    _info("Window length: $wlen samples")
-
-    # create new dataset
-    obj_tmp = deepcopy(obj)
-
-    obj_tmp.data[ch, :, :] = _filter_mmed(
-        @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
-    )
-    push!(obj_tmp.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
-
-    return obj_tmp
+    return obj_new
 end
 
 """
@@ -173,10 +160,18 @@ function filter_mmed!(
     t::Real = 0,
     ww::AbstractVector = ones(2 * k + 1),
 )::Nothing
-    obj_tmp = filter_mmed(obj; ch = ch, k = k, t = t, ww = ww)
-    obj.data = obj_tmp.data
-    obj.history = obj_tmp.history
-    obj_tmp = nothing
+    # resolve channel names to integer indices
+    ch = get_channel(obj; ch = ch)
+    isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    # window length
+    wlen = 2 * k + 1
+    _info("Window length: $wlen samples")
+
+    obj.data[ch, :, :] = _filter_mmed(
+        @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
+    )
+    push!(obj.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
 
     return nothing
 end
