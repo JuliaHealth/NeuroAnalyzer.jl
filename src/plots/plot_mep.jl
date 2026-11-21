@@ -250,7 +250,7 @@ function plot_mep_stack(
     zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
 
     # draw zero line if requested
-    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
 
     return fig
 end

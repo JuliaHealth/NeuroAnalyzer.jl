@@ -157,7 +157,7 @@ function plot_eros(
             ax, st, sf[fr], sp[fr, :, 1]';
             colormap = pal, colorrange = _crange(sp[fr_c, :, 1]),
         )
-        cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+        cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
         _draw_markers!(fig, (1, 1), tm_s)
 
     else
@@ -182,7 +182,7 @@ function plot_eros(
             ax1, st, sf[fr], sp[fr, :, 1]';
             colormap = pal, colorrange = _crange(sp[fr_c, :, 1]),
         )
-        cb && GLMakie.Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16)
+        cb && GLMakie.Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
         GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (1, 1), tm_s)
 
@@ -192,7 +192,7 @@ function plot_eros(
             ax2, st, sf[fr], sp[fr, :, 2]';
             colormap = pal, colorrange = _crange(sp[fr_c, :, 2]),
         )
-        cb && GLMakie.Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16)
+        cb && GLMakie.Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
         GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
         _draw_markers!(fig, (2, 1), tm_s)
     end

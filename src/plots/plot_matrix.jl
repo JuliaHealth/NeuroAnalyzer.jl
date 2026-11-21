@@ -83,7 +83,7 @@ function plot_matrix(
     _style_axis!(ax)
 
     hm = GLMakie.heatmap!(m'; colormap = pal)
-    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
 
     return fig
 end
@@ -217,7 +217,7 @@ function plot_heatmap(
     hm = GLMakie.heatmap!(x, y, m'; colormap = pal)
 
     # plot colorbar
-    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
 
     # apply thresholding
     if !isnothing(threshold)

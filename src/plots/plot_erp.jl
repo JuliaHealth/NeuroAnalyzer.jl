@@ -549,7 +549,7 @@ function plot_erp_stack(
     end
 
     # add colorbar if requested
-    cb && Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+    cb && Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
 
     return fig
 end

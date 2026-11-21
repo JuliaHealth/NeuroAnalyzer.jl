@@ -226,6 +226,70 @@ function _ticks(t::Union{AbstractVector, AbstractRange, Tuple{Real, Real}})::Abs
 end
 
 """
+    _cb_ticks(crange; n)
+
+Return colorbar ticks: the minimum, the maximum and `n - 2` equally spaced values in between.
+
+Labels use a fixed number of decimals chosen from the tick step, so that neighbouring labels differ (e.g. 0.23, 0.36, 0.49 for a range of 0.232–0.746); very small or very large values use 3 significant digits.
+
+# Arguments
+
+- `crange::Tuple{Real, Real}`: color range (minimum, maximum)
+- `n::Int64=5`: number of ticks (≥ 2)
+
+# Returns
+
+- `Tuple{Vector{Float64}, Vector{String}}`: tick positions and labels
+"""
+function _cb_ticks(crange::Tuple{Real, Real}; n::Int64 = 5)::Tuple{Vector{Float64}, Vector{String}}
+    n < 2 && throw(ArgumentError("n must be ≥ 2."))
+    lo, hi = Float64.(crange)
+    # constant data: a single tick
+    hi == lo && return ([lo], [_cb_label(lo, 3)])
+    v = collect(range(lo, hi; length = n))
+    step = (hi - lo) / (n - 1)
+    m = max(abs(lo), abs(hi))
+    lab = if m >= 1e5 || m < 1e-3
+        [(r = round(x; sigdigits = 3) + 0.0;
+          isinteger(r) && abs(r) < 1e15 ? string(round(Int64, r)) : string(r))
+         for x in v]
+    else
+        d = clamp(ceil(Int64, -log10(step)) + 1, 0, 6)
+        [_cb_label(x, d) for x in v]
+    end
+    # the colorbar limits are compared in Float32: ticks placed exactly at the
+    # limits may fall outside them and be dropped, so the end ticks are moved
+    # inwards by a negligible amount (labels are not changed)
+    v[1] += (hi - lo) * 1e-6
+    v[end] -= (hi - lo) * 1e-6
+    return (v, lab)
+end
+
+"""
+    _cb_tickfun(; n)
+
+Return a tick function for `GLMakie.Colorbar(...; ticks = _cb_tickfun())`: Makie calls it with the colorbar limits, so the ticks (see `_cb_ticks()`) always cover the actual color range, also when it is set automatically or changes.
+
+# Arguments
+
+- `n::Int64=5`: number of ticks (≥ 2)
+
+# Returns
+
+- `Function`: `(vmin, vmax) -> (positions, labels)`
+"""
+_cb_tickfun(; n::Int64 = 5)::Function = (vmin, vmax) -> _cb_ticks((vmin, vmax); n = n)
+
+# format x with exactly d decimals (no Printf dependency); -0.0 is shown as 0
+function _cb_label(x::Real, d::Int64)::String
+    d == 0 && return string(round(Int64, x))
+    s = string(round(x; digits = d) + 0.0)
+    occursin('e', s) && return string(round(x; sigdigits = 3) + 0.0)
+    i, f = occursin('.', s) ? split(s, '.') : (s, "")
+    return i * "." * rpad(f, d, '0')
+end
+
+"""
     _erpticks(t)
 
 Return a tick vector suitable for ERP plots: 3 ticks from `floor(t[1])` to 0, then 8 more ticks from 0 to `ceil(t[end])`.

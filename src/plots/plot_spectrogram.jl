@@ -131,7 +131,7 @@ function plot_spectrogram(
     end
 
     # draw colorbar if requested
-    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
 
     return fig
 end
@@ -265,7 +265,7 @@ function plot_spectrogram(
     end
 
     # draw colorbar
-    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16)
+    cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
 
     return fig
 end

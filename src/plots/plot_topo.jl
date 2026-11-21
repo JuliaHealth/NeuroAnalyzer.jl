@@ -411,13 +411,18 @@ function plot_topo(
 
     # draw colorbar
     if cb
+        # the colorbar is as high as the topomap (the plot area of the axis,
+        # which is smaller than the layout cell because of aspect = 1); both
+        # are centered vertically in the same layout row
         GLMakie.Colorbar(
             fig[1, 2],
             hm;
             label = cb_title,
             labelsize = font_size - 4,
             ticklabelsize = font_size - 4,
-            height = round(Int64, plot_size[2] * 0.8),
+            # minimum, maximum and equally spaced values in between
+            ticks = _cb_tickfun(; n = ps === :s ? 3 : 5),
+            height = GLMakie.lift(vp -> vp.widths[2], ax.scene.viewport),
             width = ps === :l ? 20 : 10,
             tellheight = false,
         )
