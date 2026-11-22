@@ -1444,6 +1444,50 @@ gm = sum((gs_p.gc[1, 2, 1:(end - 1)] .+ gs_p.gc[1, 2, 2:end]) ./ 2) / (length(gs
 @test size(granger(e10; ch = ["Fp1", "Fp2"], order = 2).gc) == (2, 2)
 @test size(granger_spectral(e10; ch = ["Fp1", "Fp2"], order = 2, nfrq = 16).gc) ==
       (2, 2, 16)
+# chain 1 → 2 → 3 (no direct 1 → 3)
+x_ch = zeros(3, 4000, 1)
+for t = 2:4000
+    x_ch[1, t, 1] = 0.5 * x_ch[1, t - 1, 1] + randn(rng_tmp)
+    x_ch[2, t, 1] = 0.3 * x_ch[2, t - 1, 1] + 0.6 * x_ch[1, t - 1, 1] + randn(rng_tmp)
+    x_ch[3, t, 1] = 0.3 * x_ch[3, t - 1, 1] + 0.6 * x_ch[2, t - 1, 1] + randn(rng_tmp)
+end
+# conditional GC: reduced models from the full model, so the estimate does not depend on
+# the model order (a refitted VAR(1) reduced model overestimates 2 → 3 by ~35%)
+gc1 = NeuroAnalyzer._granger(x_ch; order = 1, conditional = true)
+gc5 = NeuroAnalyzer._granger(x_ch; order = 5, conditional = true)
+@test gc1.gc[2, 3] ≈ gc5.gc[2, 3] rtol = 0.02
+@test gc1.gc[1, 3] < 0.005 && gc1.gc[1, 2] > 0.3 && gc1.gc[2, 3] > 0.3
+@test gc1.order == [0 1 1; 1 0 1; 1 1 0]
+# time-domain GC = frequency average of spectral GC (pairwise and conditional)
+for c in (false, true)
+    gt = NeuroAnalyzer._granger(x_ch; conditional = c)
+    gs = NeuroAnalyzer._granger_spectral(x_ch; fs = 100, conditional = c)
+    gm = [
+        sum((gs.gc[i, j, 1:(end - 1)] .+ gs.gc[i, j, 2:end]) ./ 2) / (length(gs.frq) - 1)
+        for i = 1:3, j = 1:3
+    ]
+    @test gm ≈ gt.gc atol = 1e-10
+    @test gs.order == gt.order
+end
+# pairwise: one BIC order per channel pair (1 → 3 acts at lag 2)
+gp_ch = NeuroAnalyzer._granger(x_ch)
+@test gp_ch.order[1, 3] == gp_ch.order[3, 1] && gp_ch.order[1, 3] >= 2
+@test gp_ch.gc[1, 3] > 0.1
+# permutation test
+@test all(isnan, gp_ch.p_perm)
+gperm = NeuroAnalyzer._granger(x_ch[:, 1:2000, :]; order = 1, nperm = 99, conditional = true)
+@test gperm.p_perm[1, 2] == 0.01 && gperm.p_perm[2, 3] == 0.01
+@test gperm.p_perm[1, 3] > 0.05
+@test all(0 .< gperm.p_perm .<= 1) && all(gperm.p_perm_adj .>= gperm.p_perm .- 1e-12)
+# reproducible (seed), independent of the number of threads
+@test NeuroAnalyzer._granger(x_ch[:, 1:2000, :]; order = 1, nperm = 99, conditional = true).p_perm ==
+      gperm.p_perm
+gsp = NeuroAnalyzer._granger_spectral(x_ch[:, 1:2000, :]; fs = 100, order = 1, nfrq = 32, nperm = 49)
+@test size(gsp.p_perm) == size(gsp.p_perm_max) == (3, 3, 32)
+@test all(gsp.p_perm_max .>= gsp.p_perm)
+@test minimum(gsp.p_perm_max[1, 2, :]) == 0.02
+@test_throws ArgumentError NeuroAnalyzer._granger(x_ch[:, 1:10, :]; order = 5, nperm = 9)
+@test granger(e10; ch = ["Fp1", "Fp2"], order = 2).labels == ["Fp1", "Fp2"]
 # psd_slope(): slope per Hz (0.5 Hz resolution)
 x = randn(NeuroAnalyzer.Random.MersenneTwister(2), 5120)
 r_tmp = NeuroAnalyzer._psd_slope(x; fs = 256, wlen = 512)
@@ -1930,5 +1974,23 @@ H, Σw = NeuroAnalyzer._gc_wilson(S)
 @test Σw ≈ [1.0 0.0; 0.0 1.0] atol = 1e-6
 gp = NeuroAnalyzer._gc_plus(S)
 @test size(gp) == size(S)
+# cepstral factorization of a univariate spectrum (AR(1)), even and odd number of points
+for N2 in (64, 63)
+    Sc = reshape(
+        ComplexF64[1 / abs2(1 - 0.5 * cis(-2π * (k - 1) / N2)) for k = 1:N2],
+        1,
+        1,
+        N2,
+    )
+    Hc, σc = NeuroAnalyzer._gc_cepstral(Sc)
+    @test σc[1] ≈ 1.0
+    @test all(Hc[1, 1, k] ≈ 1 / (1 - 0.5 * cis(-2π * (k - 1) / N2)) for k = 1:N2)
+end
+# Gram-based VAR fit equals the least-squares fit of the full design
+Y, Z = NeuroAnalyzer._gc_design(xv, 2)
+gr = NeuroAnalyzer._gc_gram(xv, 2; block = 1000)
+@test gr.N == size(Y, 1)
+@test gr.G ≈ Z' * Z && gr.C ≈ Z' * Y && gr.YY ≈ Y' * Y
+@test NeuroAnalyzer._gc_rss_gram(gr, 1, 1:4) ≈ NeuroAnalyzer._gc_rss(Y[:, 1], Z)
 
 true

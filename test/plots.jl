@@ -509,6 +509,15 @@ p = plot_phs(e10; ep = 1, ch = "eeg", type = :w3d, gui = false)
 p = plot_phs(e10; ep = 1, ch = "eeg", type = :topo, gui = false)
 @test p isa GLMakie.Figure
 
+@info "Test: plot_granger()"
+g_tmp = granger(e10; ch = ["Fp1", "Fp2", "C3"], order = 2, nperm = 9)
+@test plot_granger(g_tmp) isa GLMakie.Figure
+@test plot_granger(g_tmp; values = false, sig = false, mono = true) isa GLMakie.Figure
+gs_tmp = granger_spectral(e10; ch = ["Fp1", "Fp2"], order = 2, nfrq = 32, nperm = 9)
+@test plot_granger(gs_tmp; flim = (0, 40)) isa GLMakie.Figure
+@test_throws ArgumentError plot_granger(g_tmp; labels = ["a"])
+@test_throws ArgumentError plot_granger((x = 1,))
+
 @info "Test: plot_coherence()"
 coh, imcoh, mscoh, f = NeuroAnalyzer.coherence(
     e10,
