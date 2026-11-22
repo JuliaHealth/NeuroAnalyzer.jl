@@ -63,7 +63,6 @@ l = labels(e10)
 @test NeuroAnalyzer._ch_idx(e10, r"^Fp1$") == [findfirst(isequal("Fp1"), l)]
 @test NeuroAnalyzer._ch_idx(e10, r"no_such_channel") == Int64[]
 
-@info "Test: _ch_pairs()"
 ci(x) = findfirst(isequal(x), l)
 # user order kept (not sorted into the object order)
 @test NeuroAnalyzer._ch_pairs(e10, ["O1", "F3"], e10, ["O2", "F4"]) ==

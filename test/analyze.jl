@@ -657,11 +657,11 @@ pv, sd, phd, s1p, s2p = plv(e10, e10; ch1 = "Fp1", ch2 = "Fp2", ep1 = 1, ep2 = 1
 # rows follow the pairs in the order given (ch1[i] with ch2[i]), not the object order
 for (f, get) in ((plv, x -> x.pv), (pli, x -> x.pv), (corr, identity), (cosim, identity),
                  (aecor, identity), (NeuroAnalyzer.coherence, x -> x.msc))
-    r = get(f(e10, e10; ch1 = ["O1", "F3"], ch2 = ["O2", "F4"], ep1 = 1:2, ep2 = 1:2))
-    r1 = get(f(e10, e10; ch1 = "O1", ch2 = "O2", ep1 = 1:2, ep2 = 1:2))
-    r2 = get(f(e10, e10; ch1 = "F3", ch2 = "F4", ep1 = 1:2, ep2 = 1:2))
-    @test selectdim(r, 1, 1) ≈ selectdim(r1, 1, 1)
-    @test selectdim(r, 1, 2) ≈ selectdim(r2, 1, 1)
+    rp = get(f(e10, e10; ch1 = ["O1", "F3"], ch2 = ["O2", "F4"], ep1 = 1:2, ep2 = 1:2))
+    rp1 = get(f(e10, e10; ch1 = "O1", ch2 = "O2", ep1 = 1:2, ep2 = 1:2))
+    rp2 = get(f(e10, e10; ch1 = "F3", ch2 = "F4", ep1 = 1:2, ep2 = 1:2))
+    @test selectdim(rp, 1, 1) ≈ selectdim(rp1, 1, 1)
+    @test selectdim(rp, 1, 2) ≈ selectdim(rp2, 1, 1)
 end
 
 @info "Test: psd()"
@@ -1462,11 +1462,11 @@ gc5 = NeuroAnalyzer._granger(x_ch; order = 5, conditional = true)
 for c in (false, true)
     gt = NeuroAnalyzer._granger(x_ch; conditional = c)
     gs = NeuroAnalyzer._granger_spectral(x_ch; fs = 100, conditional = c)
-    gm = [
+    gm_ch = [
         sum((gs.gc[i, j, 1:(end - 1)] .+ gs.gc[i, j, 2:end]) ./ 2) / (length(gs.frq) - 1)
         for i = 1:3, j = 1:3
     ]
-    @test gm ≈ gt.gc atol = 1e-10
+    @test gm_ch ≈ gt.gc atol = 1e-10
     @test gs.order == gt.order
 end
 # pairwise: one BIC order per channel pair (1 → 3 acts at lag 2)

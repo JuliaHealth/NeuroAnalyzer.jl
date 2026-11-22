@@ -598,6 +598,7 @@ include("plots/plot_coherence.jl")
 include("plots/plot_granger.jl")
 include("plots/plot_efield.jl")
 include("plots/plot_stats.jl")
+include("plots/plot_pca.jl")
 include("plots/plot_matrix.jl")
 include("plots/plot_phase.jl")
 include("plots/plot_tf.jl")
@@ -644,15 +645,15 @@ function __init__()
     global colors = @load_preference("colors", true)
 
     # show major parameters
-    @info "NeuroAnalyzer v$(NeuroAnalyzer.VER)"
-    @info "NeuroAnalyzer path: $(NeuroAnalyzer.PATH)"
-    @info "Preferences:"
-    @info " Progress bar: $progress_bar"
-    @info "      Verbose: $verbose"
-    @info " Exclude bads: $exclude_bads"
-    @info "       Colors: $colors"
-    @info "System info:"
-    @info "  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB"
+    _info("NeuroAnalyzer v$(NeuroAnalyzer.VER)")
+    _info("NeuroAnalyzer path: $(NeuroAnalyzer.PATH)")
+    _info("Preferences:")
+    _info(" Progress bar: $progress_bar")
+    _info("      Verbose: $verbose")
+    _info(" Exclude bads: $exclude_bads")
+    _info("       Colors: $colors")
+    _info("System info:")
+    _info("  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB")
 
     # set package options
     # FFTW: one thread - most transforms are small (Welch / STFT segments, wavelets) and many run
@@ -662,19 +663,19 @@ function __init__()
     BLAS.set_num_threads(max(1, Sys.CPU_THREADS - 1))
 
     # setup resources
-    @info "Preparing resources"
+    _info("Preparing resources")
     global res_path = joinpath(artifact"NeuroAnalyzer_resources", "neuroanalyzer-resources")
 
     # load plugins (not while another package that depends on NeuroAnalyzer is
     # being precompiled: plugins are included into this module)
     global plugins_path = joinpath(homedir(), "NeuroAnalyzer", "plugins")
     if ccall(:jl_generating_output, Cint, ()) == 0
-        @info "Loading plugins"
+        _info("Loading plugins")
         try
             isdir(plugins_path) || mkpath(plugins_path)
             isempty(readdir(plugins_path)) || plugins_reload()
         catch err
-            @warn "Plugins could not be loaded: $err"
+            _warn("Plugins could not be loaded: $err")
         end
     end
 

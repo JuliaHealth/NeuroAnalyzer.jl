@@ -2176,13 +2176,13 @@ for (f!, f, kw) in (
 )
     e_in = deepcopy(e_io)
     d0, l0, h0 = copy(e_io.data), copy(labels(e_io)), copy(e_io.history)
-    e_out = f(e_io; kw...)
+    e_oop = f(e_io; kw...)
     @test e_io.data == d0 && labels(e_io) == l0 && e_io.history == h0
     @test f!(e_in; kw...) === nothing
-    @test e_in.data == e_out.data
-    @test labels(e_in) == labels(e_out)
-    @test e_in.history == e_out.history
-    @test e_in.markers == e_out.markers
+    @test e_in.data == e_oop.data
+    @test labels(e_in) == labels(e_oop)
+    @test e_in.history == e_oop.history
+    @test e_in.markers == e_oop.markers
 end
 # reference_ce!: a reference channel that is also re-referenced (copied before subtraction)
 e_ce = reference_ce(e_io; ch = "Cz")

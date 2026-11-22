@@ -194,7 +194,7 @@ function plot_locs3d(
                 save_dialog("Pick an image file", nothing, ["*.png"]) do file_name
                     if file_name != ""
                         GLMakie.save(file_name, fig.scene)
-                        @info "Image saved as $file_name"
+                        _info("Image saved as $file_name")
                     end
                 end
             end

@@ -217,11 +217,11 @@ df = DataFrame(m, :auto)
 p = pcacomp(df, names(df))
 @test size(p.pc, 1) == 4 && 1 <= size(p.pc, 2) <= 4
 
-@info "Test: biplot()"
-@test biplot(df, names(df)) isa GLMakie.Figure
+@info "Test: plot_pca()"
+@test plot_pca(df, names(df)) isa GLMakie.Figure
 
-@info "Test: screeplot()"
-@test screeplot(df, names(df)) isa GLMakie.Figure
+@info "Test: plot_scree()"
+@test plot_scree(df, names(df)) isa GLMakie.Figure
 
 @info "Test: npca()"
 @test npca(m, type = :var, value = 0.9) <= size(m, 2)

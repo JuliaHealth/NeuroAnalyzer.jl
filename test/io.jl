@@ -517,8 +517,8 @@ ref = import_edf(dtee_base * ".edf")
 )
 # the EDF export places the events 0.151 s later (start time truncated to whole seconds)
 for row in eachrow(ref.markers)
-    v = replace(row[:value], "@value:+" => " ", "@value:-" => " ")
-    idx = findall(==(v), eeg.markers[!, :value])
+    ev_lbl = replace(row[:value], "@value:+" => " ", "@value:-" => " ")
+    idx = findall(==(ev_lbl), eeg.markers[!, :value])
     isempty(idx) && continue
     @test minimum(abs.(eeg.markers[idx, :start] .- (row[:start] - 0.151))) < 0.002
 end

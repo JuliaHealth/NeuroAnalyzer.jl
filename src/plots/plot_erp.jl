@@ -950,8 +950,8 @@ function plot_erp(
                 markersize = 15,
             )
 
-            @info "Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units"
-            @info "Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units"
+            _info("Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units")
+            _info("Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units")
 
         elseif length(ch) > 1 && type === :normal
 
@@ -983,8 +983,8 @@ function plot_erp(
                 markersize = 15,
             )
 
-            @info "Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units"
-            @info "Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units"
+            _info("Positive peak: $(round(pos_time, digits = 0)) ms, $(round(pos_amp, digits = 2)) $units")
+            _info("Negative peak: $(round(neg_time, digits = 0)) ms, $(round(neg_amp, digits = 2)) $units")
         end
     end
 
