@@ -13,7 +13,7 @@ This function is intended for EDF+ files whose `data_records_duration` header fi
 
 # Returns
 
-- `DataFrame` with columns `:id`, `:start`, `:length`, `:value`, `:channel`
+- `DataFrame` with columns `:type`, `:start`, `:length`, `:value`, `:channel`
 """
 function import_edf_annotations(file_name::String)::DataFrame
     # validate
@@ -117,8 +117,8 @@ function import_edf_annotations(file_name::String)::DataFrame
 
         return isempty(annotations) ?
                DataFrame(
-            :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[],
+            :type => String[], :start => Float64[],
+            :length => Float64[], :value => String[], :channel => Vector{String}[],
         ) :
                _a2df(annotations)
     end

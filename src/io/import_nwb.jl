@@ -178,30 +178,15 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         events =
             CSV.read(events_file, DataFrame; stringtype = String, missingstring = "n/a")
         _info("$(DataFrames.nrow(events)) markers found")
-        event_id = string.(coalesce.(events[!, :trial_type], ""))
-        event_description = string.(coalesce.(events[!, :value], ""))
-        # BIDS: onset and duration in seconds; sample is 0-based
-        event_start = if "onset" in names(events)
-            Float64.(events[!, :onset])
-        else
-            Float64.(events[!, :sample]) ./ sampling_rate
-        end
-        event_length = Float64.(coalesce.(events[!, :duration], 0.0))
-        event_channel = zeros(Int64, DataFrames.nrow(events))
-        markers = DataFrame(
-            :id => event_id,
-            :start => event_start,
-            :length => event_length,
-            :value => event_description,
-            :channel => event_channel,
-        )
+        # other columns of events.tsv are kept as extra marker columns
+        markers = _bids_events(events, sampling_rate)
     else
         markers = DataFrame(
-            :id => String[],
+            :type => String[],
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Vector{String}[],
         )
     end
 

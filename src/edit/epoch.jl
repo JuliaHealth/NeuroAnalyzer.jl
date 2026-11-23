@@ -10,12 +10,13 @@ export subepoch!
 
 Return a copy of `obj` split into epochs.
 
-Epochs are created either by splitting at marker positions (when `marker` is specified) or by dividing the signal into fixed-length windows (`ep_len`).
+Epochs are created either by splitting at marker positions (when `marker_value` is specified) or by dividing the signal into fixed-length windows (`ep_len`).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be continuous (1 epoch)
-- `marker::String=""`: marker value to split at; if empty, split by `ep_len`
+- `marker_value::String=""`: marker value to split at; if empty, split by `ep_len`
+- `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
@@ -25,12 +26,13 @@ Epochs are created either by splitting at marker positions (when `marker` is spe
 """
 function epoch(
     obj::NeuroAnalyzer.NEURO;
-    marker::String = "",
+    marker_value::String = "",
+    marker_type::String = "",
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    epoch!(obj_new; marker = marker, offset = offset, ep_len = ep_len)
+    epoch!(obj_new; marker_value = marker_value, marker_type = marker_type, offset = offset, ep_len = ep_len)
 
     return obj_new
 end
@@ -40,12 +42,13 @@ end
 
 Split `obj` into epochs in-place.
 
-Epochs are created either by splitting at marker positions (when `marker` is specified) or by dividing the signal into fixed-length windows (`ep_len`).
+Epochs are created either by splitting at marker positions (when `marker_value` is specified) or by dividing the signal into fixed-length windows (`ep_len`).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be continuous (1 epoch)
-- `marker::String=""`: marker value to split at; if empty, split by `ep_len`
+- `marker_value::String=""`: marker value to split at; if empty, split by `ep_len`
+- `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 
@@ -55,7 +58,8 @@ Epochs are created either by splitting at marker positions (when `marker` is spe
 """
 function epoch!(
     obj::NeuroAnalyzer.NEURO;
-    marker::String = "",
+    marker_value::String = "",
+    marker_type::String = "",
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
 )::Nothing
@@ -64,22 +68,29 @@ function epoch!(
         throw(ArgumentError("epoch() must be applied to continuous object."))
 
     # create ID for epochs
-    epoch_id = if marker != ""
-        marker
+    epoch_id = if marker_value != ""
+        marker_value
     elseif !isnothing(ep_len)
         "length_$(ep_len)s"
     else
         "full"
     end
 
-    if marker != ""
+    if marker_value != ""
         # marker-based epoching
         _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
-        _check_markers(obj, marker)
         isnothing(ep_len) &&
             throw(ArgumentError("ep_len must be specified for marker-based epoching."))
 
-        mrk_idx   = findall(obj.markers.value .== marker)
+        mrk_sel = obj.markers.value .== marker_value
+        marker_type == "" || (mrk_sel .&= obj.markers.type .== marker_type)
+        any(mrk_sel) || throw(
+            ArgumentError(
+                "Marker '$marker_value'" * (marker_type == "" ? "" : " of type '$marker_type'") *
+                " not found.",
+            ),
+        )
+        mrk_idx   = findall(mrk_sel)
         mrk_start = obj.markers[mrk_idx, :start]
         mrk_len   = obj.markers[mrk_idx, :length]
 
@@ -105,7 +116,7 @@ function epoch!(
 
         epochs, obj.markers = _make_epochs_bymarkers(
             obj.data;
-            marker  = marker,
+            marker  = marker_value,
             markers = deepcopy(obj.markers),
             # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
             marker_start = t2s.(mrk_start, sr(obj)),
@@ -140,7 +151,10 @@ function epoch!(
     obj.time_pts, obj.epoch_time = _get_t(obj)
     obj.epoch_time .-= offset
 
-    push!(obj.history, "epoch(obj; marker=$marker, offset=$offset, ep_len=$ep_len)")
+    push!(
+        obj.history,
+        "epoch(obj; marker_value=$marker_value, marker_type=$marker_type, offset=$offset, ep_len=$ep_len)",
+    )
 
     return nothing
 end

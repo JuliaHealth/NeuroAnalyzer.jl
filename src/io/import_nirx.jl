@@ -254,11 +254,11 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
 
     markers = DataFrame(
         # value: the condition (trigger) code, so that epochs can be selected by condition
-        :id => repeat(["stim"], length(stim_id)),
+        :type => repeat(["stim"], length(stim_id)),
         :start => stim_frame ./ sampling_rate_exact,
         :length => zeros(length(stim_id)),
         :value => stim_id,
-        :channel => zeros(Int64, length(stim_id)),
+        :channel => [String[] for _ = 1:length(stim_id)],
     )
 
     # read probes data

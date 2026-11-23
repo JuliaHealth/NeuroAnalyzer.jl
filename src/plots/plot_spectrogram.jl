@@ -863,7 +863,7 @@ function plot_spectrogram(
                 GLMakie.textlabel!(
                     fig[1, 1],
                     (mpos + 0.07, 0.97 * minimum(obj.data[ch, :, :]));
-                    text = "$(obj.markers[idx, :id]) / $(obj.markers[idx, :value])",
+                    text = "$(obj.markers[idx, :type]) / $(obj.markers[idx, :value])",
                     text_align = (:left, :center),
                     fontsize = 8,
                     text_rotation = pi / 2,

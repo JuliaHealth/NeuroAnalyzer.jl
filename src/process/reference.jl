@@ -87,6 +87,8 @@ function _append_label_suffix!(
     sfx = suffix isa String ? fill(suffix, length(ch)) : suffix
     length(sfx) == length(ch) || throw(ArgumentError("Suffix length mismatch."))
     obj_tmp.header.recording[:label][ch] .*= sfx
+    # markers refer to channels by label
+    _markers_relabel!(obj_tmp.markers, lbl, lbl .* sfx)
     for (i, l) in enumerate(lbl)
         r = _find_bylabel(obj_tmp.locs, l)
         r isa Int64 || continue  # channel has no location
@@ -1050,6 +1052,7 @@ Each entry in `ref_list` is either a single channel name (copied as-is) or a `"C
 - Single-channel entries keep the location of their channel; for `"Ch1-Ch2"` entries the location is set according to `loc`. Locations of the replaced EEG channels are removed.
 - With `loc=:mid` the Cartesian midpoint is projected back onto the head surface and the spherical coordinates are recalculated from it; the polar midpoint is taken between the 2-D topographic positions.
 - A montage channel whose source channel(s) have no location gets no location.
+- Markers of a replaced EEG channel are moved to the montage channels that use it; markers of EEG channels not used by the montage are removed.
 
 Examples of montages:
 
@@ -1095,6 +1098,7 @@ Re-reference EEG channels using a custom montage in-place.
 - Single-channel entries keep the location of their channel; for `"Ch1-Ch2"` entries the location is set according to `loc`. Locations of the replaced EEG channels are removed.
 - With `loc=:mid` the Cartesian midpoint is projected back onto the head surface and the spherical coordinates are recalculated from it; the polar midpoint is taken between the 2-D topographic positions.
 - A montage channel whose source channel(s) have no location gets no location.
+- Markers of a replaced EEG channel are moved to the montage channels that use it; markers of EEG channels not used by the montage are removed.
 
 Examples of montages:
 
@@ -1141,6 +1145,14 @@ function reference_custom!(
     rec = obj.header.recording
     obj.data = vcat(s, obj.data[keep, :, :])
     rec[:label] = vcat(ref_list, rec0[:label][keep])
+    # markers of the replaced channels: moved to the montage channels using them
+    mmap = Dict(l => String[] for l in ch_lbls)
+    for (k, (a, b)) in enumerate(entries)
+        push!(mmap[a], ref_list[k])
+        isnothing(b) || push!(mmap[b], ref_list[k])
+    end
+    n_del = _markers_map_channels!(obj.markers, mmap)
+    n_del > 0 && _info("$n_del marker(s) of channels not used by the montage removed")
     rec[:channel_type] = vcat(fill("eeg", n_new), rec0[:channel_type][keep])
     for f in (:unit, :prefiltering, :transducers, :gain)
         rec[f] = vcat(fill(rec0[f][ch[1]], n_new), rec0[f][keep])

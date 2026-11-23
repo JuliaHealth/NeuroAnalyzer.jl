@@ -163,18 +163,10 @@ function _delete_channel!(
     rec[:channel_order] = _sort_channels(rec[:channel_type])
     obj.data = obj.data[keep, :, :]
 
-    # markers refer to channels by number (0 = all channels): renumber them,
-    # markers of deleted channels are removed
-    if DataFrames.nrow(obj.markers) > 0
-        new_idx = cumsum(keep_mask)
-        mrk_ch = obj.markers[!, :channel]
-        on_deleted = [c != 0 && !keep_mask[c] for c in mrk_ch]
-        any(on_deleted) &&
-            _info("$(count(on_deleted)) marker(s) of deleted channels removed")
-        obj.markers = obj.markers[.!on_deleted, :]
-        obj.markers[!, :channel] =
-            [c == 0 ? 0 : new_idx[c] for c in obj.markers[!, :channel]]
-    end
+    # markers refer to channels by label (empty = all channels): deleted channels are
+    # removed from them, markers of deleted channels only are removed
+    n_del = _markers_delete_channels!(obj.markers, del_labels)
+    n_del > 0 && _info("$n_del marker(s) of deleted channels removed")
 
     push!(obj.history, "delete_channel(obj; ch=$del_lbl)")
 

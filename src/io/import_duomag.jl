@@ -277,11 +277,11 @@ function import_duomag(file_name::String)::NeuroAnalyzer.NEURO
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     markers_df = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     locs = _initialize_locs()

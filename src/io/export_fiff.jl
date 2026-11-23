@@ -91,7 +91,7 @@ Written:
 - MEG geometry stored by `import_fiff()` (`:coil_loc`, `:coil_id`, `:dev_head_t`): MEG sensors in the device frame, EEG electrodes in the head frame; without it, positions come from `OBJ.locs` (head frame, meters) and MEG sensors get default coil types and orientations
 - EEG/sEEG/ECoG electrode positions also as digitization points; cHPI coil frequencies and digitized positions
 - SSP projectors (inactive), bad channels, sampling rate, line frequency, low-pass/high-pass (from the prefiltering string), measurement date, subject (ID, names, handedness, weight, height), recording description and experiment name
-- markers as MNE annotations (onset relative to the first sample, duration, description = marker value); `id` and `channel` are not stored
+- markers as MNE annotations (onset relative to the first sample, duration, description = marker value, or the type if the value is empty; `BAD` markers are written as `BAD_<value>` and `boundary` markers as `BAD boundary`, which MNE-Python treats as bad segments); marker channels as the channels of the annotations (`ch_names` in MNE-Python); marker types, values and extra marker columns as the annotation extras (`extras` in MNE-Python), read back by `import_fiff()`
 - MEG `first_time` as `first_samp`; IAS (MaxShield) objects as MaxShield raw data
 
 Recordings larger than `split_size` are split as MNE-Python does: `name_raw.fif`, `name_raw-1.fif`, `name_raw-2.fif`, … (each part links to the next one; `import_fiff()` and MNE-Python read them as one recording).
@@ -254,7 +254,35 @@ function export_fiff(
     # markers → annotations (onsets relative to the first sample, as MNE-Python reads them
     # when the annotations block stores no meas_date)
     mrk = obj.markers
-    an_desc = [isempty(v) ? i : v for (i, v) in zip(string.(mrk[!, :id]), string.(mrk[!, :value]))]
+    # description = value (or type, if the value is empty); bad segments are written as
+    # "BAD_…" and discontinuities as "BAD boundary", which MNE-Python treats as bad segments
+    an_desc = [_fiff_an_desc(t, v) for (t, v) in zip(string.(mrk[!, :type]), string.(mrk[!, :value]))]
+    # marker channels (MNE: JSON list of channel name lists, empty: all channels); written only
+    # if a marker refers to some channels, as MNE-Python does
+    an_ch = ""
+    if any(!isempty, mrk[!, :channel])
+        lbl_set = Set(clabels)
+        mch = [String[c for c in ch if c in lbl_set] for ch in mrk[!, :channel]]
+        any(length.(mch) .!= length.(mrk[!, :channel])) &&
+            _warn("Marker channels that are not in the object are not exported.")
+        an_ch = JSON.json(mch)
+    end
+    # marker type and value as the annotation extras of MNE-Python (FIFF free list), so that
+    # import_fiff() restores the markers exactly (the description may have a BAD_ prefix)
+    # (with the extra marker columns; names reserved by MNE-Python are skipped)
+    ex_cols = Base.filter(
+        c -> !(c in ("onset", "duration", "description", "ch_names", "hed_string")),
+        _marker_extra_cols(mrk),
+    )
+    length(ex_cols) < length(_marker_extra_cols(mrk)) &&
+        _warn("Extra marker columns with names reserved by MNE-Python are not exported.")
+    ex_val(x) = ismissing(x) || isnothing(x) ? nothing : (x isa Union{AbstractString, Real} ? x : string(x))
+    an_extra = JSON.json([
+        merge(
+            Dict{String, Any}("type" => string(mrk[i, :type]), "value" => string(mrk[i, :value])),
+            Dict{String, Any}(c => ex_val(mrk[i, c]) for c in ex_cols),
+        ) for i = 1:DataFrames.nrow(mrk)
+    ])
 
     # ------------------------------------------------------------------ #
     # output files                                                       #
@@ -262,7 +290,7 @@ function export_fiff(
     buf_len = sr
     bytes_per_buf = 16 + 4 * ch_n * buf_len
     limit = floor(Int64, split_size * 1024^3) - 4096
-    est_info = 2048 + ch_n * (112 + (long_names ? 300 : 0)) + 64 * DataFrames.nrow(mrk) +
+    est_info = 2048 + ch_n * (112 + (long_names ? 300 : 0)) + 64 * DataFrames.nrow(mrk) + ncodeunits(an_ch) + ncodeunits(an_extra) +
                sum(x -> 4 * length(x[3]) + 32 * length(x[2]), ssp; init = 0) + 1024
     max_bufs = max(1, (limit - est_info) ÷ bytes_per_buf)
     n_bufs = cld(n_samples, buf_len)
@@ -426,6 +454,8 @@ function export_fiff(
                 _fiff_write_float(io, tag("mne_baseline_min"), mrk[!, :start])
                 _fiff_write_float(io, tag("mne_baseline_max"), mrk[!, :start] .+ mrk[!, :length])
                 _fiff_write_name_list(io, tag("description"), an_desc)
+                isempty(an_ch) || _fiff_write_string(io, tag("mne_epochs_drop_log"), an_ch)
+                _fiff_write_string(io, tag("free_list"), an_extra)
                 _fiff_end_block(io, blk("mne_annotations"))
             end
 

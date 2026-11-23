@@ -185,6 +185,7 @@ function rename_channel!(
 
     obj.header.recording[:label][ch_idx] = name
     _rename_locs!(obj.locs, old, name)
+    _markers_relabel!(obj.markers, [old], [name])
 
     push!(obj.history, "rename_channel(obj; ch=$old, name=$name)")
 
@@ -375,6 +376,8 @@ function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
         mapping = Dict(zip(old, clabels))
         obj.locs[!, :label] = [get(mapping, l, l) for l in obj.locs[!, :label]]
     end
+    # markers refer to channels by label (renamed in one pass, like the locations)
+    _markers_relabel!(obj.markers, old, clabels)
 
     push!(obj.history, "add_label(obj, clabels=$clabels)")
 

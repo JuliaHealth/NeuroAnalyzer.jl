@@ -3,7 +3,7 @@ export export_markers
 """
     export_markers(obj; <keyword arguments>)
 
-Export the event markers table of a `NeuroAnalyzer.NEURO` object to a CSV file.
+Export the event markers table of a `NeuroAnalyzer.NEURO` object to a CSV file. The `channel` column holds the channel labels separated by `;` (empty: all channels); the file can be read back with `import_markers()`.
 
 If the markers table is empty, a warning is issued and no file is written.
 
@@ -34,7 +34,10 @@ function export_markers(
         return nothing
     end
 
-    CSV.write(file_name, obj.markers)
+    # channel: labels separated by ";" (empty: all channels), read back by add_markers()
+    m = copy(obj.markers)
+    m[!, :channel] = _mrk_ch_str.(m[!, :channel])
+    CSV.write(file_name, m)
 
     return nothing
 end

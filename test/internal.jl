@@ -254,7 +254,7 @@ hdr = NeuroAnalyzer._create_header(; subject = s, recording = r, experiment = e)
 @test NeuroAnalyzer._has_markers(["eeg", "mrk"]) == (true, 2)
 
 df = NeuroAnalyzer._a2df(["1.0\x14stim\x14"])
-@test names(df) == ["id", "start", "length", "value", "channel"]
+@test names(df) == ["type", "start", "length", "value", "channel"]
 
 ##
 ## Locs Operations
@@ -638,7 +638,7 @@ tps = NeuroAnalyzer._epochs_tps(e10)
 @test tps[:, 1] == [0.0, 2559 / 256]
 @test tps[1, 2] == 10.0
 e10_tmp = deepcopy(e10)
-e10_tmp.markers = DataFrame(:id => ["1", "1"],
+e10_tmp.markers = DataFrame(:type => ["1", "1"],
     :start => [5.0, 25.0],
     :length => [0.0, 0.0],
     :value => ["a", "a"],
@@ -648,7 +648,7 @@ e10_tmp.markers = DataFrame(:id => ["1", "1"],
 # epochs around markers: signal 1:20 at 10 Hz, markers at samples 5, 12 and 18
 s_tmp = reshape(collect(1.0:20), 1, 20, 1)
 mrk =
-    DataFrame(:id => ["1", "1", "2"], :start => [0.4, 1.1, 1.7], :length => [0.0, 0.0, 0.0],
+    DataFrame(:type => ["1", "1", "2"], :start => [0.4, 1.1, 1.7], :length => [0.0, 0.0, 0.0],
         :value => ["a", "a", "b"], :channel => [0, 0, 0])
 ep_tmp, mrk_tmp = NeuroAnalyzer._make_epochs_bymarkers(
     s_tmp; marker = "a", markers = mrk, marker_start = [5, 12], offset = 2, ep_len = 5,
@@ -675,7 +675,7 @@ ep_tmp, _ = NeuroAnalyzer._make_epochs_bymarkers(
 ##
 
 mrk =
-    DataFrame(:id => ["1", "2", "3"], :start => [0.5, 1.5, 3.0], :length => [0.0, 0.0, 0.0],
+    DataFrame(:type => ["1", "2", "3"], :start => [0.5, 1.5, 3.0], :length => [0.0, 0.0, 0.0],
         :value => ["a", "b", "c"], :channel => [0, 0, 0])
 @test NeuroAnalyzer._delete_markers(mrk, (1, 2))[!, :value] == ["a", "c"]
 @test NeuroAnalyzer._shift_markers(mrk, (1, 2))[!, :start] == [0.5, 1.5, 2.0]
@@ -693,7 +693,7 @@ df = NeuroAnalyzer._a2df(["+0\x14\x14\0", "+1.5\x150.5\x14stim\x14"])
 @test df[!, :start] == [1.5]
 @test df[!, :length] == [0.5]
 @test df[!, :value] == ["stim"]
-# several records; records without a duration get length 0; ids are per label
+# several records; records without a duration get length 0; types recognized in the text
 df = NeuroAnalyzer._a2df([
     "+1\x14\x14stim\x14",
     "+2.5\x150.5\x14resp\x14",
@@ -701,7 +701,7 @@ df = NeuroAnalyzer._a2df([
 ])
 @test df[!, :start] == [1.0, 2.5, 3.0]
 @test df[!, :length] == [0.0, 0.5, 0.0]
-@test df[!, :id] == ["1", "2", "1"]
+@test df[!, :type] == ["stim", "response", "stim"]
 @test nrow(NeuroAnalyzer._a2df(["+0\x14\x14\0"])) == 0
 # a data record with a time-keeping TAL followed by several TALs, one of them with
 # two annotations sharing the onset (previously such records were dropped)

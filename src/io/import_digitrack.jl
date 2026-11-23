@@ -107,11 +107,11 @@ function import_digitrack(
     units, _ = _resolve_units(fill("μV", ch_n), ch_type)
 
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     # ------------------------------------------------------------------ #

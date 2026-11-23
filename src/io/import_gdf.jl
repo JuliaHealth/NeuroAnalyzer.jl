@@ -408,11 +408,11 @@ function import_gdf(
     # event table (ETP block)                                            #
     # ------------------------------------------------------------------ #
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     data_bytes = n_rec * record_bytes
@@ -458,12 +458,12 @@ function import_gdf(
 
             # POS (uint32 × N)
             for _ = 1:etp_number
-                push!(id, "event")
                 push!(start, Float64(reinterpret(UInt32, etp[1:4])[1]))
                 etp = etp[5:end]
             end
             # TYP (uint16 × N)
             for _ = 1:etp_number
+                push!(id, _gdf_marker_type(UInt16(etp[1]) | (UInt16(etp[2]) << 8)))
                 push!(value, _gdf_etp(etp[1:2]))
                 etp = etp[3:end]
             end
@@ -487,11 +487,11 @@ function import_gdf(
             # POS is 1-based (the first sample has position 1)
             sr_denom = etp_sr == 0 ? Float64(sampling_rate) : Float64(etp_sr)
             return markers = DataFrame(
-                :id => id,
+                :type => id,
                 :start => (start .- 1) ./ sr_denom,
                 :length => len ./ sr_denom,
                 :value => value,
-                :channel => ch,
+                :channel => [_mrk_ch(c, clabels) for c in ch],
             )
         end
         # event file closed here

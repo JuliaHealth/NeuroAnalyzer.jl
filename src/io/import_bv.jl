@@ -300,49 +300,23 @@ function import_bv(
 
         # marker positions are 1-based sample numbers; lengths are numbers of samples
         markers = DataFrame(
-            :id => m_id,
+            # BrainVision marker types (Stimulus, Response, Comment, New Segment, …) → standard types
+            :type => [_marker_type(t) for t in m_id],
             :start => s2t.(max.(m_pos, 1), sampling_rate),
             :length => n2t.(m_len, sampling_rate),
             :value => m_desc,
-            :channel => m_ch,
+            :channel => [_mrk_ch(c, clabels) for c in m_ch],
         )
-        if all(==(""), markers[!, :id])
-            markers[!, :id] .= "mrk"
-        end
 
     elseif isfile(events_file)
         # BIDS events.tsv: onset and duration in seconds; sample is 0-based
         vmrk = CSV.read(events_file, DataFrame; stringtype = String, missingstring = "n/a")
-        n_ev = DataFrames.nrow(vmrk)
-        cols = names(vmrk)
-        ev_start = if "onset" in cols
-            Float64.(coalesce.(vmrk[!, :onset], 0.0))
-        else
-            Float64.(coalesce.(vmrk[!, :sample], 0)) ./ sampling_rate
-        end
-        ev_len =
-            "duration" in cols ? Float64.(coalesce.(vmrk[!, :duration], 0.0)) : zeros(n_ev)
-        ev_value = if "trial_type" in cols && "value" in cols
-            string.(coalesce.(vmrk[!, :trial_type], "")) .* "_" .*
-            string.(coalesce.(vmrk[!, :value], ""))
-        elseif "trial_type" in cols
-            string.(coalesce.(vmrk[!, :trial_type], ""))
-        elseif "value" in cols
-            string.(coalesce.(vmrk[!, :value], ""))
-        else
-            repeat(["marker"], n_ev)
-        end
-        markers = DataFrame(
-            :id => repeat(["mrk"], n_ev),
-            :start => ev_start,
-            :length => ev_len,
-            :value => ev_value,
-            :channel => zeros(Int64, n_ev),
-        )
+        # other columns of events.tsv are kept as extra marker columns
+        markers = _bids_events(vmrk, sampling_rate)
     else
         markers = DataFrame(
-            :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[],
+            :type => String[], :start => Float64[],
+            :length => Float64[], :value => String[], :channel => Vector{String}[],
         )
     end
 

@@ -13,7 +13,7 @@
 #   r = spectral_pipeline(eeg)
 #
 #   # task: ERP time-locked to marker "S  1" (200 ms before to 800 ms after the stimulus)
-#   r = erp_pipeline(eeg; marker = "S  1", offset = 0.2, ep_len = 1.0)
+#   r = erp_pipeline(eeg; marker_value = "S  1", offset = 0.2, ep_len = 1.0)
 #   plot_erp(r.erp; ch = "Cz")
 
 using DataFrames
@@ -226,7 +226,7 @@ Event-related potential (ERP) analysis of a (preprocessed) continuous EEG record
 # Arguments
 
 - `eeg::NeuroAnalyzer.NEURO`: continuous EEG recording with markers
-- `marker::String`: marker value (see `eeg.markers`)
+- `marker_value::String`: marker value (see `eeg.markers`)
 - `offset::Real=0.2`: epoch start before the marker in seconds (also the baseline)
 - `ep_len::Real=1.0`: epoch length in seconds
 - `amp_t::Real=100`: amplitude threshold (μV) for epoch rejection
@@ -242,13 +242,13 @@ Named tuple:
 """
 function erp_pipeline(
     eeg::NeuroAnalyzer.NEURO;
-    marker::String,
+    marker_value::String,
     offset::Real = 0.2,
     ep_len::Real = 1.0,
     amp_t::Real = 100,
     twin::Tuple{Real, Real} = (0, ep_len - offset),
 )::@NamedTuple{erp::NeuroAnalyzer.NEURO, rejected::Vector{Int64}, peaks::DataFrame}
-    obj = epoch(eeg; marker = marker, offset = offset, ep_len = ep_len)
+    obj = epoch(eeg; marker_value = marker_value, offset = offset, ep_len = ep_len)
 
     rejected = epoch_reject(obj; ch = "eeg", method = :amp, amp_t = amp_t)
     length(rejected) < nepochs(obj) ||

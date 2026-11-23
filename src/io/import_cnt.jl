@@ -437,22 +437,21 @@ function import_cnt(
     # ------------------------------------------------------------------ #
     markers = if nevents == 0
         DataFrame(
-            :id => String[],
+            :type => String[],
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Vector{String}[],
         )
     else
-        # value: the trigger code (StimType), as in MNE-Python, EEGLAB and FieldTrip; id: the
-        # keypad response code (KeyPad Accept), if stored
+        # value: the trigger code (StimType), as in MNE-Python, EEGLAB and FieldTrip
         # start: the sample of the event's byte offset (MNE-Python places events 1 sample earlier)
         DataFrame(
-            :id => [isempty(evt_code) ? "mrk" : string(evt_code[i]) for i = 1:nevents],
+            :type => fill("stim", nevents),
             :start => evt_offset ./ sampling_rate,
             :length => fill(0.0, nevents),
             :value => string.(evt_stimtype),
-            :channel => fill(0, nevents),
+            :channel => [String[] for _ = 1:nevents],
         )
     end
 

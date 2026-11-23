@@ -264,14 +264,16 @@ function import_dtee(
         length(m_start) < length(ev_t) &&
             _info("$(length(ev_t) - length(m_start)) events outside the recording skipped")
     end
-    # one numeric id per event type (as for EDF+ annotations)
-    id_map = Dict(n => i for (i, n) in enumerate(unique(m_name)))
+    # pauses of the exam are discontinuities of the signal
     markers = DataFrame(
-        :id => [string(id_map[n]) for n in m_name],
+        :type => [
+            n in ("Technical_ExamPause", "Technical_ExamResume") ? "boundary" : "annotation"
+            for n in m_name
+        ],
         :start => m_start,
         :length => zeros(length(m_start)),
         :value => m_value,
-        :channel => zeros(Int64, length(m_start)),
+        :channel => [String[] for _ = 1:length(m_start)],
     )
 
     # ------------------------------------------------------------------ #

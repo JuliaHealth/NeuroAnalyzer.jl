@@ -750,7 +750,7 @@ e_tmp = add_note(e10; note = "x")
 @test_throws ArgumentError t2s(-1, 256)
 @test_throws ArgumentError s2t(1, 0)
 m = DataFrame(
-    :id => ["a"],
+    :type => ["a"],
     :start => [257.0],
     :length => [256.0],
     :value => ["x"],

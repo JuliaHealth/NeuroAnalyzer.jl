@@ -193,11 +193,11 @@ function import_set(
 
     # MARKERS
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     if "event" in keys(dataset)
@@ -213,13 +213,14 @@ function import_set(
             end
             # event types may be strings or numbers
             desc = string.(events["type"][:])
-            id = repeat(["stim"], length(start))
+            # EEGLAB "boundary" events mark discontinuities (e.g. removed segments)
+            id = [d == "boundary" ? "boundary" : "stim" for d in desc]
             markers = DataFrame(
-                :id => id,
+                :type => id,
                 :start => start,
                 :length => len,
                 :value => desc,
-                :channel => zeros(Int64, length(start)),
+                :channel => [String[] for _ = 1:length(start)],
             )
         end
     end

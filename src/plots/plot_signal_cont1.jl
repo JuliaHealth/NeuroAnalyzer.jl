@@ -157,7 +157,7 @@ function plot_cont(
         markers = markers_init && _has_markers(obj)
         if markers
             markers_pos  = obj.markers[!, :start]
-            markers_id   = obj.markers[!, :id]
+            markers_id   = obj.markers[!, :type]
             markers_desc = obj.markers[!, :value]
         end
         return nothing

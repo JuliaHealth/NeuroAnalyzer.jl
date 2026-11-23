@@ -591,12 +591,43 @@ function load_fiff(
             _warn("Inconsistent MNE annotations block; ignored.")
             continue
         end
+        # channels of each annotation (MNE: JSON list of channel name lists; empty: all channels)
+        ch_names = nothing
+        chn = g("mne_epochs_drop_log")
+        if !isnothing(chn)
+            p = try
+                JSON.parse(string(chn))
+            catch
+                nothing
+            end
+            if p isa AbstractVector && length(p) == length(desc) && all(x -> x isa AbstractVector, p)
+                ch_names = [String[string(n) for n in x] for x in p]
+            else
+                _warn("Invalid channel list of MNE annotations; ignored.")
+            end
+        end
+        # annotation extras of MNE-Python (dicts or null): marker type and value of files
+        # written by export_fiff()
+        extras = nothing
+        ext = g("free_list")
+        if !isnothing(ext)
+            p = try
+                JSON.parse(string(ext))
+            catch
+                nothing
+            end
+            if p isa AbstractVector && length(p) == length(desc)
+                extras = [x isa AbstractDict ? x : nothing for x in p]
+            end
+        end
         push!(
             annotations,
             Dict{Symbol, Any}(
                 :onset => onset,
                 :duration => offset .- onset,
                 :description => desc,
+                :ch_names => ch_names,
+                :extras => extras,
                 :has_orig_time => !isnothing(g("meas_date")),
             ),
         )
@@ -869,7 +900,10 @@ function import_fiff(
     m_start = Float64[]
     m_len = Float64[]
     m_val = String[]
-    m_ch = Int64[]
+    m_ch = Vector{String}[]
+    # other keys of the annotation extras → extra marker columns (missing for other markers)
+    m_extra = Dict{String, Any}[]
+    ex_order = String[]
 
     # DACQ event table: (sample, before, after) triplets
     for ev in mi[:events]
@@ -885,33 +919,68 @@ function import_fiff(
             # events outside the recording are dropped
             evts[row, 3] == 0 && continue
             0 <= evts[row, 1] - offset < size(data, 2) || continue
-            push!(m_id, "mrk")
+            push!(m_id, "stim")
             push!(m_start, (evts[row, 1] - offset) / sfreq)
             push!(m_len, 0.0)
             push!(m_val, string(evts[row, 3]))
-            push!(m_ch, 0)
+            push!(m_ch, String[])
+            push!(m_extra, Dict{String, Any}())
         end
     end
 
     # MNE annotations: onsets are relative to meas_date when it is stored, i.e. they include first_samp / sfreq
+    # (FIFF channel names → channel labels, by channel position)
+    name2lbl = Dict(zip(mi[:ch_names], clabels))
+    n_skip = 0
     for an in mi[:annotations]
         t0 = an[:has_orig_time] ? first_samp / sfreq : 0.0
         for k in eachindex(an[:onset])
-            push!(m_id, "annotation")
+            an_ch = String[]
+            if !isnothing(an[:ch_names]) && !isempty(an[:ch_names][k])
+                an_ch = unique(String[name2lbl[n] for n in an[:ch_names][k] if haskey(name2lbl, n)])
+                # an annotation of channels that are not in the recording
+                isempty(an_ch) && (n_skip += 1; continue)
+            end
+            # MNE: BAD_* annotations are bad segments, "EDGE boundary" / "BAD boundary" mark the
+            # junctions of concatenated recordings
+            desc = an[:description][k]
+            ex = isnothing(an[:extras]) ? nothing : an[:extras][k]
+            ex_type = isnothing(ex) ? nothing : get(ex, "type", nothing)
+            ex_value = isnothing(ex) ? nothing : get(ex, "value", nothing)
+            # type and value from the extras (export_fiff()), unless the description was
+            # changed afterwards (e.g. in MNE-Python)
+            use_ex = ex_type isa AbstractString && ex_value isa AbstractString &&
+                !isempty(ex_type) && _fiff_an_desc(String(ex_type), String(ex_value)) == desc
+            push!(m_id, use_ex ? String(ex_type) : _marker_type(desc; default = "annotation"))
             push!(m_start, an[:onset][k] - t0)
             push!(m_len, an[:duration][k])
-            push!(m_val, an[:description][k])
-            push!(m_ch, 0)
+            push!(m_val, use_ex ? String(ex_value) : desc)
+            d = Dict{String, Any}()
+            if !isnothing(ex)
+                for (k, v) in ex
+                    k = String(k)
+                    k in ("type", "value") && continue
+                    d[k] = v
+                    k in ex_order || push!(ex_order, k)
+                end
+            end
+            push!(m_extra, d)
+            push!(m_ch, an_ch)
         end
     end
+    n_skip > 0 && _warn("$n_skip annotation(s) of channels not in the recording skipped.")
 
     markers = DataFrame(
-        :id => m_id,
+        :type => m_id,
         :start => m_start,
         :length => m_len,
         :value => m_val,
         :channel => m_ch,
     )
+    for k in ex_order
+        k in names(markers) && continue
+        markers[!, k] = [isnothing(get(d, k, nothing)) ? missing : d[k] for d in m_extra]
+    end
     sort!(markers, :start)
     # non-integer sampling rate (stored rounded): place the markers on the stored time axis, so that a
     # marker at sample s of the file stays at sample s of the data

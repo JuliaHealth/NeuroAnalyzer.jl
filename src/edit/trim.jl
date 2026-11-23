@@ -170,7 +170,10 @@ function trim!(
         )
         # mark the position of the cut (the last sample if the end was removed)
         s_cut = min(s1, size(obj.data, 2))
-        push!(obj.markers, ("NA", s2t(s_cut, fs), 0.0, "DELETED", 0))
+        _markers_push!(
+            obj.markers,
+            (type = "boundary", start = s2t(s_cut, fs), length = 0.0, value = "DELETED", channel = String[]),
+        )
         obj.markers = sort(unique(obj.markers), :start)
     end
 

@@ -68,6 +68,9 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
         ),
     )
 
+    # marker channels saved as numbers by older versions → channel labels
+    _markers_upgrade!(obj)
+
     _info(
         "Loaded: " *
         uppercase(obj.header.recording[:data_type]) *

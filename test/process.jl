@@ -1092,7 +1092,7 @@ function _nirs_sim(n0)
     fs = sr(n)
     onsets = 30:45:330
     for o in onsets
-        add_marker!(n; id = "stim", start = Float64(o), len = 15.0, value = "task", ch = 0)
+        add_marker!(n; type = "stim", start = Float64(o), len = 15.0, value = "task")
     end
     h = nirs_hrf(; fs = fs).h
     u = zeros(epoch_len(n))
@@ -1136,7 +1136,7 @@ nirs_ssr!(n_s2)
 @test n_s2.data == n_s.data
 
 @info "Test: average_epochs() (NIRS)"
-e_n = epoch(n_s; marker = "task", offset = 5, ep_len = 30)
+e_n = epoch(n_s; marker_value = "task", offset = 5, ep_len = 30)
 a_n = average_epochs(e_n; bl = (-5, 0))
 @test datatype(a_n) == "nirs"
 @test nepochs(a_n) == nepochs(e_n) + 1

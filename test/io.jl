@@ -706,6 +706,9 @@ n = import_nwb(nwb)
 @test n.header.recording[:recording_date] == "2020-01-01"
 @test n.markers[!, :start] == [0.01]
 @test n.markers[!, :value] == ["a"]
+@test n.markers[!, :type] == ["stim"]
+# other columns of events.tsv are kept (BIDS value as bids_value)
+@test n.markers[!, :trial_type] == ["stim"] && n.markers[!, :bids_value] == ["a"]
 @test_throws ArgumentError import_nwb(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
 
 @info "Test: import_recording()"
@@ -972,6 +975,22 @@ eeg2 = import_fiff(f; clean_labels = false)
 @test nrow(eeg2.locs) == nrow(eeg_tmp.locs)
 # head radius of 95 mm
 @test 0.07 < maximum(eeg2.locs[!, :loc_radius_sph]) < 0.12
+# marker channels ↔ channels of MNE annotations (also long labels); marker types and values are
+# restored from the annotation extras (the description of a BAD marker is BAD_<value>)
+eeg_m = add_marker(eeg_tmp; type = "BAD", start = 1.0, len = 1.0, value = "x",
+                   ch = ["Fp1_very_long_channel_label", "F3"])
+add_marker!(eeg_m; type = "stim", start = 2.0, value = "s1")
+eeg_m.markers[!, :rt] = [missing, 0.25]
+export_fiff(eeg_m; file_name = f, overwrite = true)
+eeg2 = import_fiff(f; clean_labels = false)
+@test eeg2.markers[!, :channel] == eeg_m.markers[!, :channel]
+@test eeg2.markers[!, :type] == ["BAD", "stim"]
+@test eeg2.markers[!, :value] == ["x", "s1"]
+@test isequal(eeg2.markers[!, :rt], [missing, 0.25])
+@test NeuroAnalyzer._fiff_an_desc("BAD", "x") == "BAD_x"
+@test NeuroAnalyzer._fiff_an_desc("BAD", "BAD_ACQ") == "BAD_ACQ"
+@test NeuroAnalyzer._fiff_an_desc("boundary", "DELETED") == "BAD boundary"
+@test NeuroAnalyzer._fiff_an_desc("stim", "") == "stim"
 # helpers
 @test NeuroAnalyzer._fiff_short_names(["A"^20, "A"^20 * "x", "B"]) ==
       ["A"^15, "A"^13 * "-1", "B"]

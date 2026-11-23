@@ -407,11 +407,11 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
     # stimulus groups (stim1 … stimN): one group per condition; data rows: onset, duration,
     # value (and optional additional columns)
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
     for s_idx = 1:stim_n
         s_id = "stim$s_idx"
@@ -424,15 +424,10 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         # an empty stimulus group (no events)
         (isempty(stim_data) || size(stim_data, 1) < 2) && continue
         for e_idx in axes(stim_data, 2)
-            push!(markers, ("", stim_data[1, e_idx], stim_data[2, e_idx], stim_name, 0))
+            push!(markers, ("stim", stim_data[1, e_idx], stim_data[2, e_idx], stim_name, String[]))
         end
     end
     sort!(markers, :start)
-    # unique IDs: one per stimulus name
-    value = unique(markers[!, :value])
-    for idx1 = 1:DataFrames.nrow(markers), idx2 in eachindex(value)
-        markers[idx1, :value] == value[idx2] && (markers[idx1, :id] = string(idx2))
-    end
 
     # auxiliary measurements
     aux_n = 0

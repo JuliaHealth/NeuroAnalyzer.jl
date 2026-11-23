@@ -99,7 +99,7 @@ Each string (the annotation channel of one data record) is parsed into time-stam
 
 # Notes
 
-- IDs are assigned per unique event label (matching events share the same numeric ID)
+- the marker type is `"annotation"`, or a standard type recognized in the text (e.g. `"BAD_ACQ_SKIP"`: `"BAD"`, see `_marker_type()`)
 - Non-ASCII labels trigger a warning but are not dropped
 """
 function _a2df(annotations::Vector{String})::DataFrame
@@ -125,26 +125,21 @@ function _a2df(annotations::Vector{String})::DataFrame
     end
 
     isempty(a_event) && return DataFrame(
-        :id      => String[],
+        :type    => String[],
         :start   => Float64[],
         :length  => Float64[],
         :value   => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     all(isascii.(a_event)) || _warn("Unicode labels were not converted.")
 
-    # build numeric IDs: each unique event label gets one integer ID, shared by all occurrences of that label
-    unique_events = unique(a_event)
-    event_id_map = Dict(ev => i for (i, ev) in enumerate(unique_events))
-    id = [event_id_map[ev] for ev in a_event]
-
     return DataFrame(
-        :id      => string.(id),
+        :type    => [_marker_type(String(ev); default = "annotation") for ev in a_event],
         :start   => a_start,
         :length  => a_length,
         :value   => a_event,
-        :channel => zeros(Int64, length(a_event)),
+        :channel => [String[] for _ = 1:length(a_event)],
     )
 end
 
@@ -171,4 +166,316 @@ function _remap_markers(markers::DataFrame, fs::Int64, f::Function)::DataFrame
         end
     end
     return m[keep, :]
+end
+
+# ---------------------------------------------------------------------------
+# marker channels: every marker holds a vector of channel labels (`channel` column,
+# `Vector{String}`); an empty vector means that the marker applies to all channels
+
+"""
+    _markers_df()
+
+Return an empty markers table (columns `type`, `start`, `length`, `value`, `channel`).
+"""
+_markers_df()::DataFrame = DataFrame(
+    :type    => String[],
+    :start   => Float64[],
+    :length  => Float64[],
+    :value   => String[],
+    :channel => Vector{String}[],
+)
+
+"""
+    _mrk_ch(idx, clabels)
+
+Channel labels of a marker given as a channel number (`0`, or a number outside `clabels`: all channels).
+
+# Arguments
+
+- `idx::Integer`: channel number
+- `clabels::Vector{String}`: channel labels
+
+# Returns
+
+- `Vector{String}`: `[clabels[idx]]`, or `String[]` (all channels)
+"""
+_mrk_ch(idx::Integer, clabels::Vector{String})::Vector{String} =
+    idx in eachindex(clabels) ? [clabels[idx]] : String[]
+
+"""
+    _mrk_ch(ch, clabels)
+
+Validate the channel(s) of a marker given as labels.
+
+# Arguments
+
+- `ch::Union{String, Vector{String}}`: channel label(s); `""` or `String[]`: all channels
+- `clabels::Vector{String}`: channel labels of the object
+
+# Returns
+
+- `Vector{String}`: unique channel labels (`String[]`: all channels)
+"""
+function _mrk_ch(ch::Union{String, Vector{String}}, clabels::Vector{String})::Vector{String}
+    ch = ch isa String ? (ch == "" ? String[] : [ch]) : unique(ch)
+    for c in ch
+        c in clabels || throw(ArgumentError("Channel $c does not exist."))
+    end
+    return ch
+end
+
+# string of the marker channels (for printing and CSV export)
+_mrk_ch_str(ch::Vector{String})::String = isempty(ch) ? "" : join(ch, ";")
+
+"""
+    _markers_relabel!(markers, old, new)
+
+Rename the marker channels after channel labels were changed (`old[i]` → `new[i]`).
+"""
+function _markers_relabel!(
+    markers::DataFrame,
+    old::AbstractVector{<:AbstractString},
+    new::AbstractVector{<:AbstractString},
+)::Nothing
+    DataFrames.nrow(markers) == 0 && return nothing
+    length(old) == length(new) ||
+        throw(ArgumentError("old and new labels must have the same length."))
+    m = Dict(String(o) => String(n) for (o, n) in zip(old, new) if o != n)
+    isempty(m) && return nothing
+    # new vectors are assigned: rows may share one vector object
+    markers[!, :channel] = Vector{String}[[get(m, c, c) for c in ch] for ch in markers[!, :channel]]
+    return nothing
+end
+
+"""
+    _markers_delete_channels!(markers, del)
+
+Remove deleted channels from the marker channels. A marker whose channels were all deleted is removed (otherwise its empty channel list would mean all channels); markers of all channels are kept.
+
+# Returns
+
+- `Int64`: number of removed markers
+"""
+function _markers_delete_channels!(
+    markers::DataFrame,
+    del::AbstractVector{<:AbstractString},
+)::Int64
+    (DataFrames.nrow(markers) == 0 || isempty(del)) && return 0
+    del = Set(String.(del))
+    drop = falses(DataFrames.nrow(markers))
+    # new vectors are assigned: rows may share one vector object
+    new_ch = Vector{String}[]
+    for (idx, ch) in enumerate(markers[!, :channel])
+        nch = String[c for c in ch if !(c in del)]
+        drop[idx] = !isempty(ch) && isempty(nch)
+        push!(new_ch, nch)
+    end
+    markers[!, :channel] = new_ch
+    any(drop) && deleteat!(markers, findall(drop))
+    return count(drop)
+end
+
+"""
+    _markers_upgrade!(obj)
+
+Convert the markers of an object saved by an older version of NeuroAnalyzer: the `id` column is renamed to `type` and its values are mapped to the standard marker types (see `_marker_type()`), channel numbers (`0` = all channels) are converted to channel labels.
+"""
+function _markers_upgrade!(obj::NeuroAnalyzer.NEURO)::Nothing
+    # marker `id` (before v0.26.12): free-form → standard marker type
+    if "id" in names(obj.markers) && !("type" in names(obj.markers))
+        DataFrames.rename!(obj.markers, :id => :type)
+        obj.markers[!, :type] = String[
+            _marker_type_old(string(t), string(v)) for
+            (t, v) in zip(obj.markers[!, :type], obj.markers[!, :value])
+        ]
+    end
+    "channel" in names(obj.markers) || return nothing
+    eltype(obj.markers[!, :channel]) <: AbstractVector{<:AbstractString} && return nothing
+    clabels = labels(obj)
+    obj.markers[!, :channel] = Vector{String}[
+        _mrk_ch(Int64(c), clabels) for c in obj.markers[!, :channel]
+    ]
+    return nothing
+end
+
+"""
+    _markers_map_channels!(markers, m)
+
+Replace the marker channels using the map `m` (label → labels of the channels derived from it, e.g. montage channels); labels not in `m` are kept. A marker whose channels map to no channel is removed; markers of all channels are kept.
+
+# Returns
+
+- `Int64`: number of removed markers
+"""
+function _markers_map_channels!(markers::DataFrame, m::Dict{String, Vector{String}})::Int64
+    DataFrames.nrow(markers) == 0 && return 0
+    drop = falses(DataFrames.nrow(markers))
+    new_ch = Vector{String}[]
+    for (idx, ch) in enumerate(markers[!, :channel])
+        nch = unique(reduce(vcat, [get(m, c, [c]) for c in ch]; init = String[]))
+        drop[idx] = !isempty(ch) && isempty(nch)
+        push!(new_ch, nch)
+    end
+    markers[!, :channel] = new_ch
+    any(drop) && deleteat!(markers, findall(drop))
+    return count(drop)
+end
+
+# ---------------------------------------------------------------------------
+# marker types: `type` is the kind of marker, `value` its code or condition (used by `epoch()`)
+
+"""Standard marker types (the `type` column of `obj.markers`)."""
+const _MARKER_TYPES = ["stim", "response", "annotation", "BAD", "boundary", "epoch", "other"]
+
+"""
+    _marker_type(t; <keyword arguments>)
+
+Map a marker type name used by a file format or another program to a standard marker type (`_MARKER_TYPES`).
+
+| standard type | recognized names (case-insensitive) |
+| ------------- | ----------------------------------- |
+| `stim`        | stim, stimulus, trigger, event, mrk, marker |
+| `response`    | response, resp, button, keypress |
+| `annotation`  | annotation, comment, note |
+| `BAD`         | BAD, BAD_*, BAD … (e.g. MNE `BAD_ACQ_SKIP`) |
+| `boundary`    | boundary, new segment, EDGE, EDGE boundary, BAD boundary, deleted |
+| `epoch`       | epoch |
+
+# Arguments
+
+- `t::AbstractString`: type name
+- `default::String="other"`: type of names that are not recognized
+
+# Returns
+
+- `String`
+"""
+function _marker_type(t::AbstractString; default::String = "other")::String
+    tl = lowercase(strip(t))
+    tl in ("stim", "stimulus", "trigger", "event", "mrk", "marker") && return "stim"
+    tl in ("response", "resp", "button", "keypress") && return "response"
+    tl in ("annotation", "comment", "note") && return "annotation"
+    tl in ("boundary", "new segment", "edge", "edge boundary", "bad boundary", "deleted") &&
+        return "boundary"
+    tl == "epoch" && return "epoch"
+    occursin(r"^bad([_\s]|$)", tl) && return "BAD"
+    return default
+end
+
+# marker `id` of objects saved before v0.26.12 → marker type
+function _marker_type_old(id::String, value::String)::String
+    # boundary markers placed by trim() (id "NA", value "DELETED")
+    value == "DELETED" && return "boundary"
+    t = _marker_type(id; default = "")
+    isempty(t) || return t
+    # numeric IDs (one per annotation text: EDF+, DigiTrack, SNIRF, NIRS) and other names
+    return occursin(r"^\d+$", id) ? "stim" : "other"
+end
+
+"""
+    _gdf_marker_type(code)
+
+Standard marker type of a GDF event code (BioSig `eventcodes.txt`): artifacts (`0x0101`–`0x01FF`): `BAD`, start of a new segment (`0x7FFE`): `boundary`, user-specific events and trial/cue codes (`0x0001`–`0x00FF`, `0x0300`–`0x03FF`): `stim`, other codes (e.g. sleep stages, ECG waves): `annotation`.
+"""
+function _gdf_marker_type(code::UInt16)::String
+    c = code & 0x7fff
+    0x0101 <= c <= 0x01ff && return "BAD"
+    c == 0x7ffe && return "boundary"
+    (0x0001 <= c <= 0x00ff || 0x0300 <= c <= 0x03ff) && return "stim"
+    return "annotation"
+end
+
+"""
+    _fiff_an_desc(type, value)
+
+Description of the MNE annotation of a marker (`export_fiff()`): the value (or the type, if the value is empty); `BAD` markers: `BAD_<value>` (unless the value starts with `BAD`), `boundary` markers: `BAD boundary` (MNE-Python treats both as bad segments).
+"""
+function _fiff_an_desc(type::String, value::String)::String
+    type == "boundary" && return "BAD boundary"
+    if type == "BAD"
+        startswith(uppercase(value), "BAD") && return value
+        return isempty(value) ? "BAD" : "BAD_" * value
+    end
+    return isempty(value) ? type : value
+end
+
+# ---------------------------------------------------------------------------
+# extra marker columns: a markers table has the 5 fixed columns (`type`, `start`, `length`,
+# `value`, `channel`) followed by optional extra columns (e.g. `trial_type`, `response_time`
+# from BIDS events.tsv); rows added by NeuroAnalyzer get `missing` in the extra columns
+
+# names of the fixed marker columns
+const _MARKER_FIXED = ["type", "start", "length", "value", "channel"]
+
+# names of the extra columns of a markers table
+_marker_extra_cols(markers::DataFrame)::Vector{String} = setdiff(names(markers), _MARKER_FIXED)
+
+"""
+    _markers_push!(markers, row)
+
+Append a marker (`NamedTuple` with the fixed columns) to `markers`; extra columns get `missing`.
+"""
+function _markers_push!(markers::DataFrame, row::NamedTuple)::Nothing
+    push!(markers, row; cols = :subset, promote = true)
+    return nothing
+end
+
+"""
+    _markers_append!(markers, new)
+
+Append the rows of `new` to `markers`; columns missing in either table get `missing`.
+"""
+function _markers_append!(markers::DataFrame, new::DataFrame)::Nothing
+    append!(markers, new; cols = :union, promote = true)
+    return nothing
+end
+
+"""
+    _bids_events(events, fs)
+
+Markers from a BIDS `events.tsv` table.
+
+- `start`, `length`: `onset` and `duration` (seconds), or `sample` (0-based) / `fs`
+- `type`, `value`: a `trial_type` that names a marker type (e.g. `stimulus`, `response`, `BAD_…`, see `_marker_type()`) gives the type and the value is the event code (`value`); a condition (e.g. `face`) gives type `stim` and the value is the condition (used by `epoch()`); without `trial_type` the type is `stim` and the value is the event code
+- all other columns are kept as extra columns (`value` as `bids_value`)
+
+# Arguments
+
+- `events::DataFrame`: events table (`n/a` read as `missing`)
+- `fs::Real`: sampling rate in Hz
+
+# Returns
+
+- `DataFrame`: markers
+"""
+function _bids_events(events::DataFrame, fs::Real)::DataFrame
+    n = DataFrames.nrow(events)
+    cols = names(events)
+    col(c, default) = c in cols ? [ismissing(x) ? default : x for x in events[!, c]] : fill(default, n)
+    start = if "onset" in cols
+        Float64.(col("onset", 0.0))
+    else
+        Float64.(col("sample", 0)) ./ fs
+    end
+    len = Float64.(col("duration", 0.0))
+    tt = string.(col("trial_type", ""))
+    ev = string.(col("value", ""))
+    mtype = [_marker_type(t; default = "stim") for t in tt]
+    mvalue = [
+        (isempty(t) || _marker_type(t; default = "") != "") ? (isempty(v) ? t : v) : t for
+        (t, v) in zip(tt, ev)
+    ]
+    markers = DataFrame(
+        :type => mtype,
+        :start => start,
+        :length => len,
+        :value => mvalue,
+        :channel => [String[] for _ = 1:n],
+    )
+    for c in cols
+        c in ("onset", "duration") && continue
+        name = c in _MARKER_FIXED ? "bids_" * c : c
+        markers[!, name] = events[!, c]
+    end
+    return markers
 end

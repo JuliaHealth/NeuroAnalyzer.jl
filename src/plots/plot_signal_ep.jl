@@ -369,7 +369,7 @@ function plot_ep(
             isempty(obj.markers) ? nothing :
             GLMakie.textlabel!(
                 ax1, markers_ypos;
-                text = string.(obj.markers[!, :id], " / ", obj.markers[!, :value]),
+                text = string.(obj.markers[!, :type], " / ", obj.markers[!, :value]),
                 text_align = (:left, :center),
                 fontsize = 8,
                 cornerradius = 0,

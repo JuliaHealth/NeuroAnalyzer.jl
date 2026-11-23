@@ -116,11 +116,11 @@ function import_ncs(file_name::String)::NeuroAnalyzer.NEURO
         "HP: $AmpLowCut Hz, LP: $AmpHiCut Hz" : ""
 
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     # -------------------------------------------------------------------- #

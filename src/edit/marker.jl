@@ -10,28 +10,58 @@ export channel2marker!
 export add_markers
 export add_markers!
 
-# Expected column schema for a markers DataFrame
-const _MARKER_COLS = ["id", "start", "length", "value", "channel"]
 
 """
     _check_marker_cols(markers)
 
-Throw `ArgumentError` if `markers` does not have the expected column schema.
+Throw `ArgumentError` if `markers` does not start with the fixed marker columns (`type`, `start`, `length`, `value`, `channel`; `id` instead of `type` before v0.26.12); extra columns may follow.
 """
 function _check_marker_cols(markers::DataFrame)::Nothing
-    names(markers) == _MARKER_COLS ||
+    n = names(markers)
+    k = length(_MARKER_FIXED)
+    (length(n) >= k && (n[1:k] == _MARKER_FIXED || n[1:k] == ["id"; _MARKER_FIXED[2:end]])) ||
         throw(
             ArgumentError(
-                "Markers DataFrame must have columns: $(_MARKER_COLS); got $(names(markers)).",
+                "Markers DataFrame must start with columns: $(_MARKER_FIXED) (extra columns may follow); got $n.",
             ),
         )
     return nothing
 end
 
 """
+    _marker_channels(markers, clabels)
+
+Return a copy of `markers` with the `channel` column as vectors of channel labels (`String[]`: all channels). Accepted input: vectors of labels, strings (labels separated by `;`, `""`: all channels, as written by `export_markers()`) or channel numbers (`0`: all channels). Channel labels must exist in `clabels`.
+"""
+function _marker_channels(markers::DataFrame, clabels::Vector{String})::DataFrame
+    m = copy(markers)
+    # `id` column of NeuroAnalyzer before v0.26.12
+    if "id" in names(m)
+        DataFrames.rename!(m, :id => :type)
+        m[!, :type] = String[_marker_type_old(string(t), string(v)) for (t, v) in zip(m[!, :type], m[!, :value])]
+    end
+    m[!, :channel] = Vector{String}[
+        if c isa Integer
+            0 <= c <= length(clabels) ||
+                throw(ArgumentError("Marker channel $c must be in [0, $(length(clabels))]."))
+            _mrk_ch(c, clabels)
+        elseif c isa AbstractString
+            _mrk_ch(String[strip(x) for x in split(c, ';') if strip(x) != ""], clabels)
+        elseif c isa AbstractVector
+            _mrk_ch(String.(c), clabels)
+        elseif ismissing(c)
+            String[]
+        else
+            throw(ArgumentError("Marker channel must be a label, a vector of labels or a channel number; got $(typeof(c))."))
+        end for c in markers[!, :channel]
+    ]
+    return m
+end
+
+"""
     view_marker(obj)
 
-Print a formatted table of all markers.
+Print a formatted table of all markers (extra columns as `name=value`).
 
 # Arguments
 
@@ -46,20 +76,23 @@ function view_marker(obj::NeuroAnalyzer.NEURO)::Nothing
 
     println(
         rpad("n", 5) *
-        rpad("ID", 24) *
+        rpad("type", 14) *
         rpad("start [s]", 12) *
         rpad("length [s]", 12) *
         rpad("value", 24) *
         rpad("channel", 1),
     )
+    ex = _marker_extra_cols(obj.markers)
     for i = 1:DataFrames.nrow(obj.markers)
         println(
             rpad(string(i), 5) *
-            rpad("'" * obj.markers[i, :id] * "'", 24) *
+            rpad(obj.markers[i, :type], 14) *
             rpad(string(round(obj.markers[i, :start]; digits = 3)), 12) *
             rpad(string(round(obj.markers[i, :length]; digits = 3)), 12) *
             rpad("'" * obj.markers[i, :value] * "'", 24) *
-            rpad(string(obj.markers[i, :channel]), 1),
+            (isempty(obj.markers[i, :channel]) ? "all" : _mrk_ch_str(obj.markers[i, :channel])) *
+            # extra columns: name=value
+            join(["  $c=$(obj.markers[i, c])" for c in ex if !ismissing(obj.markers[i, c])]),
         )
     end
     return nothing
@@ -121,11 +154,11 @@ Append a new marker.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `id::String`: marker ID
+- `type::String="stim"`: marker type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
 - `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
-- `ch::Int64=0`: channel number; `0` means the marker applies to all channels
+- `ch::Union{String, Vector{String}}=""`: channel label(s); `""` (or `String[]`) means the marker applies to all channels
 
 # Returns
 
@@ -133,14 +166,14 @@ Append a new marker.
 """
 function add_marker(
     obj::NeuroAnalyzer.NEURO;
-    id::String,
+    type::String = "stim",
     start::Real,
     len::Real = 0.0,
     value::String,
-    ch::Int64 = 0,
+    ch::Union{String, Vector{String}} = "",
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    add_marker!(obj_new; id = id, start = start, len = len, value = value, ch = ch)
+    add_marker!(obj_new; type = type, start = start, len = len, value = value, ch = ch)
 
     return obj_new
 end
@@ -153,11 +186,11 @@ Add a marker in-place.
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `id::String`: marker ID
+- `type::String="stim"`: marker type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
 - `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
-- `ch::Int64=0`: channel number; `0` means the marker applies to all channels
+- `ch::Union{String, Vector{String}}=""`: channel label(s); `""` (or `String[]`) means the marker applies to all channels
 
 # Returns
 
@@ -165,11 +198,11 @@ Add a marker in-place.
 """
 function add_marker!(
     obj::NeuroAnalyzer.NEURO;
-    id::String,
+    type::String = "stim",
     start::Real,
     len::Real = 0.0,
     value::String,
-    ch::Int64 = 0,
+    ch::Union{String, Vector{String}} = "",
 )::Nothing
     # validate
     start >= 0 || throw(ArgumentError("start must be ≥ 0."))
@@ -178,25 +211,19 @@ function add_marker!(
         throw(ArgumentError("start must be ≤ $(obj.time_pts[end])."))
     start + len <= obj.time_pts[end] ||
         throw(ArgumentError("start + len must be ≤ $(obj.time_pts[end])."))
-    # 0 = marker for all channels
-    0 <= ch <= nchannels(obj) ||
-        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+    # empty = marker for all channels
+    mch = _mrk_ch(ch, labels(obj))
 
-    append!(
+    # extra marker columns get missing
+    _markers_push!(
         obj.markers,
-        DataFrame(
-            :id => id,
-            :start => start,
-            :length => len,
-            :value => value,
-            :channel => ch,
-        ),
+        (type = type, start = Float64(start), length = Float64(len), value = value, channel = mch),
     )
     sort!(obj.markers, :start)
 
     push!(
         obj.history,
-        "add_marker(obj; id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+        "add_marker(obj; type=$type, start=$start, len=$len, value=$value, ch=$(repr(ch)))",
     )
 
     return nothing
@@ -211,11 +238,11 @@ Edit a marker.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64`: marker number to edit
-- `id::String`: marker ID
+- `type::String="stim"`: marker type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
 - `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
-- `ch::Int64=0`: channel number; `0` means the marker applies to all channels
+- `ch::Union{String, Vector{String}}=""`: channel label(s); `""` (or `String[]`) means the marker applies to all channels
 
 # Returns
 
@@ -224,15 +251,15 @@ Edit a marker.
 function edit_marker(
     obj::NeuroAnalyzer.NEURO;
     n::Int64,
-    id::String,
+    type::String = "stim",
     start::Real,
     len::Real = 0.0,
     value::String,
-    ch::Int64 = 0,
+    ch::Union{String, Vector{String}} = "",
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     edit_marker!(
-        obj_new; n = n, id = id, start = start, len = len, value = value, ch = ch,
+        obj_new; n = n, type = type, start = start, len = len, value = value, ch = ch,
     )
 
     return obj_new
@@ -247,11 +274,11 @@ Edit a marker in-place.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `n::Int64`: marker number to edit
-- `id::String`: marker ID
+- `type::String="stim"`: marker type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
 - `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
 - `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
 - `value::String`: marker value
-- `ch::Int64=0`: channel number; `0` means the marker applies to all channels
+- `ch::Union{String, Vector{String}}=""`: channel label(s); `""` (or `String[]`) means the marker applies to all channels
 
 # Returns
 
@@ -260,11 +287,11 @@ Edit a marker in-place.
 function edit_marker!(
     obj::NeuroAnalyzer.NEURO;
     n::Int64,
-    id::String,
+    type::String = "stim",
     start::Real,
     len::Real = 0.0,
     value::String,
-    ch::Int64 = 0,
+    ch::Union{String, Vector{String}} = "",
 )::Nothing
     _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
     start >= 0 || throw(ArgumentError("start must be > 0."))
@@ -276,16 +303,17 @@ function edit_marker!(
 
     nn = size(obj.markers, 1)
     1 <= n <= nn || throw(ArgumentError("n must be in [1, $nn]."))
-    0 <= ch <= nchannels(obj) ||
-        throw(ArgumentError("ch must be in [0, $(nchannels(obj))]."))
+    mch = _mrk_ch(ch, labels(obj))
 
-    obj.markers[n, :] = Dict(
-        :id => id, :start => start, :length => len, :value => value, :channel => ch,
-    )
+    obj.markers[n, :type] = type
+    obj.markers[n, :start] = start
+    obj.markers[n, :length] = len
+    obj.markers[n, :value] = value
+    obj.markers[n, :channel] = mch
     sort!(obj.markers, :start)
     push!(
         obj.history,
-        "edit_marker(obj; n=$n, id=$id, start=$start, len=$len, value=$value, ch=$ch)",
+        "edit_marker(obj; n=$n, type=$type, start=$start, len=$len, value=$value, ch=$(repr(ch)))",
     )
 
     return nothing
@@ -301,7 +329,7 @@ Return a copy of `obj` with events detected in an event channel added as markers
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
 - `v::Real=1.0`: signal value interpreted as an event
-- `id::String`: prefix for generated marker IDs (default: channel name + `"_"`)
+- `type::String="stim"`: marker type
 - `value::String=""`: marker value string (default: channel label)
 
 # Returns
@@ -312,11 +340,11 @@ function channel2marker(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     v::Real = 1.0,
-    id::String = "",
+    type::String = "stim",
     value::String = "",
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    channel2marker!(obj_new; ch = ch, v = v, id = id, value = value)
+    channel2marker!(obj_new; ch = ch, v = v, type = type, value = value)
 
     return obj_new
 end
@@ -331,7 +359,7 @@ Convert an event channel to markers in-place.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
 - `v::Real=1.0`: signal value interpreted as an event
-- `id::String`: prefix for generated marker IDs (default: channel name + `"_"`)
+- `type::String="stim"`: marker type
 - `value::String=""`: marker value string (default: channel label)
 
 # Returns
@@ -342,7 +370,7 @@ function channel2marker!(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
     v::Real = 1.0,
-    id::String = "",
+    type::String = "stim",
     value::String = "",
 )::Nothing
     # resolve channel names to integer indices
@@ -389,16 +417,16 @@ function channel2marker!(
 
     ch_label = labels(obj)[ch]
     ev_desc = fill(value == "" ? ch_label : value, length(ev_start))
-    id_prefix = id == "" ? ch_label * "_" : id
-    ev_id = ["$id_prefix$i" for i in eachindex(ev_start)]
-    ev_ch_v = zeros(Int64, length(ev_start))
+    ev_type = fill(type, length(ev_start))
+    # the events apply to all channels
+    ev_ch_v = [String[] for _ in eachindex(ev_start)]
 
     _info("$(length(ev_start)) events found and added as markers")
 
-    append!(
+    _markers_append!(
         obj.markers,
         DataFrame(
-            :id      => ev_id,
+            :type    => ev_type,
             :start   => ev_start ./ sr(obj),
             :length  => ev_len ./ sr(obj),
             :value   => ev_desc,
@@ -407,7 +435,7 @@ function channel2marker!(
     )
     sort!(obj.markers, :start)
 
-    push!(obj.history, "channel2marker(obj; ch=$ch, v=$v, id=$id, value=$value)")
+    push!(obj.history, "channel2marker(obj; ch=$ch, v=$v, type=$type, value=$value)")
 
     return nothing
 end
@@ -417,7 +445,7 @@ end
 
 Return a copy of `obj` with its marker table replaced by `markers`.
 
-The provided DataFrame must have exactly the columns: `id`, `start`, `length`, `value`, `channel`.
+The provided DataFrame must start with the columns `type`, `start`, `length`, `value`, `channel` (a table with an `id` column instead of `type`, as used by NeuroAnalyzer before v0.26.12, is converted); extra columns (e.g. `trial_type`, `response_time`) may follow and are kept by all marker functions. The `channel` column holds vectors of channel labels (`String[]`: all channels); strings with labels separated by `;` (`""`: all channels, as written by `export_markers()`) and channel numbers (`0`: all channels) are converted.
 
 # Arguments
 
@@ -434,7 +462,7 @@ function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyze
 
     # create new dataset
     obj_tmp         = deepcopy(obj)
-    obj_tmp.markers = markers
+    obj_tmp.markers = _marker_channels(markers, labels(obj))
 
     push!(obj_tmp.history, "add_markers(obj; markers)")
 
@@ -446,7 +474,7 @@ end
 
 Replace `obj`'s marker table in-place.
 
-The provided DataFrame must have exactly the columns: `id`, `start`, `length`, `value`, `channel`.
+The provided DataFrame must start with the columns `type`, `start`, `length`, `value`, `channel` (a table with an `id` column instead of `type`, as used by NeuroAnalyzer before v0.26.12, is converted); extra columns (e.g. `trial_type`, `response_time`) may follow and are kept by all marker functions. The `channel` column holds vectors of channel labels (`String[]`: all channels); strings with labels separated by `;` (`""`: all channels, as written by `export_markers()`) and channel numbers (`0`: all channels) are converted.
 
 # Arguments
 
@@ -459,7 +487,7 @@ The provided DataFrame must have exactly the columns: `id`, `start`, `length`, `
 """
 function add_markers!(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::Nothing
     _check_marker_cols(markers)
-    obj.markers = markers
+    obj.markers = _marker_channels(markers, labels(obj))
     push!(obj.history, "add_markers!(obj; markers)")
 
     return nothing

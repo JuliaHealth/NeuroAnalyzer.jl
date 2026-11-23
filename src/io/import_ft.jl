@@ -77,11 +77,12 @@ function import_ft(
         value = value[keep]
 
         markers = DataFrame(
-            :id => string.(id),
+            # FieldTrip event types (e.g. "trigger", "Stimulus", or the name of a trigger channel)
+            :type => [_marker_type(string(t); default = "stim") for t in id],
             :start => Float64.(start),
             :length => Float64.(duration),
             :value => strip.(string.(value)),
-            :channel => zeros(Int64, length(id)),
+            :channel => [String[] for _ = 1:length(id)],
         )
         _info(
             "Imported: $(DataFrames.nrow(markers)) events; " *
@@ -182,8 +183,8 @@ function import_ft(
         "`import_ft(file_name, type=:events)` and add with `add_markers()`.",
     )
     markers = DataFrame(
-        :id => String[], :start => Float64[],
-        :length => Float64[], :value => String[], :channel => Int64[],
+        :type => String[], :start => Float64[],
+        :length => Float64[], :value => String[], :channel => Vector{String}[],
     )
 
     locs = _initialize_locs()

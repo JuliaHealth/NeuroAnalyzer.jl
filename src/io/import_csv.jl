@@ -92,11 +92,11 @@ function import_csv(
     units = [_ch_units(ch_type[idx]) for idx = 1:ch_n]
 
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     # ------------------------------------------------------------------ #

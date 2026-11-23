@@ -190,8 +190,8 @@ function import_bdf(
     # ------------------------------------------------------------------ #
     markers = if isempty(annotation_channels)
         DataFrame(
-            :id => String[], :start => Float64[],
-            :length => Float64[], :value => String[], :channel => Int64[],
+            :type => String[], :start => Float64[],
+            :length => Float64[], :value => String[], :channel => Vector{String}[],
         )
     else
         m = _a2df(annotations)

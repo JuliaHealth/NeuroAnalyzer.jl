@@ -38,11 +38,11 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
     end
 
     markers = DataFrame(
-        :id => String[],
+        :type => String[],
         :start => Float64[],
         :length => Float64[],
         :value => String[],
-        :channel => Int64[],
+        :channel => Vector{String}[],
     )
 
     time_pts = _time_axis(size(data, 2) * size(data, 3), sampling_rate)

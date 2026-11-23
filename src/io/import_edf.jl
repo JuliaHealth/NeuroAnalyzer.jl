@@ -183,11 +183,11 @@ function import_edf(
     # ------------------------------------------------------------------ #
     markers = if isempty(annotation_channels)
         DataFrame(
-            :id => String[],
+            :type => String[],
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Vector{String}[],
         )
     else
         m = _a2df(annotations)

@@ -164,13 +164,13 @@ delete_marker!(eeg_mrk; n = 40)
 @test nrow(eeg_mrk.markers) == 44
 
 @info "Test: add_marker()"
-add_marker!(eeg_mrk; id = "test", start = 1988, len = 1, value = "test", ch = 0)
+add_marker!(eeg_mrk; type = "test", start = 1988, len = 1, value = "test")
 @test nrow(eeg_mrk.markers) == 45
 
 @info "Test: edit_marker()"
-@test eeg_mrk.markers[45, :id] == "test"
-edit_marker!(eeg_mrk; n = 45, id = "TEST", start = 1989, len = 1, value = "test", ch = 0)
-@test eeg_mrk.markers[45, :id] == "TEST"
+@test eeg_mrk.markers[45, :type] == "test"
+edit_marker!(eeg_mrk; n = 45, type = "TEST", start = 1989, len = 1, value = "test")
+@test eeg_mrk.markers[45, :type] == "TEST"
 
 @info "Test: channel2marker()"
 @test nrow(eeg_mrk.markers) == 45
@@ -180,11 +180,11 @@ idx = getindex.(findall(eeg_mrk.data[28, :, :] .== maximum(eeg_mrk.data[28, :, :
 eeg_mrk.data[28, idx, :] .= 1.0
 idx = getindex.(findall(eeg_mrk.data[28, :, :] .!= 1.0), 1)
 eeg_mrk.data[28, idx, :] .= 0.0
-channel2marker!(eeg_mrk; ch = "Mark2", id = "mrk")
+channel2marker!(eeg_mrk; ch = "Mark2", type = "stim")
 @test nrow(eeg_mrk.markers) == 1094
 
 @info "Test: epoch()"
-eeg_mrk2 = epoch(eeg_mrk; marker = "Mark2", offset = 0.2, ep_len = 1.2)
+eeg_mrk2 = epoch(eeg_mrk; marker_value = "Mark2", offset = 0.2, ep_len = 1.2)
 @test size(eeg_mrk2) == (29, 240, 1049)
 # each epoch contains its marker at the offset (other markers inside the epoch are kept)
 m_tmp = eeg_mrk2.markers[eeg_mrk2.markers.value .== "Mark2", :]
@@ -400,14 +400,16 @@ v = vch(e10; f = "Cz - (C3 + C4 + Fz + Pz) / 4")
 
 @info "Test: markers"
 mrk = DataFrame(
-    :id => ["a", "b"],
+    :type => ["a", "b"],
     :start => [1.0, 12.5],
     :length => [0.0, 0.5],
     :value => ["x", "y"],
     :channel => [0, 0],
 )
 e_tmp = add_markers(eeg; markers = mrk)
-@test e_tmp.markers == mrk
+# channel numbers are converted to labels (0: all channels = empty vector)
+@test e_tmp.markers[!, 1:4] == mrk[!, 1:4]
+@test e_tmp.markers[!, :channel] == [String[], String[]]
 @test isempty(eeg.markers)
 add_markers!(e_tmp; markers = mrk[1:1, :])
 @test nrow(e_tmp.markers) == 1
@@ -424,16 +426,177 @@ out = mktemp() do path, io
 end
 @test occursin("'x'", out) && occursin("12.5", out)
 @test_throws ArgumentError view_marker(eeg)
-e_tmp = add_marker(e_tmp; id = "c", start = 5.0, value = "z")
+e_tmp = add_marker(e_tmp; type = "c", start = 5.0, value = "z")
 # markers are kept sorted by start
 @test e_tmp.markers[!, :value] == ["x", "z", "y"]
-@test_throws ArgumentError add_marker(e_tmp; id = "c", start = -1.0, value = "z")
-@test_throws ArgumentError add_marker(e_tmp; id = "c", start = 1e6, value = "z")
+@test_throws ArgumentError add_marker(e_tmp; type = "c", start = -1.0, value = "z")
+@test_throws ArgumentError add_marker(e_tmp; type = "c", start = 1e6, value = "z")
 e_tmp2 = delete_marker(e_tmp; n = 2)
 @test e_tmp2.markers[!, :value] == ["x", "y"]
 @test_throws ArgumentError delete_marker(e_tmp; n = 9)
-e_tmp2 = edit_marker(e_tmp; n = 1, id = "a", start = 20.0, value = "x2")
+e_tmp2 = edit_marker(e_tmp; n = 1, type = "a", start = 20.0, value = "x2")
 @test e_tmp2.markers[!, :value] == ["z", "y", "x2"]
+# marker channels: labels (empty vector = all channels)
+@test e_tmp.markers[!, :channel] == [String[], String[], String[]]
+e_tmp2 = add_marker(e_tmp; type = "BAD", start = 0.5, len = 1.0, value = "", ch = "Fp1")
+@test e_tmp2.markers[1, :channel] == ["Fp1"]
+e_tmp2 = add_marker(e_tmp; type = "BAD", start = 0.5, len = 1.0, value = "", ch = ["Fp1", "F7"])
+@test e_tmp2.markers[1, :channel] == ["Fp1", "F7"]
+@test_throws ArgumentError add_marker(e_tmp; type = "c", start = 2.0, value = "z", ch = "XX")
+e_tmp3 = edit_marker(e_tmp2; n = 1, type = "BAD", start = 0.5, len = 1.0, value = "", ch = "O1")
+@test e_tmp3.markers[1, :channel] == ["O1"]
+out = mktemp() do path, io
+    redirect_stdout(io) do
+        return view_marker(e_tmp2)
+    end
+    flush(io)
+    return read(path, String)
+end
+@test occursin("Fp1;F7", out) && occursin("all", out)
+# deleting channels: removed from the markers; a marker of deleted channels only is removed
+e_tmp3 = add_marker(e_tmp2; type = "BAD", start = 3.0, len = 1.0, value = "", ch = "F7")
+e_del = delete_channel(e_tmp3; ch = "F7")
+@test nrow(e_del.markers) == nrow(e_tmp3.markers) - 1
+@test e_del.markers[1, :channel] == ["Fp1"]
+@test count(isempty, e_del.markers[!, :channel]) == 3
+# markers follow renamed channels; rows do not share their vectors
+e_ren = rename_channel(e_tmp3; ch = "Fp1", name = "FP1")
+@test e_ren.markers[1, :channel] == ["FP1", "F7"]
+@test e_tmp3.markers[1, :channel] == ["Fp1", "F7"]
+e_ren = add_label(e_tmp3; clabels = uppercase.(labels(e_tmp3)))
+@test e_ren.markers[1, :channel] == ["FP1", "F7"]
+# referencing appends a suffix to the labels
+e_ref = reference_avg(e_tmp3)
+@test e_ref.markers[1, :channel] == ["Fp1-avg", "F7-avg"]
+# montage: markers move to the montage channels using the channel
+e_mon = reference_custom(e_tmp3; ref_list = ["Fp1-F7", "F7-T3", "O1-O2"], ref_name = "bip")
+@test e_mon.markers[1, :channel] == ["Fp1-F7", "F7-T3"]
+@test e_mon.markers[3, :channel] == ["Fp1-F7", "F7-T3"]
+@test count(isempty, e_mon.markers[!, :channel]) == 3
+e_mon = reference_custom(e_tmp3; ref_list = ["O1-O2"], ref_name = "bip")
+@test nrow(e_mon.markers) == 3
+# add_markers(): labels separated by ";" (as written by export_markers()) and channel numbers
+mrk2 = DataFrame(:type => ["a", "b", "c"], :start => [1.0, 2.0, 3.0], :length => zeros(3),
+                 :value => ["x", "y", "z"], :channel => ["", "Fp1;F7", "O1"])
+@test add_markers(eeg; markers = mrk2).markers[!, :channel] == [String[], ["Fp1", "F7"], ["O1"]]
+mrk2[!, :channel] = [0, 1, 2]
+@test add_markers(eeg; markers = mrk2).markers[!, :channel] == [String[], [labels(eeg)[1]], [labels(eeg)[2]]]
+mrk2[!, :channel] = [0, 1, 999]
+@test_throws ArgumentError add_markers(eeg; markers = mrk2)
+# export_markers() → CSV → add_markers() round trip
+f_tmp = tempname() * ".csv"
+export_markers(e_tmp3; file_name = f_tmp)
+m_csv = NeuroAnalyzer.CSV.read(
+    f_tmp,
+    DataFrame;
+    types = Dict(:type => String, :value => String, :channel => String),
+)
+@test add_markers(eeg; markers = m_csv).markers[!, :channel] == e_tmp3.markers[!, :channel]
+# import_markers(): exact round trip (also extra columns)
+e_rt = deepcopy(e_tmp3)
+e_rt.markers[!, :rt] = [missing, 0.5, missing, 0.25, missing]
+export_markers(e_rt; file_name = f_tmp, overwrite = true)
+m_imp = import_markers(f_tmp)
+@test isequal(m_imp, e_rt.markers)
+@test isequal(add_markers(eeg; markers = m_imp).markers, e_rt.markers)
+rm(f_tmp)
+# BIDS events.tsv: onset/duration in seconds, the other columns are kept
+f_tsv = tempname() * "_events.tsv"
+write(f_tsv, "onset\tduration\ttrial_type\tvalue\tresponse_time\n" *
+             "12.5\t0\tface\t71\t0.512\n2.0\tn/a\tresponse\t1\tn/a\n")
+m_bids = import_markers(f_tsv)
+@test m_bids[!, :start] == [2.0, 12.5] && m_bids[!, :length] == [0.0, 0.0]
+@test m_bids[!, :type] == ["response", "stim"]
+@test m_bids[!, :value] == ["1", "face"]
+@test m_bids[!, :bids_value] == ["1", "71"] && isequal(m_bids[!, :response_time], [missing, 0.512])
+@test nrow(add_markers(eeg; markers = m_bids).markers) == 2
+# events with sample numbers only (0-based) need the sampling rate
+# codes keep their leading zeros
+write(f_tsv, "onset\tvalue\n1.0\t001\n")
+@test import_markers(f_tsv)[!, :value] == ["001"]
+write(f_tsv, "sample\tvalue\n256\tA\n")
+@test_throws ArgumentError import_markers(f_tsv)
+@test import_markers(f_tsv; fs = 256)[!, :start] == [1.0]
+rm(f_tsv)
+# CSV of NeuroAnalyzer before v0.26.12: id instead of type, channel numbers
+f_old = tempname() * ".csv"
+write(f_old, "id,start,length,value,channel\nmrk,1.0,0.0,s1,0\nNA,2.0,0.0,DELETED,2\n")
+m_old = import_markers(f_old)
+@test m_old[!, :type] == ["stim", "boundary"]
+@test add_markers(eeg; markers = m_old).markers[!, :channel] == [String[], [labels(eeg)[2]]]
+write(f_old, "a,b\n1,2\n")
+@test_throws ArgumentError import_markers(f_old)
+rm(f_old)
+@test_throws ArgumentError import_markers("no_such_file.csv")
+# objects saved with channel numbers are converted on loading
+e_old = deepcopy(e_tmp)
+e_old.markers[!, :channel] = [0, 2, 0]
+NeuroAnalyzer._markers_upgrade!(e_old)
+@test e_old.markers[!, :channel] == [String[], [labels(eeg)[2]], String[]]
+# marker types: names used by formats and programs → standard types
+@test NeuroAnalyzer._marker_type("Stimulus") == "stim"
+@test NeuroAnalyzer._marker_type("Response") == "response"
+@test NeuroAnalyzer._marker_type("Comment") == "annotation"
+@test NeuroAnalyzer._marker_type("New Segment") == "boundary"
+@test NeuroAnalyzer._marker_type("BAD boundary") == "boundary"
+@test NeuroAnalyzer._marker_type("BAD_ACQ_SKIP") == "BAD"
+@test NeuroAnalyzer._marker_type("Badania") == "other"
+@test NeuroAnalyzer._marker_type("SyncStatus"; default = "stim") == "stim"
+@test NeuroAnalyzer._gdf_marker_type(0x0101) == "BAD"
+@test NeuroAnalyzer._gdf_marker_type(0x7ffe) == "boundary"
+@test NeuroAnalyzer._gdf_marker_type(0x0301) == "stim"
+@test NeuroAnalyzer._gdf_marker_type(0x8301) == "stim"
+@test NeuroAnalyzer._gdf_marker_type(0x0410) == "annotation"
+# objects and tables with the `id` column (before v0.26.12) are converted
+e_old = deepcopy(e_tmp)
+DataFrames.rename!(e_old.markers, :type => :id)
+e_old.markers[!, :id] = ["NA", "mrk", "3"]
+e_old.markers[1, :value] = "DELETED"
+e_old.markers[!, :channel] = [0, 0, 0]
+NeuroAnalyzer._markers_upgrade!(e_old)
+@test names(e_old.markers) == ["type", "start", "length", "value", "channel"]
+@test e_old.markers[!, :type] == ["boundary", "stim", "stim"]
+mrk_old = DataFrame(:id => ["Stimulus", "x"], :start => [1.0, 2.0], :length => zeros(2),
+                    :value => ["S  1", "y"], :channel => [0, 0])
+@test add_markers(eeg; markers = mrk_old).markers[!, :type] == ["stim", "other"]
+# trim(): the cut is marked by a boundary marker
+@test NeuroAnalyzer.trim(e_tmp; seg = (4, 6)).markers[!, :type] == ["a", "boundary", "b"]
+# epoch(): markers can be selected by type
+e_ep = add_marker(eeg; type = "stim", start = 10.0, value = "A")
+e_ep = add_marker(e_ep; type = "stim", start = 30.0, value = "A")
+e_ep = add_marker(e_ep; type = "annotation", start = 50.0, value = "A")
+@test nepochs(epoch(e_ep; marker_value = "A", ep_len = 2)) == 3
+@test nepochs(epoch(e_ep; marker_value = "A", marker_type = "stim", ep_len = 2)) == 2
+@test_throws ArgumentError epoch(e_ep; marker_value = "A", marker_type = "response", ep_len = 2)
+# extra marker columns are kept by all marker functions (missing in markers added by NeuroAnalyzer)
+mrk_x = DataFrame(:type => ["stim", "stim"], :start => [10.0, 30.0], :length => zeros(2),
+                  :value => ["A", "B"], :channel => [String[], String[]],
+                  :trial_type => ["face", "house"], :response_time => [0.512, 0.634])
+e_x = add_markers(eeg; markers = mrk_x)
+@test names(e_x.markers)[6:7] == ["trial_type", "response_time"]
+add_marker!(e_x; type = "BAD", start = 20.0, len = 1.0, value = "", ch = "Fp1")
+@test nrow(e_x.markers) == 3 && ismissing(e_x.markers[2, :trial_type])
+@test e_x.markers[[1, 3], :response_time] == [0.512, 0.634]
+e_x2 = edit_marker(e_x; n = 1, type = "stim", start = 11.0, value = "A2")
+@test e_x2.markers[1, :trial_type] == "face"
+@test delete_marker(e_x; n = 2).markers[!, :trial_type] == ["face", "house"]
+e_x2 = NeuroAnalyzer.trim(e_x; seg = (15, 16))
+@test "boundary" in e_x2.markers[!, :type] && "response_time" in names(e_x2.markers)
+@test count(ismissing, e_x2.markers[!, :trial_type]) == 2
+@test nrow(delete_channel(e_x; ch = "Fp1").markers) == 2
+@test "trial_type" in names(rename_channel(e_x; ch = "Fp1", name = "FP1").markers)
+@test epoch(e_x; marker_value = "B", offset = 1, ep_len = 2).markers[1, :response_time] == 0.634
+e_j = NeuroAnalyzer.join(e_x, eeg)
+@test "trial_type" in names(e_j.markers) && nrow(e_j.markers) == 3
+out = mktemp() do path, io
+    redirect_stdout(io) do
+        return view_marker(e_x)
+    end
+    flush(io)
+    return read(path, String)
+end
+@test occursin("trial_type=face", out) && occursin("response_time=0.634", out)
+@test_throws ArgumentError add_markers(eeg; markers = mrk_x[!, [:start, :type, :length, :value, :channel]])
 # channel → markers: rising and falling edges of a pulse channel
 e_tmp = deepcopy(eeg)
 e_tmp.data[24, :, 1] .= 0.0
@@ -460,7 +623,7 @@ e_tmp2 = channel2marker(e_tmp; ch = labels(eeg)[24], v = 32, value = "code 32")
 e_tmp = add_markers(
     e10;
     markers = DataFrame(
-        :id => ["a"],
+        :type => ["a"],
         :start => [12.0],
         :length => [0.0],
         :value => ["x"],
@@ -521,7 +684,7 @@ NeuroAnalyzer.crop!(e_tmp; seg = (1, 2))
 e_tmp = add_markers(
     eeg;
     markers = DataFrame(
-        :id => ["a", "b"],
+        :type => ["a", "b"],
         :start => [5.0, 20.0],
         :length => [0.0, 0.0],
         :value => ["x", "y"],

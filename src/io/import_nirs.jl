@@ -89,31 +89,27 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     stim_raw = nirs["s"]
     markers = if all(iszero, stim_raw)
         DataFrame(
-            :id => String[],
+            :type => String[],
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Vector{String}[],
         )
     else
         stim = ndims(stim_raw) == 1 ? reshape(stim_raw, :, 1) : Matrix(stim_raw)
         s_n = size(stim, 2)
         df = DataFrame(
-            :id => String[],
+            :type => String[],
             :start => Float64[],
             :length => Float64[],
             :value => String[],
-            :channel => Int64[],
+            :channel => Vector{String}[],
         )
         for col = 1:s_n
             for samp in findall(!iszero, stim[:, col])
                 # value: the condition (column of the stimulus matrix)
-                push!(df, ("", time_pts[samp], 0.0, string(col), 0))
+                push!(df, ("stim", time_pts[samp], 0.0, string(col), String[]))
             end
-        end
-        # assign sequential IDs per unique value
-        for (i, v) in enumerate(unique(df[!, :value]))
-            df[df[!, :value] .== v, :id] .= string(i)
         end
         df
     end
