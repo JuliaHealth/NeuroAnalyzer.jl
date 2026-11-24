@@ -68,6 +68,7 @@ function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
     # validate
     _check_epochs(obj, ep)
 
+    obj.epochs = _epochs_table(obj)[[ep], :]
     obj.data = reshape(obj.data[:, :, ep], nchannels(obj), epoch_len(obj), 1)
     obj.time_pts, obj.epoch_time = _get_t(obj)
 

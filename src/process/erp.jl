@@ -81,6 +81,20 @@ function average_epochs!(
         obj.data[:, :, :] = _remove_dc(obj.data[:, :, :], bl_samples)
     end
 
+    # epoch metadata: the average epoch has the condition and source of the averaged
+    # epochs (if they are the same), no onset (NaN)
+    ep_tbl = _epochs_table(obj)
+    _uq(x) = length(unique(x)) == 1 ? x[1] : join(unique(x), ";")
+    obj.epochs = vcat(
+        DataFrame(
+            :condition => _uq(ep_tbl.condition),
+            :source    => _uq(ep_tbl.source),
+            :reject    => false,
+            :onset     => NaN,
+        ),
+        ep_tbl,
+    )
+
     # prepend the trial average as epoch 1; original epochs follow
     obj.data = cat(
         mean(
@@ -160,6 +174,7 @@ function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
     allunique(s) || throw(ArgumentError("s must be a permutation (no repeated epochs)."))
 
     obj.data[:, :, 2:end] = obj.data[:, :, s]
+    obj.epochs = _epochs_table(obj)[vcat(1, s), :]
 
     # markers move with their epochs: epoch s[i] becomes epoch i + 1
     ep_len = epoch_len(obj)

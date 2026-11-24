@@ -99,7 +99,6 @@ function _create_recording_eeg_like(;
             :prefiltering => prefiltering,
             :line_frequency => line_frequency,
             :gain => gain,
-            :epoch_id => "",
         ),
     )
     return d
@@ -191,7 +190,6 @@ function _create_recording_meg(;
             :first_time => Float64(first_time),
             :sss => false,
             :tsss => false,
-            :epoch_id => "",
         ),
     )
     return d
@@ -240,7 +238,6 @@ function _create_recording_nirs(;
             :src_labels => src_labels,
             :det_labels => det_labels,
             :optode_labels => opt_labels,
-            :epoch_id => "",
         ),
     )
     return d
@@ -275,7 +272,6 @@ function _create_recording_prefiltered(;
     merge!(
         d, Dict(
         :prefiltering => prefiltering,
-        :epoch_id => "",
     ),
     )
     return d
@@ -323,7 +319,6 @@ function _create_recording_mep(;
             :stimulation_sample => stimulation_sample,
             :markers_pos => markers_pos,
             :markers_neg => markers_neg,
-            # note: MEP does not use :epoch_id (intentional - MEP data is not epoched)
         ),
     )
     return d

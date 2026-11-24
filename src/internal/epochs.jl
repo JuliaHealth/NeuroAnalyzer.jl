@@ -1,3 +1,67 @@
+"""
+    _epochs_default(ep_n, ep_dur; <keyword arguments>)
+
+Default epoch metadata table: `ep_n` epochs of `ep_dur` seconds, without conditions, not rejected, onsets of consecutive epochs starting at `onset`.
+
+# Returns
+
+- `DataFrame`: columns `condition::String`, `source::String`, `reject::Bool`, `onset::Float64` (seconds)
+"""
+function _epochs_default(
+    ep_n::Int64,
+    ep_dur::Real;
+    onset::Real = 0.0,
+    source::String = "",
+)::DataFrame
+    return DataFrame(
+        :condition => fill("", ep_n),
+        :source    => fill(source, ep_n),
+        :reject    => falses(ep_n),
+        :onset     => Float64[onset + (idx - 1) * ep_dur for idx = 1:ep_n],
+    )
+end
+
+# source recording of the epochs: the name of the imported file (without the folder)
+_epochs_source(hdr::NeuroAnalyzer.HEADER)::String =
+    basename(string(get(hdr.recording, :file_name, "")))
+
+"""
+    _epochs_upgrade!(obj)
+
+Convert an object saved before v0.26.12: the `:epoch_id` header field is removed; the ID of marker-based epochs (the marker value) becomes the epoch condition.
+
+# Returns
+
+- `Nothing`
+"""
+function _epochs_upgrade!(obj::NeuroAnalyzer.NEURO)::Nothing
+    haskey(obj.header.recording, :epoch_id) || return nothing
+    ep_id = string(obj.header.recording[:epoch_id])
+    delete!(obj.header.recording, :epoch_id)
+    # fixed-length IDs: "length_<s>s", "full"
+    (ep_id == "" || ep_id == "full" || startswith(ep_id, "length_")) && return nothing
+    obj.epochs = copy(_epochs_table(obj))
+    obj.epochs[!, :condition] .= ep_id
+    return nothing
+end
+
+"""
+    _epochs_table(obj)
+
+Epoch metadata of `obj`; if the table does not match the number of epochs (e.g. after the data were replaced directly), the default table is returned.
+
+# Returns
+
+- `DataFrame`
+"""
+function _epochs_table(obj::NeuroAnalyzer.NEURO)::DataFrame
+    DataFrames.nrow(obj.epochs) == nepochs(obj) && return obj.epochs
+    return _epochs_default(
+        nepochs(obj), epoch_duration(obj);
+        source = _epochs_source(obj.header),
+    )
+end
+
 function _make_epochs(
     s::AbstractMatrix;
     ep_len::Int64,

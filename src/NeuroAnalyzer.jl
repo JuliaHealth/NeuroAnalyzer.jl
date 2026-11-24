@@ -277,11 +277,31 @@ mutable struct NEURO
     header::NeuroAnalyzer.HEADER
     history::Vector{String}
     markers::DataFrame
+    epochs::DataFrame   # epoch metadata, one row per epoch: condition, source, reject, onset
     locs::DataFrame
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}
     data::Array{Float64, 3}
 end
+
+# without the epoch metadata (as before v0.26.12): default table (no conditions, onsets of
+# consecutive epochs, source = recording file name)
+NEURO(
+    header::NeuroAnalyzer.HEADER,
+    history::Vector{String},
+    markers::DataFrame,
+    locs::DataFrame,
+    time_pts::Vector{Float64},
+    epoch_time::Vector{Float64},
+    data::Array{Float64, 3},
+) = NEURO(
+    header, history, markers,
+    _epochs_default(
+        size(data, 3), size(data, 2) / header.recording[:sampling_rate];
+        source = _epochs_source(header),
+    ),
+    locs, time_pts, epoch_time, data,
+)
 
 # equivalent current dipole, as fitted by dipole_fit()
 mutable struct DIPOLE

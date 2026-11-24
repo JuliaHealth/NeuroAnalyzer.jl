@@ -154,6 +154,14 @@ function trim!(
         "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 
+    # onset of the continuous signal in the original recording: moves if its beginning is
+    # removed (cuts inside the signal are marked with `boundary` markers)
+    obj.epochs = copy(_epochs_table(obj))
+    if keep
+        obj.epochs[1, :onset] += (s1 - 1) / sr(obj)
+    elseif s1 == 1
+        obj.epochs[1, :onset] += (s2 - s1 + 1) / sr(obj)
+    end
     obj.data = _trim(obj.data; seg = (s1, s2), keep = keep)
     obj.time_pts, obj.epoch_time = _get_t(obj)
 
@@ -230,6 +238,7 @@ function crop!(obj::NeuroAnalyzer.NEURO; seg::Tuple{Real, Real})::Nothing
     obj.time_pts = obj_tmp.time_pts
     obj.epoch_time = obj_tmp.epoch_time
     obj.markers = obj_tmp.markers
+    obj.epochs = obj_tmp.epochs
     obj_tmp = nothing
 
     return nothing

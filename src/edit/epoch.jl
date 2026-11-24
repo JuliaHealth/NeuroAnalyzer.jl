@@ -19,6 +19,7 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+- `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
 # Returns
 
@@ -30,9 +31,17 @@ function epoch(
     marker_type::String = "",
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
+    overlap::Real = 0,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    epoch!(obj_new; marker_value = marker_value, marker_type = marker_type, offset = offset, ep_len = ep_len)
+    epoch!(
+        obj_new;
+        marker_value = marker_value,
+        marker_type = marker_type,
+        offset = offset,
+        ep_len = ep_len,
+        overlap = overlap,
+    )
 
     return obj_new
 end
@@ -51,6 +60,7 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+- `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
 # Returns
 
@@ -62,19 +72,24 @@ function epoch!(
     marker_type::String = "",
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
+    overlap::Real = 0,
 )::Nothing
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("epoch() must be applied to continuous object."))
+    overlap >= 0 || throw(ArgumentError("overlap must be ≥ 0."))
+    overlap == 0 || (marker_value == "" && !isnothing(ep_len)) || throw(
+        ArgumentError("overlap can only be used for fixed-length epoching (ep_len)."),
+    )
+    overlap == 0 || overlap < ep_len ||
+        throw(ArgumentError("overlap must be < ep_len."))
 
-    # create ID for epochs
-    epoch_id = if marker_value != ""
-        marker_value
-    elseif !isnothing(ep_len)
-        "length_$(ep_len)s"
-    else
-        "full"
-    end
+    # epoch metadata of the continuous signal: onset of its first sample in the original
+    # recording and its source
+    ep_tbl   = _epochs_table(obj)
+    onset0   = ep_tbl[1, :onset]
+    source   = ep_tbl[1, :source]
+    fs       = sr(obj)
 
     if marker_value != ""
         # marker-based epoching
@@ -114,46 +129,81 @@ function epoch!(
             ),
         )
 
+        # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
+        mrk_smp = t2s.(mrk_start, fs)
         epochs, obj.markers = _make_epochs_bymarkers(
             obj.data;
             marker  = marker_value,
             markers = deepcopy(obj.markers),
-            # 1-based sample number of each marker (a marker at t = 0 s is sample 1)
-            marker_start = t2s.(mrk_start, sr(obj)),
-            offset       = t2n(offset, sr(obj)),
-            ep_len       = t2n(ep_len, sr(obj)),
-            fs           = sr(obj),
+            marker_start = mrk_smp,
+            offset       = t2n(offset, fs),
+            ep_len       = t2n(ep_len, fs),
+            fs           = fs,
         )
+        # first samples of the epochs kept by _make_epochs_bymarkers (epochs that fall,
+        # even partially, outside the signal are dropped)
+        ep_starts = mrk_smp .- t2n(offset, fs)
+        ep_starts = ep_starts[(ep_starts .>= 1) .& (ep_starts .+ t2n(ep_len, fs) .- 1 .<= signal_len(obj))]
+        condition = marker_value
 
     else
         # fixed-length epoching
+        ep_n_smp = signal_len(obj)
         if !isnothing(ep_len)
             ep_len <= signal_len(obj) / sr(obj) || throw(
                 ArgumentError(
                     "ep_len must be ≤ signal length ($(signal_len(obj) / sr(obj)) s).",
                 ),
             )
-            ep_len = round(Int64, ep_len * sr(obj))
+            ep_n_smp = round(Int64, ep_len * sr(obj))
         end
 
-        epochs = _make_epochs(obj.data; ep_len = ep_len)
+        ovl_n = round(Int64, overlap * sr(obj))
+        if ovl_n == 0
+            epochs = _make_epochs(obj.data; ep_len = ep_n_smp)
+            ep_starts = collect(1:ep_n_smp:(ep_n_smp * (size(epochs, 3) - 1) + 1))
 
-        # remove markers that fall outside the new epoch grid (trailing samples are dropped)
-        n_total = size(epochs, 2) * size(epochs, 3)
-        obj.markers = _remap_markers(
-            obj.markers, sr(obj), s -> 1 <= s <= n_total ? s : nothing,
-        )
+            # remove markers that fall outside the new epoch grid (trailing samples are dropped)
+            n_total = size(epochs, 2) * size(epochs, 3)
+            obj.markers = _remap_markers(
+                obj.markers, sr(obj), s -> 1 <= s <= n_total ? s : nothing,
+            )
+        else
+            ovl_n < ep_n_smp || throw(
+                ArgumentError("overlap must be < ep_len ($(ep_n_smp) samples after rounding)."),
+            )
+            # windows start every (ep_len - overlap) samples; trailing samples that do not
+            # fill a complete window are dropped
+            step = ep_n_smp - ovl_n
+            ep_starts = collect(1:step:(signal_len(obj) - ep_n_smp + 1))
+            epochs, obj.markers = _make_epochs_bymarkers(
+                obj.data;
+                marker       = "",
+                markers      = deepcopy(obj.markers),
+                marker_start = ep_starts,
+                offset       = 0,
+                ep_len       = ep_n_smp,
+                fs           = sr(obj),
+            )
+        end
+        condition = ""
     end
 
+    size(epochs, 3) == length(ep_starts) ||
+        throw(ArgumentError("Internal error: epochs and their onsets do not match."))
     obj.data = epochs
-    obj.header.recording[:epoch_id] = epoch_id
-    obj.header.recording[:bad_channel] = obj.header.recording[:bad_channel]
+    obj.epochs = DataFrame(
+        :condition => fill(condition, length(ep_starts)),
+        :source    => fill(source, length(ep_starts)),
+        :reject    => falses(length(ep_starts)),
+        :onset     => onset0 .+ (ep_starts .- 1) ./ fs,
+    )
     obj.time_pts, obj.epoch_time = _get_t(obj)
     obj.epoch_time .-= offset
 
     push!(
         obj.history,
-        "epoch(obj; marker_value=$marker_value, marker_type=$marker_type, offset=$offset, ep_len=$ep_len)",
+        "epoch(obj; marker_value=$marker_value, marker_type=$marker_type, offset=$offset, ep_len=$ep_len, overlap=$overlap)",
     )
 
     return nothing
@@ -259,6 +309,9 @@ function subepoch!(
 
     obj.data = obj.data[:, ep_start_idx:ep_end_idx, :]
     obj.epoch_time = ep_time[ep_start_idx:ep_end_idx]
+    # epoch onsets: first retained sample of each epoch
+    obj.epochs = copy(_epochs_table(obj))
+    obj.epochs[!, :onset] .+= (ep_start_idx - 1) / sr(obj)
     obj.time_pts, _ = _get_t(obj)
 
     # markers: keep those within the retained window of their epoch and move

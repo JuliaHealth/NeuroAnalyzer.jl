@@ -1,6 +1,7 @@
 export channel_reject
 export channel_reject!
 export epoch_reject
+export epoch_reject!
 
 const _REJECT_METHODS =
     [:flat, :rmse, :rmsd, :euclid, :var, :p2p, :tkeo, :kurt, :z, :ransac, :amp]
@@ -450,6 +451,8 @@ With many channels and `nbad = 1`, the statistical methods are sensitive: the ro
 # Returns
 
 - `Vector{Int64}`: sorted indices of bad epochs
+
+See also `epoch_reject!()`, which marks the bad epochs in the epoch metadata (`obj.epochs.reject`).
 """
 function epoch_reject(
     obj::NeuroAnalyzer.NEURO;
@@ -505,4 +508,73 @@ function epoch_reject(
     end
 
     return findall(be)
+end
+
+"""
+    epoch_reject!(obj; <keyword arguments>)
+
+Detect bad epochs and mark them in the `reject` column of the epoch metadata (`obj.epochs`) in-place. Epochs marked before stay marked (e.g. by a previous run with other channels or methods); to clear the marks use `obj.epochs.reject .= false`. See `epoch_reject()` for the methods and arguments.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- other arguments as in `epoch_reject()`
+
+# Returns
+
+- `Nothing`
+"""
+function epoch_reject!(
+    obj::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex},
+    method::Union{Symbol, Vector{Symbol}} = [
+        :flat,
+        :rmse,
+        :rmsd,
+        :euclid,
+        :var,
+        :p2p,
+        :tkeo,
+        :kurt,
+        :z,
+        :ransac,
+        :amp,
+    ],
+    w::Int64 = sr(obj),
+    flat_tol::Float64 = 0.1,
+    flat_fr::Float64 = 0.3,
+    p::Float64 = 0.99,
+    tc::Float64 = 0.2,
+    tkeo_method::Symbol = :pow,
+    z::Real = 3.5,
+    ransac_r::Float64 = 0.6,
+    ransac_tr::Float64 = 0.4,
+    ransac_t::Float64 = 100.0,
+    amp_t::Real = 400.0,
+    nbad::Int64 = 1,
+)::Nothing
+    be = epoch_reject(
+        obj;
+        ch = ch,
+        method = method,
+        w = w,
+        flat_tol = flat_tol,
+        flat_fr = flat_fr,
+        p = p,
+        tc = tc,
+        tkeo_method = tkeo_method,
+        z = z,
+        ransac_r = ransac_r,
+        ransac_tr = ransac_tr,
+        ransac_t = ransac_t,
+        amp_t = amp_t,
+        nbad = nbad,
+    )
+    obj.epochs = copy(_epochs_table(obj))
+    obj.epochs[be, :reject] .= true
+    _info("$(length(be)) epoch(s) marked as rejected ($(count(obj.epochs.reject)) in total)")
+    push!(obj.history, "epoch_reject!(obj; ch=$ch, method=$method, nbad=$nbad)")
+
+    return nothing
 end

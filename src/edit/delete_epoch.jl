@@ -60,7 +60,9 @@ function delete_epoch!(
     _check_epochs(obj, ep_sorted)
 
     # remove epoch
-    obj.data = obj.data[:, :, setdiff(1:nepochs(obj), ep_sorted)]
+    ep_keep = setdiff(1:nepochs(obj), ep_sorted)
+    obj.epochs = _epochs_table(obj)[ep_keep, :]
+    obj.data = obj.data[:, :, ep_keep]
 
     # marker times are in seconds; epoch e spans [(e - 1) * ep_dur, e * ep_dur)
     ep_dur = epoch_duration(obj)

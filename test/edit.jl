@@ -115,6 +115,15 @@ e10 = epoch(eeg; ep_len = 10)
 @test nepochs(e10) == 120
 e2 = subepoch(e10; ep_start = 2, ep_end = 8)
 @test nepochs(e2) == 120
+e10o = epoch(eeg; ep_len = 10, overlap = 5)
+@test epoch_len(e10o) == 10 * sr(eeg)
+@test nepochs(e10o) == 240
+@test e10o.data[:, :, 2] == eeg.data[:, (5 * sr(eeg) + 1):(15 * sr(eeg)), 1]
+@test e10o.data[:, 1:(5 * sr(eeg)), 2] == e10o.data[:, (5 * sr(eeg) + 1):end, 1]
+@test epoch(eeg; ep_len = 10, overlap = 0).data == e10.data
+@test_throws ArgumentError epoch(eeg; ep_len = 10, overlap = 10)
+@test_throws ArgumentError epoch(eeg; ep_len = 10, overlap = -1)
+@test_throws ArgumentError epoch(eeg; overlap = 5)
 
 @info "Test: epoch_time()"
 eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
@@ -346,6 +355,12 @@ e_bad.data[ix_("T3"), 200:400, 4] .+= 30 .* randn(rng_, 201)            # muscle
 @test 4 in epoch_reject(e_bad; ch = "eeg", method = :tkeo)
 @test epoch_reject(e_bad; ch = "eeg", method = :z) == [3, 4]
 @test epoch_reject(e_bad; ch = "eeg", method = :var, nbad = 2) == Int64[]
+e_rej = deepcopy(e_bad)
+epoch_reject!(e_rej; ch = "eeg", method = :flat)
+@test findall(e_rej.epochs.reject) == [2]
+epoch_reject!(e_rej; ch = "eeg", method = :amp, amp_t = 150)
+@test findall(e_rej.epochs.reject) == [2, 3]
+@test !any(e_bad.epochs.reject)
 @test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", nbad = 0)
 @test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", nbad = 20)
 @test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", method = :var, w = 1)

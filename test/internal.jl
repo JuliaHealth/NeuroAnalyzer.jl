@@ -1057,7 +1057,7 @@ for f in (NeuroAnalyzer._create_recording_seeg, NeuroAnalyzer._create_recording_
     local r_tmp =
         f(; common..., reference = "a", transducers = ["t"], prefiltering = ["p"],
             line_frequency = 50, gain = [1.0])
-    @test r_tmp[:reference] == "a" && r_tmp[:gain] == [1.0] && r_tmp[:epoch_id] == ""
+    @test r_tmp[:reference] == "a" && r_tmp[:gain] == [1.0] && !haskey(r_tmp, :epoch_id)
 end
 for f in (NeuroAnalyzer._create_recording_sensors, NeuroAnalyzer._create_recording_eda,
     NeuroAnalyzer._create_recording_tpt, NeuroAnalyzer._create_recording_prefiltered)
@@ -1072,7 +1072,7 @@ r_tmp = NeuroAnalyzer._create_recording_nirs(; common..., wavelengths = [760.0, 
 r_tmp = NeuroAnalyzer._create_recording_mep(; common..., stimulation_intensity = [50],
     coil_type = ["c"],
     stimulation_sample = [10], markers_pos = [1], markers_neg = [2])
-@test r_tmp[:stimulation_intensity] == [50] && !haskey(r_tmp, :epoch_id)
+@test r_tmp[:stimulation_intensity] == [50]
 # MEG: time separator normalized, geometry validated
 r_tmp =
     NeuroAnalyzer._create_recording_meg(; common..., reference = "", prefiltering = [""],

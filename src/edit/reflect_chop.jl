@@ -56,6 +56,9 @@ function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
         s[ch_idx, :, ep_idx] = _reflect(x, @view(x[1:n]), @view(x[(end - n + 1):end]))
     end
 
+    # epochs begin n samples earlier
+    obj.epochs = copy(_epochs_table(obj))
+    obj.epochs[!, :onset] .-= n / sr(obj)
     obj.data = s
     obj.time_pts, obj.epoch_time = _get_t(obj)
 
@@ -121,6 +124,9 @@ function chop!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
         s[ch_idx, :, ep_idx] = _chop(@view(obj.data[ch_idx, :, ep_idx]), n)
     end
 
+    # epochs begin n samples later
+    obj.epochs = copy(_epochs_table(obj))
+    obj.epochs[!, :onset] .+= n / sr(obj)
     obj.data = s
     obj.time_pts, obj.epoch_time = _get_t(obj)
 

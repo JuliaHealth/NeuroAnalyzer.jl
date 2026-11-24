@@ -59,7 +59,18 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    obj = JLD2.load_object(file_name)
+    # objects saved before v0.26.12 have no epoch metadata (`epochs`): NEURO objects are
+    # read through `rconvert`, which adds the default table
+    obj = JLD2.jldopen(
+        file_name, "r";
+        typemap = Dict("NeuroAnalyzer.NEURO" => JLD2.Upgrade(NeuroAnalyzer.NEURO)),
+    ) do f
+        k = keys(f)
+        length(k) == 1 || throw(
+            ArgumentError("$file_name must contain one object (found: $(length(k)))."),
+        )
+        f[k[1]]
+    end
     # files saved by old versions of NeuroAnalyzer (e.g. EEG objects) are reconstructed by JLD2 as
     # anonymous types without the NEURO fields
     obj isa NeuroAnalyzer.NEURO || throw(
@@ -70,6 +81,7 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
 
     # marker channels saved as numbers by older versions → channel labels
     _markers_upgrade!(obj)
+    _epochs_upgrade!(obj)
 
     _info(
         "Loaded: " *
@@ -78,4 +90,16 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     )
 
     return obj
+end
+
+# upgrade path of `load_neuro()`: a NEURO object read from a file as a NamedTuple of its
+# fields; objects saved before v0.26.12 have no `epochs` field
+function JLD2.rconvert(::Type{NeuroAnalyzer.NEURO}, nt::NamedTuple)::NeuroAnalyzer.NEURO
+    haskey(nt, :epochs) && return NeuroAnalyzer.NEURO(
+        nt.header, nt.history, nt.markers, nt.epochs, nt.locs, nt.time_pts,
+        nt.epoch_time, nt.data,
+    )
+    return NeuroAnalyzer.NEURO(
+        nt.header, nt.history, nt.markers, nt.locs, nt.time_pts, nt.epoch_time, nt.data,
+    )
 end

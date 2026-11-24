@@ -65,6 +65,8 @@ function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
     )
 
     # merge data: each obj2 epoch is appended to the respective obj1 epoch
+    # epoch metadata of obj1 is kept (each obj2 epoch continues an obj1 epoch)
+    obj1.epochs = _epochs_table(obj1)
     obj1.data = hcat(obj1.data, obj2.data)
     # regenerate time points
     obj1.time_pts, obj1.epoch_time = _get_t(obj1)

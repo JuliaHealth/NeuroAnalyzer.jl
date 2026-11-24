@@ -1257,8 +1257,8 @@ x_emd = 5 .* sin.(2π * 20 .* t_emd) .+ 10 .* sin.(2π * 4 .* t_emd) .+ 2 .* t_e
 imf_emd = NeuroAnalyzer._emd(x_emd, t_emd)
 @test size(imf_emd) == (3, length(t_emd))
 @test vec(sum(imf_emd; dims = 1)) ≈ x_emd
-@test cor(imf_emd[1, :], 5 .* sin.(2π * 20 .* t_emd)) > 0.99
-@test cor(imf_emd[2, :], 10 .* sin.(2π * 4 .* t_emd)) > 0.99
+@test NeuroAnalyzer.Statistics.cor(imf_emd[1, :], 5 .* sin.(2π * 20 .* t_emd)) > 0.99
+@test NeuroAnalyzer.Statistics.cor(imf_emd[2, :], 10 .* sin.(2π * 4 .* t_emd)) > 0.99
 @test maximum(abs.(imf_emd[3, :] .- 2 .* t_emd)) < 1
 # the rows (IMFs and residual) always sum to the signal
 imf_emd = emd(e10; ch = "Fp1", ep = 1)

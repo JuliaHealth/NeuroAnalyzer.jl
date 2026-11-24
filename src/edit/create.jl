@@ -268,6 +268,7 @@ function create_data!(
     end
 
     obj.time_pts, obj.epoch_time = _get_t(obj)
+    obj.epochs = _epochs_default(nepochs(obj), epoch_duration(obj))
     push!(obj.history, "create_data(obj; data, fs=$fs, type=$type)")
 
     return nothing
