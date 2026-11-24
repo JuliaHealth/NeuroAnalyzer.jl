@@ -529,3 +529,109 @@ function _marker_conditions(
     condition == "channel" && throw(ArgumentError("condition cannot be the channel column."))
     return String[ismissing(x) ? "" : string(x) for x in markers[!, condition]]
 end
+
+"""
+    _mark_bad!(obj, t1, t2, ch)
+
+Mark the segment `t1`–`t2` (seconds) as bad: add a marker of type `"BAD"` (value `"manual"`) for the channels `ch` (labels; empty: all channels). Used by the interactive signal plot (`b`).
+"""
+function _mark_bad!(
+    obj::NeuroAnalyzer.NEURO,
+    t1::Real,
+    t2::Real,
+    ch::Vector{String},
+)::Nothing
+    t2 > t1 || throw(ArgumentError("The end of the segment must be after its start."))
+    add_marker!(obj; type = "BAD", start = t1, len = t2 - t1, value = "manual", ch = ch)
+    return nothing
+end
+
+"""
+    _unmark_bad!(obj, t1, t2)
+
+Delete the markers of type `"BAD"` overlapping the segment `t1`–`t2` (seconds). Used by the interactive signal plot (`u`).
+
+# Returns
+
+- `Int64`: number of deleted markers
+"""
+function _unmark_bad!(obj::NeuroAnalyzer.NEURO, t1::Real, t2::Real)::Int64
+    m = obj.markers
+    del = findall(
+        i -> m[i, :type] == "BAD" && m[i, :start] < t2 && m[i, :start] + m[i, :length] > t1,
+        1:DataFrames.nrow(m),
+    )
+    for i in reverse(del)
+        delete_marker!(obj; n = i)
+    end
+    return length(del)
+end
+
+"""
+    _bad_marker_epochs(obj, ch)
+
+Epochs that contain a bad segment: a marker of type `"BAD"` of all channels, or of at least one of the channels `ch` (labels), overlapping the epoch (marker times are on the timeline of the concatenated epochs).
+
+# Returns
+
+- `Vector{Int64}`: sorted epoch numbers
+"""
+function _bad_marker_epochs(obj::NeuroAnalyzer.NEURO, ch::Vector{String})::Vector{Int64}
+    fs = sr(obj)
+    n = epoch_len(obj)
+    ep_n = nepochs(obj)
+    ep = Int64[]
+    for m in eachrow(obj.markers)
+        m[:type] == "BAD" || continue
+        (isempty(m[:channel]) || any(in(ch), m[:channel])) || continue
+        # first and last sample of the marker (1-based), its epochs
+        s1 = t2s(m[:start], fs)
+        s2 = max(s1, round(Int64, (m[:start] + m[:length]) * fs))
+        e1 = clamp((s1 - 1) ÷ n + 1, 1, ep_n)
+        e2 = clamp((s2 - 1) ÷ n + 1, 1, ep_n)
+        append!(ep, e1:e2)
+    end
+    return sort(unique(ep))
+end
+
+"""
+    _bad_samples(obj, ch)
+
+Samples of a continuous object covered by bad segments: markers of type `"BAD"` of all channels or of at least one of the channels `ch` (channel numbers).
+
+# Returns
+
+- `BitVector`: `true` for the samples in bad segments
+"""
+function _bad_samples(obj::NeuroAnalyzer.NEURO, ch::AbstractVector{<:Integer})::BitVector
+    n = epoch_len(obj)
+    fs = sr(obj)
+    lbl = Set(labels(obj)[ch])
+    bad = falses(n)
+    for m in eachrow(obj.markers)
+        m[:type] == "BAD" || continue
+        (isempty(m[:channel]) || any(in(lbl), m[:channel])) || continue
+        s1 = clamp(t2s(m[:start], fs), 1, n)
+        s2 = clamp(max(s1, round(Int64, (m[:start] + m[:length]) * fs)), 1, n)
+        bad[s1:s2] .= true
+    end
+    return bad
+end
+
+"""
+    _seg_data(obj, ch, exclude_bad_segments)
+
+Signal of the channels `ch` (channel numbers), shape (channels, samples, epochs). For a continuous object with `exclude_bad_segments = true`, the samples of bad segments (markers of type `"BAD"` of all channels or of any of the channels `ch`) are removed and the remaining parts are joined (as `reject_by_annotation = "omit"` of MNE-Python); epoched objects are returned unchanged (see the `reject` column of the epoch metadata).
+"""
+function _seg_data(
+    obj::NeuroAnalyzer.NEURO,
+    ch::AbstractVector{<:Integer},
+    exclude_bad_segments::Bool,
+)::AbstractArray{Float64, 3}
+    (exclude_bad_segments && nepochs(obj) == 1) || return @view(obj.data[ch, :, :])
+    bad = _bad_samples(obj, ch)
+    any(bad) || return @view(obj.data[ch, :, :])
+    all(bad) && throw(ArgumentError("All samples are in bad segments."))
+    _info("$(round(count(bad) / sr(obj); digits = 2)) s of bad segments excluded")
+    return obj.data[ch, .!bad, :]
+end

@@ -300,6 +300,7 @@ Calculate mean, standard error and 95% CI for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `n::Int64=3`: bootstrap resampling factor
 - `method::Symbol=:normal`: `:normal` (analytical) or `:boot` (bootstrap)
 
@@ -317,6 +318,7 @@ function msci95(
     ch::Union{String, Vector{String}, Regex},
     n::Int64 = 3,
     method::Symbol = :normal,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     sm::Matrix{Float64},
     se::Matrix{Float64},
@@ -324,10 +326,7 @@ function msci95(
     ul::Matrix{Float64},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return NeuroAnalyzer._msci95(@view(obj.data[ch, :, :]); n = n, method = method)
@@ -346,6 +345,7 @@ Calculate mean difference, standard error and 95% CI between two NEURO objects.
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -363,6 +363,7 @@ function msci95(
     ch2::Union{String, Vector{String}, Regex},
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     sm::Matrix{Float64},
     se::Matrix{Float64},
@@ -370,7 +371,7 @@ function msci95(
     ul::Matrix{Float64},
 }
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(

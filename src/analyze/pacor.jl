@@ -168,6 +168,7 @@ For ERP/ERF objects, the PACF is calculated for the single trials (epochs 2:end)
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `l::Real=1`: lag limit in seconds; lags vector is `−l:1/sr(obj):l`
 - `demean::Bool=true`: subtract the mean before computing PACF
 - `method::Symbol=:yw`: method of calculating auto-correlation:
@@ -187,6 +188,7 @@ function pacor(
     l::Real = 1,
     demean::Bool = true,
     method::Symbol = :yw,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     pac::Array{Float64, 3},
     lags::Vector{Float64},
@@ -195,10 +197,7 @@ function pacor(
     _check_var(method, [:reg, :yw], "method")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # convert l from seconds to samples for the inner call

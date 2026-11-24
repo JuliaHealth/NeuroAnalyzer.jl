@@ -165,6 +165,7 @@ Calculate spectrogram for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `pad::Int64=0`: number of zeros to append
 - `method::Symbol=:stft`: spectrogram estimation method:
     - `:stft`: short-time Fourier transform
@@ -203,6 +204,7 @@ function spectrogram(
     wlen::Int64 = sr(obj),
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     p::Array{Float64, 4},
     f::Vector{Float64},
@@ -212,10 +214,7 @@ function spectrogram(
     _check_var(method, [:stft, :mt, :mw, :gh, :cwt, :hht], "method")
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels

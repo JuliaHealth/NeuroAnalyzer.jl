@@ -72,6 +72,7 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -80,12 +81,10 @@ A smooth, slowly-varying signal has low Dirichlet energy; a noisy or rapidly osc
 function dirinrg(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Matrix{Float64}
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _dirinrg(@view(obj.data[ch, :, :]))

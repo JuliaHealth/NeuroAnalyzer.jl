@@ -43,6 +43,7 @@ Plot signal from a NEURO object.
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces next to the plot (for ERP/ERF, `type = :normal`)
 - `ch_locs_pos::Symbol=:outside`: position of the inset: `:outside` (to the right of the plot) or `:rt`, `:lt`, `:rb`, `:lb` (inside the plot, in that corner)
 - `gui::Bool=true`: if `true`, keep window open and interactive
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the averages and 95% CIs of butterfly plots; all selected channels are shown (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -80,6 +81,7 @@ function plot(
     ch_locs::Bool = false,
     ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
     # validate and clamp n_channels/n_epochs to object dimensions
     n_channels > nchannels(obj) && (n_channels = nchannels(obj))
@@ -155,6 +157,7 @@ function plot(
                 res = res,
                 snap = snap,
                 gui = gui,
+                exclude_bad_channels = exclude_bad_channels,
             )
         else
             fig = plot_ep(
@@ -175,6 +178,7 @@ function plot(
                 mono = mono,
                 res = res,
                 gui = gui,
+                exclude_bad_channels = exclude_bad_channels,
             )
         end
     end

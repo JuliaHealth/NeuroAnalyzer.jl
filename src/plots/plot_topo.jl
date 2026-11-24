@@ -12,6 +12,7 @@ Plot a topographical map of signal values across channel locations.
 - `locs::DataFrame`: channel location data
 - `ch::Union{Int64, AbstractVector{Int64}}=1:DataFrames.nrow(locs)`: channels to include; defaults to all rows in `locs`
 - `sch::Union{Nothing, Int64, Vector{Int64}}=nothing`: significant channels to highlight
+- `bad::AbstractVector{<:Integer}=Int64[]`: rows of `locs` of bad channels, marked with a red × (also if they are not in `ch`, i.e. not interpolated)
 - `cb::Bool=true`: if `true`, show colorbar
 - `cb_title::String="[A.U.]"`: colorbar title
 - `title::String=""`: plot title
@@ -84,6 +85,7 @@ function plot_topo(
     threshold::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     threshold_type::Symbol = :neq,
     threshold_method::Symbol = :reg,
+    bad::AbstractVector{<:Integer} = Int64[],
 )::GLMakie.Figure
     # locations are stored in their original units: scale the montage to the unit sphere
     locs = _locs_unit(locs)
@@ -381,6 +383,15 @@ function plot_topo(
         end
     end
 
+    # bad channels (rows of locs, also if they are not interpolated): red ×
+    if electrodes && !isempty(bad)
+        for r in bad
+            bx, by = cart ? (locs.loc_x[r], locs.loc_y[r]) :
+                     pol2cart(locs.loc_radius[r], locs.loc_theta[r])
+            GLMakie.scatter!(ax, bx, by; marker = :xcross, markersize = hl_size, color = :red)
+        end
+    end
+
     # labels below the electrode markers (offset in pixels, independent of the plot scale)
     label_align = electrodes ? (:center, :top) : (:center, :center)
     # (below the largest marker drawn, so that highlighted electrodes do not cover the labels)
@@ -392,20 +403,29 @@ function plot_topo(
 
     # draw labels
     if ch_labels
-        ch_set = Set(ch)
-        for idx in eachindex(local_locs.label)
-            if idx in ch_set
-                local_i = findfirst(==(idx), collect(ch))
-                isnothing(local_i) && continue
-                GLMakie.text!(
-                    loc_x[local_i],
-                    loc_y[local_i];
-                    text = local_locs.label[idx],
-                    align = label_align,
-                    offset = label_offset,
-                    fontsize = label_size,
-                )
-            end
+        # bad channels that are not interpolated
+        for r in setdiff(bad, ch)
+            bx, by = cart ? (locs.loc_x[r], locs.loc_y[r]) :
+                     pol2cart(locs.loc_radius[r], locs.loc_theta[r])
+            GLMakie.text!(
+                bx, by;
+                text = locs.label[r],
+                align = label_align,
+                offset = label_offset,
+                fontsize = label_size,
+                color = :red,
+            )
+        end
+        # local_locs = locs[ch, :]: the i-th interpolated channel is at (loc_x[i], loc_y[i])
+        for i in eachindex(local_locs.label)
+            GLMakie.text!(
+                loc_x[i],
+                loc_y[i];
+                text = local_locs.label[i],
+                align = label_align,
+                offset = label_offset,
+                fontsize = label_size,
+            )
         end
     end
 
@@ -450,6 +470,7 @@ For NIRS objects, each channel (source-detector pair) is located at the midpoint
     - `Matrix`: (channels × values), will be averaged by channels
     - `nothing`: use data from NEURO object at specified time point(s) (default)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the interpolation; bad channels are always marked with a red × (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `sch::Union{Nothing, String, Vector{String}, Regex}=nothing`: significant channels to highlight
 - `tpos::Union{Nothing, Real, AbstractVector}=nothing`: time point in seconds to plot (for ERP/ERF objects: time relative to the event in the averaged waveform), ignored if `data` is provided
 - `title::String="default"`: plot title
@@ -533,6 +554,7 @@ function plot_topo(
     threshold_method::Symbol = :reg,
     nr::Int64 = 1,
     nc::Int64 = 0,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
     # NIRS: the values belong to channels (source-detector pairs), located at the midpoints
     # of their optodes (the data are shared, not copied)
@@ -634,10 +656,27 @@ function plot_topo(
     # colorbar title
     cb_title == "default" && (cb_title = "[A.U.]")
 
+    # values in the order of the locations (matched by label)
+    val = Dict(zip(labels(obj)[ch], data))
+    data = [val[l] for l in locs[!, :label]]
+    # bad channels: marked on the map; with exclude_bad_channels they are not used for the
+    # interpolation
+    bad_lbl = Set(labels(obj)[ch][obj.header.recording[:bad_channel][ch]])
+    bad_rows = findall(in(bad_lbl), locs[!, :label])
+    ch_rows = exclude_bad_channels ? setdiff(1:DataFrames.nrow(locs), bad_rows) :
+              collect(1:DataFrames.nrow(locs))
+    length(ch_rows) >= 2 ||
+        throw(ArgumentError("plot_topo() requires ≥ 2 channels that are not bad."))
+    # highlighted channels: positions among the interpolated channels
+    if !isnothing(sch)
+        sch = Int64[findfirst(==(r), ch_rows) for r in sch if r in ch_rows]
+    end
+
     return plot_topo(
-        data;
+        data[ch_rows];
         locs             = locs,
-        ch               = collect(1:DataFrames.nrow(locs)),
+        ch               = ch_rows,
+        bad              = bad_rows,
         sch              = sch,
         cb               = cb,
         cb_title         = cb_title,

@@ -161,6 +161,8 @@ SEF is the frequency below which x percent of the total power of a given signal 
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, bad segments (markers of type `"BAD"` of all channels or of the selected channels) of a continuous signal are not used: their samples are removed and the remaining parts are joined (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `x::Float64=0.95`: threshold
 - `f::Tuple{Real, Real}=(0, sr(obj) / 2)`: lower and upper frequency bounds, default is total power
 - `method::Symbol=:welch`: PSD estimation method:
@@ -191,16 +193,15 @@ function sef(
     w::Bool = true,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::Matrix{Float64}
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _sef(
-        @view(obj.data[ch, :, :]);
+        _seg_data(obj, ch, exclude_bad_segments);
         x = x,
         fs = sr(obj),
         f = f,

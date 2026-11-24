@@ -654,6 +654,8 @@ Default PSD method is Welch's periodogram.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, bad segments (markers of type `"BAD"` of all channels or of the selected channels) of a continuous signal are not used: their samples are removed and the remaining parts are joined (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `flim::Tuple{Real, Real}=(1, sr(obj) / 2)`: frequency range to fit (inclusive); `flim[1]` must be > 0
 - `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram (default)
@@ -704,6 +706,8 @@ function fooof(
     min_peak_height::Real = 0.0,
     peak_threshold::Real = 2.0,
     aperiodic_mode::Symbol = :fixed,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::@NamedTuple{
     ap::Array{Float64, 3},
     pe::Matrix{Matrix{Float64}},
@@ -714,14 +718,11 @@ function fooof(
     ap_fit::Array{Float64, 3},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _fooof(
-        @view(obj.data[ch, :, :]);
+        _seg_data(obj, ch, exclude_bad_segments);
         fs = sr(obj),
         flim = flim,
         method = method,

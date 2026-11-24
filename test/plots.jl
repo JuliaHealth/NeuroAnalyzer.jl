@@ -1011,4 +1011,38 @@ ax = axes_of(p)[1]
 @test any(d -> [q[2] for q in d] ≈ r.itpcs[5, :], line_data(ax))
 @test_throws ArgumentError plot_itpc_frq(e10.epoch_time, r.itpcs[5, 1:10])
 
+@info "Test: bad channels in plots (marked; excluded from averages, maps and GFP)"
+e_bc = deepcopy(e10)
+for c in ("Fp1", "O1")
+    e_bc.header.recording[:bad_channel][get_channel(e_bc; ch = c)[1]] = true
+end
+plots_of(f) = reduce(vcat, [ax.scene.plots for ax in f.content if ax isa GLMakie.Axis])
+n_scatter(f) = count(x -> x isa GLMakie.Makie.Scatter, plots_of(f))
+# locations: all channels shown, bad channels marked (one more marker each)
+@test n_scatter(plot_locs(e_bc; ch = "eeg", gui = false)) ==
+      n_scatter(plot_locs(e10; ch = "eeg", gui = false)) + 2
+# topographic map: bad channels marked; with exclude_bad_channels they are not interpolated
+# (19 channels: 17 electrodes + 2 bad marks, or 19 electrodes + 2 bad marks)
+@test n_scatter(plot_topo(e_bc; ch = "eeg", tpos = 1, exclude_bad_channels = true)) == 19
+@test n_scatter(plot_topo(e_bc; ch = "eeg", tpos = 1, exclude_bad_channels = false)) == 21
+# ERP and PSD: bad traces labeled, the average without them
+n_badlbl(f) = count(
+    x -> x isa GLMakie.Makie.Lines && x.color[] == GLMakie.Makie.to_color(:lightgray),
+    plots_of(f),
+)
+erp_bc = average_epochs(e_bc)
+@test n_badlbl(plot_erp(erp_bc; ch = "eeg", avg = true, exclude_bad_channels = true, gui = false)) == 2
+@test plot_erp(erp_bc; ch = "eeg", type = :gfp, exclude_bad_channels = true, gui = false) isa GLMakie.Figure
+@test plot_erp(erp_bc; ch = "eeg", type = :topo, gui = false) isa GLMakie.Figure
+@test n_badlbl(plot_psd(e_bc; ch = "eeg", ep = 1, avg = true, exclude_bad_channels = true, gui = false)) == 2
+# butterfly average: the scale bar is not changed by the selection of the averaged channels
+scale_txt(f) = [t.text[] for t in plots_of(f) if t isa GLMakie.Makie.Text && occursin("μV", string(t.text[]))]
+eeg_bc = deepcopy(eeg)
+eeg_bc.header.recording[:bad_channel] .= e_bc.header.recording[:bad_channel]
+for o in (eeg_bc, e_bc)
+    st = [scale_txt(NeuroAnalyzer.plot(o; ch = "eeg", type = :butterfly, avg = true,
+                                       exclude_bad_channels = x, gui = false)) for x in (false, true)]
+    @test st[1] == st[2] && parse(Float64, split(only(only(st[1])))[1]) > 0
+end
+
 true

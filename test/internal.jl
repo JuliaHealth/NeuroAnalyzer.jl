@@ -74,16 +74,16 @@ ci(x) = findfirst(isequal(x), l)
 @test NeuroAnalyzer._ch_pairs(e10, "eeg", e10, "eeg")[1] ==
       findall(e10.header.recording[:channel_type] .== "eeg")
 @test_throws ArgumentError NeuroAnalyzer._ch_pairs(e10, ["O1", "F3"], e10, "O2")
-# with exclude_bads, a pair with a bad channel is removed as a whole
+# with exclude_bad_channels, a pair with a bad channel is removed as a whole
 e_bad = deepcopy(e10)
 e_bad.header.recording[:bad_channel][ci("F3")] = true
-eb0 = NeuroAnalyzer.exclude_bads
-Core.eval(NeuroAnalyzer, :(exclude_bads = true))
+eb0 = NeuroAnalyzer.exclude_bad_channels
+Core.eval(NeuroAnalyzer, :(exclude_bad_channels = true))
 try
     @test NeuroAnalyzer._ch_pairs(e_bad, ["O1", "F3", "C3"], e_bad, ["O2", "F4", "C4"]) ==
           ([ci("O1"), ci("C3")], [ci("O2"), ci("C4")])
 finally
-    Core.eval(NeuroAnalyzer, :(exclude_bads = $eb0))
+    Core.eval(NeuroAnalyzer, :(exclude_bad_channels = $eb0))
 end
 @test NeuroAnalyzer._ch_idx(l, r"Fp") == findall(occursin.(r"Fp", l))
 @test NeuroAnalyzer._ch_idx(l, "all") == collect(1:length(l))

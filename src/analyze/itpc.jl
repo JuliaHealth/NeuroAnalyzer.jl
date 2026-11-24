@@ -101,6 +101,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `t::Real`: time point in seconds at which ITPC is calculated
 - `w::Union{Vector{<:Real}, Nothing}=nothing`: optional per-epoch weights
 
@@ -118,6 +119,7 @@ function itpc(
     ch::Union{String, Vector{String}, Regex},
     t::Real,
     w::Union{Vector{<:Real}, Nothing} = nothing,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     itpcv::Vector{Float64},
     itpcz::Vector{Float64},
@@ -129,10 +131,7 @@ function itpc(
     ep_n >= 2 || throw(ArgumentError("OBJ must contain ≥ 2 epochs."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
@@ -257,6 +256,7 @@ The weighted variant (wITPC) allows per-epoch importance weights.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel to analyze
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `flim::Tuple{Real, Real}=(0, sr(obj) / 2)`: frequency bounds for the spectrogram
 - `nfrq::Int64=_tlength(flim)`: number of frequencies
 - `frq::Symbol=:lin`: frequency scaling - `:lin` or `:log`
@@ -277,6 +277,7 @@ function itpc_spec(
     nfrq::Int64 = _tlength(flim),
     frq::Symbol = :lin,
     w::Union{Vector{<:Real}, Nothing} = nothing,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     itpcs::Matrix{Float64},
     itpczs::Matrix{Float64},
@@ -297,10 +298,7 @@ function itpc_spec(
     end
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
 

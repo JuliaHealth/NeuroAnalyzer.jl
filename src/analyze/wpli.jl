@@ -119,6 +119,7 @@ Calculate weighted PLI (Phase Lag Index) for two NEURO objects.
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 - `debiased::Bool=false`: if `true`, calculate debiased wPLI
 - `across_epochs::Bool=false`: if `true`, calculate wPLI across the selected epochs (the standard definition, Vinck et al. 2011; `pv` has one column); otherwise for each epoch separately (across its time points)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -143,6 +144,7 @@ function wpli(
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     debiased::Bool = false,
     across_epochs::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     pv::Matrix{Float64},
     sd::Array{Float64, 3},
@@ -151,7 +153,7 @@ function wpli(
     s2ph::Array{Float64, 3},
 }
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||
@@ -220,6 +222,7 @@ Calculate weighted PLI (Phase Lag Index) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `debiased::Bool=false`: if `true`, calculate debiased wPLI
 
 # Returns
@@ -230,12 +233,10 @@ function wpli(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     debiased::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Array{Float64, 3}
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels

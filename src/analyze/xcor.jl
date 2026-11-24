@@ -222,6 +222,7 @@ For ERP/ERF objects the trial-averaged cross-correlation is prepended as epoch 1
     - `:sum`: manual lag-shifted dot product
     - `:cov`: use Julia's `cor()` (`biased` is ignored)
     - `:stat`: use `StatsBase.crosscor()` (`biased` is ignored)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -241,6 +242,7 @@ function xcor(
     demean::Bool = true,
     biased::Bool = true,
     method::Symbol = :sum,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     xc::Array{Float64, 3},
     lags::Vector{Float64},
@@ -258,7 +260,7 @@ function xcor(
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(

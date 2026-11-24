@@ -298,11 +298,11 @@ function _sort_channels(ch_t::Vector{String})::Vector{Int64}
 end
 
 """
-    _ch_pairs(obj1, ch1, obj2, ch2)
+    _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
 
 Resolve the channel pairs of two-object functions (`ch1[i]` of `obj1` with `ch2[i]` of `obj2`).
 
-Unlike `get_channel()`, the order of the channels given by the user is kept and channels may repeat (e.g. one seed channel paired with several others). Keywords (channel types, groups) and regular expressions are expanded in the order of the channels in the object. If `exclude_bads` is set, pairs in which either channel is marked as bad are removed as whole pairs.
+Unlike `get_channel()`, the order of the channels given by the user is kept and channels may repeat (e.g. one seed channel paired with several others). Keywords (channel types, groups) and regular expressions are expanded in the order of the channels in the object. If `exclude_bad_channels` is set, pairs in which either channel is marked as bad are removed as whole pairs.
 
 # Arguments
 
@@ -310,6 +310,7 @@ Unlike `get_channel()`, the order of the channels given by the user is kept and 
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
 - `obj2::NeuroAnalyzer.NEURO`
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, pairs with a bad channel are removed
 
 # Returns
 
@@ -320,6 +321,7 @@ function _ch_pairs(
     ch1::Union{String, Vector{String}, Regex},
     obj2::NeuroAnalyzer.NEURO,
     ch2::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Tuple{Vector{Int64}, Vector{Int64}}
     # resolve each token separately: keeps the order of the tokens and repeated channels;
     # a token expanding to several channels (keyword, regex) is in the object order
@@ -342,7 +344,7 @@ function _ch_pairs(
         ),
     )
 
-    if exclude_bads
+    if exclude_bad_channels
         bad1 = obj1.header.recording[:bad_channel]
         bad2 = obj2.header.recording[:bad_channel]
         keep = [!bad1[i1] && !bad2[i2] for (i1, i2) in zip(c1, c2)]
@@ -360,4 +362,36 @@ function _ch_pairs(
     end
 
     return c1, c2
+end
+
+"""
+    _get_ch(obj, ch, exclude_bad_channels)
+
+Channel numbers of the channel name(s) `ch` (see `get_channel()`); if `exclude_bad_channels` is `true`, the channels marked as bad are not included.
+"""
+_get_ch(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool,
+)::Vector{Int64} = get_channel(obj; ch = ch, exclude = exclude_bad_channels ? "bad" : "")
+
+"""
+    _get_single_ch(obj, ch, exclude_bad_channels)
+
+Channel number of the channel name `ch`, which must resolve to exactly one channel; if `exclude_bad_channels` is `true` and the channel is marked as bad, an error is thrown.
+"""
+function _get_single_ch(
+    obj::NeuroAnalyzer.NEURO,
+    ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool,
+)::Int64
+    c = get_channel(obj; ch = ch)
+    isempty(c) && throw(ArgumentError("No channels selected."))
+    length(c) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
+    exclude_bad_channels && obj.header.recording[:bad_channel][c[1]] && throw(
+        ArgumentError(
+            "Channel $(labels(obj)[c[1]]) is marked as bad (exclude_bad_channels = true).",
+        ),
+    )
+    return c[1]
 end

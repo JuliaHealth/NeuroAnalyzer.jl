@@ -135,6 +135,7 @@ For ERP return trial-averaged auto-correlation.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `l::Int64=round(Int64, min(size(obj.data, 2) - 1, 10 * log10(size(obj.data, 2))))`: range of lags is `-l:l`
 - `demean::Bool=true`: subtract the mean before computing auto-correlation
 - `biased::Bool=true`: calculate biased or unbiased autocovariance
@@ -157,6 +158,7 @@ function acor(
     demean::Bool = true,
     biased::Bool = true,
     method::Symbol = :sum,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     autocor::Array{Float64, 3},
     lags::Vector{Float64},
@@ -166,10 +168,7 @@ function acor(
     l >= 0 || throw(ArgumentError("l must be ≥ 0."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     if datatype(obj) in ("erp", "erf")

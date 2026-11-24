@@ -110,6 +110,8 @@ Computes amplitude descriptors for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, bad segments (markers of type `"BAD"` of all channels or of the selected channels) of a continuous signal are not used: their samples are removed and the remaining parts are joined (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -124,6 +126,8 @@ Named tuple:
 """
 function amp(
     obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::@NamedTuple{
     peak_amp::Matrix{Float64},
     rms_amp::Matrix{Float64},
@@ -133,11 +137,8 @@ function amp(
     te_signal::Matrix{Float64},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    return _amp(@view(obj.data[ch, :, :]))
+    return _amp(_seg_data(obj, ch, exclude_bad_segments))
 end

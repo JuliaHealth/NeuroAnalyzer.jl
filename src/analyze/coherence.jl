@@ -238,6 +238,7 @@ For two signals `s1`, `s2` and their cross-power spectra:
 - `wlen::Int64=fs`: window length in samples (default = 1 second); used by `:welch` and `:stft`
 - `wstep::Int64=min(round(Int64, wlen * 0.90), wlen - 1)`: step between window starts
 - `w::Bool=true`: if `true`, apply Hanning window
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -262,6 +263,7 @@ function coherence(
     wlen::Int64 = sr(obj1),
     wstep::Int64 = round(Int64, wlen * 0.9),
     w::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     coh::Array{ComplexF64, 2},
     imcoh::Array{Float64, 2},
@@ -273,7 +275,7 @@ function coherence(
         throw(ArgumentError("OBJ1 and OBJ2 must have the same sampling rate."))
 
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||

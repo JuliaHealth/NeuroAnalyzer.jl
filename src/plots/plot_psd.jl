@@ -96,6 +96,8 @@ Plot multi-channel Power Spectral Density (PSD) with customizable visualization 
 - `avg::Bool=false`: if `true`, plot averaged PSD across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged PSDs
 - `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
+- `bad::AbstractVector{Bool}=falses(size(p, 1))`: bad channels, drawn in light gray with a dashed line and labeled "(bad)"
+- `exclude_bad::Bool=false`: if `true`, the bad channels are not used for the average and the 95% CI
 
 # Returns
 
@@ -114,11 +116,18 @@ function plot_psd(
     avg::Bool = false,
     ci95::Bool = false,
     leg::Bool = true,
+    bad::AbstractVector{Bool} = falses(size(p, 1)),
+    exclude_bad::Bool = false,
 )::GLMakie.Figure
     # validate
     size(p, 2) == length(f) || throw(
         ArgumentError("Length of powers vector must equal length of frequencies vector."),
     )
+    length(bad) == size(p, 1) ||
+        throw(ArgumentError("Length of bad must match number of channels."))
+    # channels used for the average and the 95% CI
+    p_avg = exclude_bad && any(bad) ? p[.!bad, :] : p
+    size(p_avg, 1) > 0 || throw(ArgumentError("All channels are bad."))
     _check_var(frq, [:lin, :log], "frq")
     _check_tuple(flim, extrema(f), "flim")
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
@@ -138,7 +147,7 @@ function plot_psd(
 
     # get mean and 95%CI
     if ci95
-        msci95_data = NeuroAnalyzer._msci95(p[:, f1:f2])
+        msci95_data = NeuroAnalyzer._msci95(p_avg[:, f1:f2])
         s_m = msci95_data.sm
         s_l = msci95_data.ll
         s_u = msci95_data.ul
@@ -185,16 +194,17 @@ function plot_psd(
                 ax,
                 f[f1:f2],
                 p[idx, f1:f2];
-                color = cmap[idx],
+                color = bad[idx] ? :lightgray : cmap[idx],
                 colormap = pal,
                 linewidth = 2,
-                label = clabels[idx],
+                linestyle = bad[idx] ? :dash : :solid,
+                label = bad[idx] ? clabels[idx] * " (bad)" : clabels[idx],
             )
         end
 
         # draw averaged channels
         if avg
-            s = mean(p[:, f1:f2]; dims = 1)[:]
+            s = mean(p_avg[:, f1:f2]; dims = 1)[:]
             GLMakie.lines!(ax, f[f1:f2], s; linewidth = 4, color = :black)
         end
 
@@ -600,6 +610,7 @@ Plot Power Spectral Density (PSD) using various estimation methods with customiz
 - `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `avg::Bool=false`: if `true`, plot averaged PSD across channels
 - `ci95::Bool=false`: if `true`, plot mean and ±95% confidence interval of averaged PSDs
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the average and the 95% CI; all selected channels are shown, bad channels are marked (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `gui::Bool=true`: if `true`, keep window open and interactive
 - `ch_locs::Bool=false`: if `true`, draw a head outline with the locations of the plotted channels in the colors of their traces (black for a single channel) next to the plot (only for `type = :normal`)
 - `ch_locs_pos::Symbol=:outside`: position of the channel locations inset:
@@ -641,6 +652,7 @@ function plot_psd(
     ch_locs::Bool = false,
     ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
     _check_var(ch_locs_pos, [:outside, :rt, :lt, :rb, :lb], "ch_locs_pos")
 
@@ -779,6 +791,8 @@ function plot_psd(
                 ci95 = ci95,
                 leg = leg,
                 mono = mono,
+                bad = obj.header.recording[:bad_channel][ch],
+                exclude_bad = exclude_bad_channels,
             )
         end
 

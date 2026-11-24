@@ -515,10 +515,14 @@ end
 
 Detect bad epochs and mark them in the `reject` column of the epoch metadata (`obj.epochs`) in-place. Epochs marked before stay marked (e.g. by a previous run with other channels or methods); to clear the marks use `obj.epochs.reject .= false`. See `epoch_reject()` for the methods and arguments.
 
+Epochs that contain a bad segment (a marker of type `"BAD"`, e.g. marked in the interactive signal plot) are also marked, if the marker applies to all channels or to at least one of the channels `ch`.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `bad_markers::Bool=true`: if `true`, mark the epochs that contain a bad segment
+- `method`: as in `epoch_reject()`; `Symbol[]`: no detection, only the bad segments are used
 - other arguments as in `epoch_reject()`
 
 # Returns
@@ -553,8 +557,13 @@ function epoch_reject!(
     ransac_t::Float64 = 100.0,
     amp_t::Real = 400.0,
     nbad::Int64 = 1,
+    bad_markers::Bool = true,
 )::Nothing
-    be = epoch_reject(
+    # no detection method: only the bad segments are used
+    no_det = method isa AbstractVector && isempty(method)
+    no_det && !bad_markers &&
+        throw(ArgumentError("method must not be empty if bad_markers is false."))
+    be = no_det ? Int64[] : epoch_reject(
         obj;
         ch = ch,
         method = method,
@@ -571,10 +580,17 @@ function epoch_reject!(
         amp_t = amp_t,
         nbad = nbad,
     )
+    # epochs with a bad segment of all channels or of the selected channels
+    bm = bad_markers ? _bad_marker_epochs(obj, labels(obj)[get_channel(obj; ch = ch)]) : Int64[]
+    !isempty(bm) && _info("$(length(bm)) epoch(s) contain bad segments (BAD markers)")
+    be = sort(unique(vcat(be, bm)))
     obj.epochs = copy(_epochs_table(obj))
     obj.epochs[be, :reject] .= true
     _info("$(length(be)) epoch(s) marked as rejected ($(count(obj.epochs.reject)) in total)")
-    push!(obj.history, "epoch_reject!(obj; ch=$ch, method=$method, nbad=$nbad)")
+    push!(
+        obj.history,
+        "epoch_reject!(obj; ch=$ch, method=$method, nbad=$nbad, bad_markers=$bad_markers)",
+    )
 
     return nothing
 end

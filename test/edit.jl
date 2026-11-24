@@ -167,6 +167,52 @@ e_tmp = NeuroAnalyzer.trim(eeg; seg = (0, 21), keep = true)
 e_tmp = NeuroAnalyzer.crop(eeg; seg = (0, 21))
 @test size(e_tmp) == (24, 5377, 1)
 
+@info "Test: epoch() with exclude_bad_segments"
+# fixed-length epochs (10 s): a bad segment of all channels (9-11 s) skips epochs 1 and 2,
+# a bad segment of one channel (35-36 s) marks epoch 4 as rejected
+e_bs = deepcopy(eeg)
+e_bs.markers = e_bs.markers[1:0, :]
+add_marker!(e_bs; type = "BAD", start = 9.0, len = 2.0, value = "x")
+add_marker!(e_bs; type = "BAD", start = 35.0, len = 1.0, value = "x", ch = "O1")
+ep_all = epoch(e_bs; ep_len = 10)
+ep_bs = epoch(e_bs; ep_len = 10, exclude_bad_segments = true)
+@test nepochs(ep_bs) == nepochs(ep_all) - 2
+@test ep_bs.epochs.onset[1:2] == [20.0, 30.0]
+@test ep_bs.epochs.reject[1:2] == [false, true] && !any(ep_all.epochs.reject)
+@test ep_bs.data[:, :, 1] == ep_all.data[:, :, 3]
+# marker-based epochs: a bad segment beginning before the epoch (18-20.5 s, epoch 19.5-21.5 s)
+e_bs2 = deepcopy(eeg)
+e_bs2.markers = e_bs2.markers[1:0, :]
+add_marker!(e_bs2; type = "stim", start = 20.0, value = "A")
+add_marker!(e_bs2; type = "stim", start = 40.0, value = "A")
+add_marker!(e_bs2; type = "BAD", start = 18.0, len = 2.5, value = "x")
+ep_bs2 = epoch(e_bs2; marker_value = "A", offset = 0.5, ep_len = 2, exclude_bad_segments = true)
+@test nepochs(ep_bs2) == 1 && ep_bs2.epochs.onset == [39.5]
+@test ep_bs2.epoch_time[1] ≈ -0.5
+@test nepochs(epoch(e_bs2; marker_value = "A", offset = 0.5, ep_len = 2)) == 2
+# all epochs overlap bad segments
+add_marker!(e_bs2; type = "BAD", start = 39.0, len = 2.0, value = "y")
+@test_throws ArgumentError epoch(e_bs2; marker_value = "A", offset = 0.5, ep_len = 2,
+                                 exclude_bad_segments = true)
+
+@info "Test: bad segments (interactive plot: b, u)"
+e_bad = deepcopy(eeg)
+e_bad.markers = e_bad.markers[1:0, :]
+NeuroAnalyzer._mark_bad!(e_bad, 2.0, 3.5, String[])
+NeuroAnalyzer._mark_bad!(e_bad, 5.0, 7.0, ["Fp1", "F7"])
+@test e_bad.markers[!, :type] == ["BAD", "BAD"] && e_bad.markers[!, :value] == ["manual", "manual"]
+@test e_bad.markers[!, :start] == [2.0, 5.0] && e_bad.markers[!, :length] == [1.5, 2.0]
+@test e_bad.markers[!, :channel] == [String[], ["Fp1", "F7"]]
+@test_throws ArgumentError NeuroAnalyzer._mark_bad!(e_bad, 3.0, 2.0, String[])
+@test_throws ArgumentError NeuroAnalyzer._mark_bad!(e_bad, 1.0, 2.0, ["XX"])
+# unmark: only BAD markers overlapping the segment
+add_marker!(e_bad; type = "stim", start = 6.0, value = "s1")
+@test NeuroAnalyzer._unmark_bad!(e_bad, 6.5, 8.0) == 1
+@test e_bad.markers[!, :type] == ["BAD", "stim"]
+@test NeuroAnalyzer._unmark_bad!(e_bad, 10.0, 11.0) == 0
+# shading in the (non-interactive) plot
+@test NeuroAnalyzer.plot(e_bad; ch = "eeg", seg = (0, 10), gui = false) isa NeuroAnalyzer.GLMakie.Figure
+
 @info "Test: delete_marker()"
 eeg_mrk = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edfplus.edf"))
 @test nrow(eeg_mrk.markers) == 45
@@ -366,6 +412,27 @@ epoch_reject!(e_rej; ch = "eeg", method = :flat)
 epoch_reject!(e_rej; ch = "eeg", method = :amp, amp_t = 150)
 @test findall(e_rej.epochs.reject) == [2, 3]
 @test !any(e_bad.epochs.reject)
+# epochs containing bad segments (BAD markers) are marked (2-s epochs)
+e_bm = deepcopy(e_bad)
+e_bm.markers = e_bm.markers[1:0, :]
+add_marker!(e_bm; type = "BAD", start = 1.0, len = 0.5, value = "x")              # epoch 1
+add_marker!(e_bm; type = "BAD", start = 9.5, len = 1.0, value = "x")              # epochs 5, 6
+add_marker!(e_bm; type = "BAD", start = 13.0, len = 0.5, value = "x", ch = "O2")  # epoch 7, O2
+add_marker!(e_bm; type = "stim", start = 17.0, value = "s1")                      # not bad
+epoch_reject!(e_bm; ch = "eeg", method = Symbol[])
+@test findall(e_bm.epochs.reject) == [1, 5, 6, 7]
+# a bad segment of other channels is not used
+e_bm.epochs.reject .= false
+epoch_reject!(e_bm; ch = "Fp1", method = Symbol[])
+@test findall(e_bm.epochs.reject) == [1, 5, 6]
+# detection and bad segments together; bad segments not used
+e_bm.epochs.reject .= false
+epoch_reject!(e_bm; ch = "eeg", method = :flat)
+@test findall(e_bm.epochs.reject) == [1, 2, 5, 6, 7]
+e_bm.epochs.reject .= false
+epoch_reject!(e_bm; ch = "eeg", method = :flat, bad_markers = false)
+@test findall(e_bm.epochs.reject) == [2]
+@test_throws ArgumentError epoch_reject!(e_bm; ch = "eeg", method = Symbol[], bad_markers = false)
 @test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", nbad = 0)
 @test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", nbad = 20)
 @test_throws ArgumentError epoch_reject(e_bad; ch = "eeg", method = :var, w = 1)

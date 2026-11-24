@@ -96,7 +96,8 @@ const PATH = normpath(joinpath(@__DIR__, ".."))
 
 progress_bar = true
 verbose = true
-exclude_bads = false
+exclude_bad_channels = false
+exclude_bad_segments = false
 colors = true
 res_path = ""
 plugins_path = ""
@@ -662,7 +663,10 @@ function __init__()
     # load preferences
     global progress_bar = @load_preference("progress_bar", true)
     global verbose = @load_preference("verbose", true)
-    global exclude_bads = @load_preference("exclude_bads", false)
+    # "exclude_bads": name of the preference before v0.26.12
+    global exclude_bad_channels =
+        @load_preference("exclude_bad_channels", @load_preference("exclude_bads", false))
+    global exclude_bad_segments = @load_preference("exclude_bad_segments", false)
     global colors = @load_preference("colors", true)
 
     # show major parameters
@@ -671,7 +675,8 @@ function __init__()
     _info("Preferences:")
     _info(" Progress bar: $progress_bar")
     _info("      Verbose: $verbose")
-    _info(" Exclude bads: $exclude_bads")
+    _info("Exclude bad channels: $exclude_bad_channels")
+    _info("Exclude bad segments: $exclude_bad_segments")
     _info("       Colors: $colors")
     _info("System info:")
     _info("  Free memory: $(round(Sys.free_memory() / 2^20, digits = 1)) MB")

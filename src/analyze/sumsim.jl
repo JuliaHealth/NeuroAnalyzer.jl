@@ -91,6 +91,7 @@ Calculate summed similarity using an exponential decay model between two NEURO o
 - `ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj1))`: epoch number(s) in `obj1`
 - `ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}=_c(nepochs(obj2))`: epoch number(s) in `obj2`
 - `theta::Real`: decay parameter
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -108,6 +109,7 @@ function sumsim(
     ep1::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj1)),
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     theta::Real,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Matrix{Float64}
     # validate
     length(ep1) == length(ep2) ||
@@ -120,7 +122,7 @@ function sumsim(
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(

@@ -209,6 +209,8 @@ For a given frequency band, computes four descriptors:
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, bad segments (markers of type `"BAD"` of all channels or of the selected channels) of a continuous signal are not used: their samples are removed and the remaining parts are joined (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `flim::Tuple{Real, Real}`: lower and upper frequency bounds
 - `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
@@ -245,6 +247,8 @@ function band_mpower(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::@NamedTuple{
     mbp::Matrix{Float64},
     maxfrq::Matrix{Float64},
@@ -252,14 +256,11 @@ function band_mpower(
     maxba::Matrix{Float64},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _band_mpower(
-        @view(obj.data[ch, :, :]);
+        _seg_data(obj, ch, exclude_bad_segments);
         fs = sr(obj),
         flim = flim,
         method = method,

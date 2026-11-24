@@ -73,6 +73,7 @@ Calculate `n` first Principal Components (PCs); one model is fitted to all epoch
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `n::Int64`: number of PCs to calculate
 
 # Returns
@@ -88,6 +89,7 @@ function pca_decompose(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     n::Int64,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     pc::Array{Float64, 3},
     pcv::Matrix{Float64},
@@ -95,7 +97,7 @@ function pca_decompose(
     pc_model::MultivariateStats.PCA{Float64},
 }
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _pca_decompose(@view(obj.data[ch, :, :]); n = n)
@@ -147,6 +149,7 @@ Reconstruct signal using PCA components (`pc` and `pca`).
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
@@ -159,9 +162,10 @@ function pca_reconstruct(
     ch::Union{String, Vector{String}, Regex},
     pc::Array{Float64, 3},
     pc_model::MultivariateStats.PCA{Float64},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    pca_reconstruct!(obj_new; ch = ch, pc = pc, pc_model = pc_model)
+    pca_reconstruct!(obj_new; ch = ch, exclude_bad_channels = exclude_bad_channels, pc = pc, pc_model = pc_model)
 
     return obj_new
 end
@@ -175,6 +179,7 @@ Reconstruct signals using PCA components (`pc` and `pc_model`).
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `pc::Array{Float64, 3}`: PC(1)..PC(n) × epoch
 - `pc_model::MultivariateStats.PCA{Float64}`: PC model
 
@@ -187,9 +192,10 @@ function pca_reconstruct!(
     ch::Union{String, Vector{String}, Regex},
     pc::Array{Float64, 3},
     pc_model::MultivariateStats.PCA{Float64},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Nothing
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] =

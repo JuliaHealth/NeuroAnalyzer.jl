@@ -12,6 +12,8 @@ export plot_cont
 
 Plot continuous signal with interactive editing.
 
+Bad segments (markers of type `"BAD"`) are shaded: over all channels, or over the rows of their channels. In the interactive mode (`type = :normal`), a segment selected with two left clicks is marked as bad with `b` (for the channels selected with Ctrl + left click, or for all channels), bad segments overlapping it are unmarked with `u`, and it is deleted with `d`.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
@@ -33,6 +35,7 @@ Plot continuous signal with interactive editing.
 - `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `snap::Bool=true`: if `true`, snap to grid when placing markers
 - `gui::Bool=true`: if `true`, keep window open and interactive
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the averages and 95% CIs of butterfly plots; all selected channels are shown (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -56,6 +59,7 @@ function plot_cont(
     res::Int64 = 1,
     snap::Bool = true,
     gui::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
     # validate
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
@@ -208,6 +212,8 @@ function plot_cont(
     vmarker1 = Observable(NaN)
     vmarker2 = Observable(NaN)
     marker_range = Observable([NaN, NaN])
+    # channels selected for a bad segment (object channel numbers; Ctrl + left click)
+    sel_ch = Observable(Int64[])
 
     if gui
         # time bar
@@ -281,14 +287,58 @@ function plot_cont(
         return out
     end
 
+    # rows (channels) of the channel type ctypes_uni[k] used for the butterfly average and
+    # 95% CI: without the bad channels if exclude_bad_channels (all rows if all are bad)
+    function _avg_rows(k)
+        local rows = ctypes .== ctypes_uni[k]
+        if exclude_bad_channels
+            local rows_good = rows .& .!bad_ch[][ch_idx]
+            any(rows_good) && (rows = rows_good)
+        end
+        return rows
+    end
+
     # draw signal-dependent elements; called again after the signal is modified
     function _draw!()
         foreach(off, draw_listeners)
         empty!(draw_listeners)
+        # bad segments (markers of type "BAD"): shaded over all rows (marker of all channels)
+        # or over the rows of their channels
+        bad_rects = GLMakie.Rect2f[]
+        bad_spans = GLMakie.Rect2f[]
+        clbl_all = labels(obj)
+        for m in eachrow(obj.markers)
+            m[:type] == "BAD" || continue
+            x0 = Float32(m[:start])
+            w = Float32(max(m[:length], 1 / sr(obj)))
+            push!(bad_spans, GLMakie.Rect2f(x0, 0, w, 1))
+            if isempty(m[:channel])
+                push!(bad_rects, GLMakie.Rect2f(x0, 0.5, w, ch_n))
+            else
+                rows = Int64[]
+                for l in m[:channel]
+                    c = findfirst(==(l), clbl_all)
+                    isnothing(c) && continue
+                    row = if type === :normal
+                        findfirst(==(c), ch_idx)
+                    else
+                        findfirst(==(obj.header.recording[:channel_type][c]), ctypes_uni)
+                    end
+                    isnothing(row) || push!(rows, row)
+                end
+                for row in unique(rows)
+                    push!(bad_rects, GLMakie.Rect2f(x0, row - 0.5, w, 1))
+                end
+            end
+        end
+        isempty(bad_rects) ||
+            GLMakie.poly!(ax1, bad_rects; color = (:red, 0.15), strokewidth = 0)
         # draw channels
         if type === :normal
             for idx = 1:ch_n
-                line_color = _draw_lift(b -> b[ch_idx[idx]] ? :lightgray : :black, bad_ch)
+                line_color = _draw_lift(bad_ch, sel_ch) do b, sc
+                    return ch_idx[idx] in sc ? :blue : (b[ch_idx[idx]] ? :lightgray : :black)
+                end
                 y = _draw_lift(g -> y_off[idx] .+ g .* s[idx, :], gain)
                 GLMakie.lines!(ax1, t, y; linewidth = 1.5, color = line_color)
             end
@@ -296,7 +346,7 @@ function plot_cont(
         elseif type === :butterfly
             if ci95
                 for idx in eachindex(ctypes_uni)
-                    msci95_data = NeuroAnalyzer._msci95(s[ctypes .== ctypes_uni[idx], :])
+                    msci95_data = NeuroAnalyzer._msci95(s[_avg_rows(idx), :])
                     s_m = _draw_lift(g -> idx .+ g .* msci95_data.sm, gain)
                     s_u = _draw_lift(g -> idx .+ g .* msci95_data.ul, gain)
                     s_l = _draw_lift(g -> idx .+ g .* msci95_data.ll, gain)
@@ -322,7 +372,7 @@ function plot_cont(
                 end
                 if avg
                     for idx in eachindex(ctypes_uni)
-                        s_avg = mean(s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:]
+                        s_avg = mean(s[_avg_rows(idx), :]; dims = 1)[:]
                         y = _draw_lift(g -> idx .+ g .* s_avg, gain)
                         GLMakie.lines!(ax1, t, y; linewidth = 2, color = :black)
                     end
@@ -437,6 +487,8 @@ function plot_cont(
         if gui
             GLMakie.xlims!(ax2, t[1], t[end])
             GLMakie.ylims!(ax2, 0, 1)
+            isempty(bad_spans) ||
+                GLMakie.poly!(ax2, bad_spans; color = (:red, 0.4), strokewidth = 0)
             markers && GLMakie.vlines!(
                 ax2,
                 markers_pos;
@@ -464,6 +516,19 @@ function plot_cont(
         return nothing
     end
     _draw!()
+
+    # redraw after the signal or the markers were modified; the selection is cleared
+    function _redraw!()
+        vmarker1[] = NaN
+        vmarker2[] = NaN
+        marker_range[] = [NaN, NaN]
+        sel_ch[] = Int64[]
+        _prepare_data!()
+        empty!(ax1)
+        empty!(ax2)
+        _draw!()
+        return nothing
+    end
 
     if gui
         # mouse events
@@ -499,6 +564,7 @@ function plot_cont(
                             vmarker1[] = NaN
                             vmarker2[] = NaN
                             marker_range[] = [NaN, NaN]
+                            sel_ch[] = Int64[]
                             notify(vmarker1)
                             notify(vmarker2)
                             notify(marker_range)
@@ -506,7 +572,18 @@ function plot_cont(
                     end
 
                 elseif event.button == Mouse.left
-                    if type === :normal
+                    ctrl = ispressed(fig, Keyboard.left_control) ||
+                           ispressed(fig, Keyboard.right_control)
+                    if type === :normal && ctrl
+                        # Ctrl + left click on a channel (label or signal): select / deselect
+                        # it for a bad segment
+                        row = round(Int64, ax1_y)
+                        if ax1_x <= ax1.limits[][1][2] && 1 <= row <= ch_n &&
+                           ax1_y >= min(ax1.limits[][2]...) && ax1_y <= max(ax1.limits[][2]...)
+                            c = ch_idx[row]
+                            sel_ch[] = c in sel_ch[] ? setdiff(sel_ch[], c) : vcat(sel_ch[], c)
+                        end
+                    elseif type === :normal
                         # get channel info
                         ax1_x < ax1.limits[][1][1] &&
                             channel_info(obj; ch = clabels[round(Int64, ax1_y)])
@@ -573,22 +650,26 @@ function plot_cont(
                 alt && event.key == Keyboard.up && (gain[] *= 1.25)
                 alt && event.key == Keyboard.down && (gain[] /= 1.25)
                 if type === :normal
-                    if event.key == Keyboard.d
-                        if !isnan(vmarker1[]) && !isnan(vmarker2[])
-                            trim!(obj; seg = (marker_range[][1], marker_range[][2]))
-                            # clear selection
-                            vmarker1[] = NaN
-                            vmarker2[] = NaN
-                            marker_range[] = [NaN, NaN]
-                            # redraw modified signal in place
-                            _prepare_data!()
-                            empty!(ax1)
-                            empty!(ax2)
-                            _draw!()
-                            seg_pos[] > t[end] - seg_len &&
-                                (seg_pos[] = max(t[1], t[end] - seg_len))
-                            update_ax2 = true
-                        end
+                    sel_ok = !isnan(vmarker1[]) && !isnan(vmarker2[]) &&
+                             vmarker2[] > vmarker1[]
+                    # d: delete the selected segment
+                    if event.key == Keyboard.d && sel_ok
+                        trim!(obj; seg = (marker_range[][1], marker_range[][2]))
+                        # redraw modified signal in place
+                        _redraw!()
+                        seg_pos[] > t[end] - seg_len &&
+                            (seg_pos[] = max(t[1], t[end] - seg_len))
+                        update_ax2 = true
+                    end
+                    # b: mark the selected segment as bad (selected channels or all channels)
+                    if event.key == Keyboard.b && sel_ok
+                        _mark_bad!(obj, vmarker1[], vmarker2[], labels(obj)[sort(sel_ch[])])
+                        _redraw!()
+                    end
+                    # u: unmark the bad segments overlapping the selected segment
+                    if event.key == Keyboard.u && sel_ok
+                        _unmark_bad!(obj, vmarker1[], vmarker2[])
+                        _redraw!()
                     end
 
                     event.key == Keyboard.s && (snap = !snap)

@@ -19,6 +19,7 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, epochs that overlap a bad segment (marker of type `"BAD"`, also one that begins before the epoch) of all channels are skipped, epochs that overlap a bad segment of some channels are marked as rejected (`obj.epochs.reject`) (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
 - `condition::Union{String, AbstractDict}="value"`: condition label of each marker-based epoch (`obj.epochs.condition`): the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("s70" => "face", "s71" => "face", "s130" => "house")`; values not in the dictionary are their own labels)
 - `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
@@ -34,6 +35,7 @@ function epoch(
     ep_len::Union{Real, Nothing} = nothing,
     overlap::Real = 0,
     condition::Union{String, AbstractDict} = "value",
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     epoch!(
@@ -44,6 +46,7 @@ function epoch(
         ep_len = ep_len,
         overlap = overlap,
         condition = condition,
+        exclude_bad_segments = exclude_bad_segments,
     )
 
     return obj_new
@@ -63,6 +66,7 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, epochs that overlap a bad segment (marker of type `"BAD"`, also one that begins before the epoch) of all channels are skipped, epochs that overlap a bad segment of some channels are marked as rejected (`obj.epochs.reject`) (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
 - `condition::Union{String, AbstractDict}="value"`: condition label of each marker-based epoch (`obj.epochs.condition`): the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("s70" => "face", "s71" => "face", "s130" => "house")`; values not in the dictionary are their own labels)
 - `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
@@ -78,6 +82,7 @@ function epoch!(
     ep_len::Union{Real, Nothing} = nothing,
     overlap::Real = 0,
     condition::Union{String, AbstractDict} = "value",
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::Nothing
     # validate
     nepochs(obj) == 1 ||
@@ -96,6 +101,8 @@ function epoch!(
     # epoch metadata of the continuous signal: onset of its first sample in the original
     # recording and its source
     ep_tbl   = _epochs_table(obj)
+    # markers of the continuous signal (bad segments are checked against them)
+    mrk0     = copy(obj.markers)
     onset0   = ep_tbl[1, :onset]
     source   = ep_tbl[1, :source]
     fs       = sr(obj)
@@ -208,8 +215,38 @@ function epoch!(
 
     push!(
         obj.history,
-        "epoch(obj; marker_value=$(repr(marker_value)), marker_type=$marker_type, offset=$offset, ep_len=$ep_len, overlap=$overlap, condition=$(repr(condition)))",
+        "epoch(obj; marker_value=$(repr(marker_value)), marker_type=$marker_type, offset=$offset, ep_len=$ep_len, overlap=$overlap, condition=$(repr(condition)), exclude_bad_segments=$exclude_bad_segments)",
     )
+
+    # bad segments of the continuous signal (markers of type "BAD"; also those that begin
+    # before an epoch, whose markers are not kept in the epochs): epochs overlapping a bad
+    # segment of all channels are skipped, epochs overlapping a bad segment of some
+    # channels are marked as rejected
+    if exclude_bad_segments
+        n_ep = size(obj.data, 2)
+        drop = Int64[]
+        rej = Int64[]
+        for m in eachrow(mrk0)
+            m[:type] == "BAD" || continue
+            m1 = t2s(m[:start], fs)
+            m2 = max(m1, round(Int64, (m[:start] + m[:length]) * fs))
+            for (k, s0) in enumerate(ep_starts)
+                (m1 <= s0 + n_ep - 1 && m2 >= s0) || continue
+                push!(isempty(m[:channel]) ? drop : rej, k)
+            end
+        end
+        drop = sort(unique(drop))
+        rej = setdiff(unique(rej), drop)
+        obj.epochs[rej, :reject] .= true
+        !isempty(rej) && _info("$(length(rej)) epoch(s) with bad segments of some channels marked as rejected")
+        if !isempty(drop)
+            length(drop) < nepochs(obj) ||
+                throw(ArgumentError("All epochs overlap bad segments."))
+            # (delete_epoch!() keeps the epoch time axis, i.e. the offset)
+            delete_epoch!(obj; ep = drop)
+            _info("$(length(drop)) epoch(s) overlapping bad segments skipped")
+        end
+    end
 
     return nothing
 end

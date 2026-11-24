@@ -28,6 +28,7 @@ Computes the log-ratio and normalized difference of mean band power between two 
 - `ncyc::Union{Int64, Tuple{Int64, Int64}}=32`: number of Morlet wavelet cycles; for a tuple the number of cycles is logarithmically (geometrically) spaced from `ncyc[1]` to `ncyc[2]` across frequencies
 - `gw::Real=5`: Gaussian width in Hz (used by `:gh`)
 - `demean::Bool=true`: subtract DC component before estimating PSD
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -49,13 +50,14 @@ function asy_idx(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     asi::Float64,
     nasi::Float64,
 }
     # resolve channel names to integer indices
-    ch1 = get_channel(obj; ch = ch1)
-    ch2 = get_channel(obj; ch = ch2)
+    ch1 = _get_ch(obj, ch1, exclude_bad_channels)
+    ch2 = _get_ch(obj, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
 

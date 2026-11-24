@@ -13,6 +13,7 @@ The result may be a vector (e.g. `"cumsum(obj)"`, `"obj .^ 2"`) or a single numb
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `f::String`: Julia expression to evaluate, using `obj` as the signal placeholder
 
 # Returns
@@ -23,9 +24,10 @@ function apply(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     f::String,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Array{Float64, 3}
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels

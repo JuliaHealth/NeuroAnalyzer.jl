@@ -187,6 +187,7 @@ Calculate temporal envelope for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
@@ -200,15 +201,13 @@ function tenv(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     d::Int64 = 32,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     e::Array{Float64, 3},
     t::Vector{Float64},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
@@ -239,6 +238,7 @@ Calculate temporal envelope (mean and 95% CI) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
@@ -256,6 +256,7 @@ function tenv_mean(
     ch::Union{String, Vector{String}, Regex},
     dims::Int64,
     d::Int64 = 32,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -272,7 +273,7 @@ function tenv_mean(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    tenv_data = tenv(obj; ch = ch, d = d)
+    tenv_data = tenv(obj; ch = ch, exclude_bad_channels = exclude_bad_channels, d = d)
     a = tenv_data.e
     t = tenv_data.t
 
@@ -294,6 +295,7 @@ Calculate temporal envelope (median and 95% CI) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
@@ -311,6 +313,7 @@ function tenv_median(
     ch::Union{String, Vector{String}, Regex},
     dims::Int64,
     d::Int64 = 32,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -327,7 +330,7 @@ function tenv_median(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    tenv_data = tenv(obj; ch = ch, d = d)
+    tenv_data = tenv(obj; ch = ch, exclude_bad_channels = exclude_bad_channels, d = d)
     a = tenv_data.e
     t = tenv_data.t
 
@@ -349,6 +352,7 @@ Calculate power spectrum envelope (linear power) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD estimation method:
     - `:welch`: Welch's periodogram
@@ -384,15 +388,13 @@ function penv(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     e::Array{Float64, 3},
     f::Vector{Float64},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
@@ -442,6 +444,7 @@ Calculate power spectrum envelope (linear power) (mean and 95% CI) for a NEURO o
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD estimation method:
@@ -481,6 +484,7 @@ function penv_mean(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -499,7 +503,7 @@ function penv_mean(
 
     penv_data = penv(
         obj;
-        ch = ch,
+        ch = ch, exclude_bad_channels = exclude_bad_channels,
         d = d,
         method = method,
         nt = nt,
@@ -533,6 +537,7 @@ Calculate power spectrum envelope (linear power) (median and 95% CI) for a NEURO
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: median over channels (dims = 1) or epochs (dims = 2)
 - `d::Int64=8`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `method::Symbol=:welch`: PSD estimation method:
@@ -572,6 +577,7 @@ function penv_median(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -590,7 +596,7 @@ function penv_median(
 
     penv_data = penv(
         obj;
-        ch = ch,
+        ch = ch, exclude_bad_channels = exclude_bad_channels,
         d = d,
         method = method,
         nt = nt,
@@ -624,6 +630,7 @@ Calculate spectral envelope (dominant frequency over time) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
 - `method::Symbol=:stft` spectrogram method:
@@ -664,15 +671,13 @@ function senv(
     wlen::Int64 = sr(obj),
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     e::Array{Float64, 3},
     t::Vector{Float64},
 } where {T <: CWT}
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels
@@ -824,6 +829,7 @@ Calculate spectral envelope (mean and 95% CI) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
@@ -868,6 +874,7 @@ function senv_mean(
     wlen::Int64 = sr(obj),
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -886,7 +893,7 @@ function senv_mean(
 
     env_data = senv(
         obj;
-        ch = ch,
+        ch = ch, exclude_bad_channels = exclude_bad_channels,
         d = d,
         threshold = threshold,
         pad = pad,
@@ -923,6 +930,7 @@ Calculate spectral envelope (median and 95% CI) for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=2`: minimum distance between peaks in samples; smaller values give a tighter fit
 - `threshold::Union{Real, Nothing}=nothing`: spectrogram threshold; powers above `threshold` are zeroed before finding the dominant frequency
@@ -967,6 +975,7 @@ function senv_median(
     wlen::Int64 = sr(obj),
     woverlap::Int64 = min(round(Int64, wlen * 0.90), wlen - 1),
     w::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -985,7 +994,7 @@ function senv_median(
 
     senv_data = senv(
         obj;
-        ch = ch,
+        ch = ch, exclude_bad_channels = exclude_bad_channels,
         d = d,
         threshold = threshold,
         pad = pad,
@@ -1022,6 +1031,7 @@ Calculate Hilbert spectrum amplitude envelope for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
 # Returns
@@ -1035,6 +1045,7 @@ function henv(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     d::Int64 = 32,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     e::Array{Float64, 3},
     t::Vector{Float64},
@@ -1044,10 +1055,7 @@ function henv(
     )
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     a = htransform(@view(obj.data[ch, :, :])).a
@@ -1081,6 +1089,7 @@ Calculate Hilbert spectrum amplitude envelope (mean and 95% CI) for a NEURO obje
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: mean over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
@@ -1097,6 +1106,7 @@ function henv_mean(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     dims::Int64, d::Int64 = 32,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -1113,7 +1123,7 @@ function henv_mean(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    henv_data = henv(obj; ch = ch, d = d)
+    henv_data = henv(obj; ch = ch, exclude_bad_channels = exclude_bad_channels, d = d)
     a = henv_data.e
     t = henv_data.t
 
@@ -1137,6 +1147,7 @@ Calculate Hilbert spectrum amplitude envelope (median and 95% CI) for a NEURO ob
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `dims::Int64`: median over channels (`dims=1`), epochs (`dims=2`), or both (`dims=3`)
 - `d::Int64=32`: minimum distance between peaks in samples; smaller values give a tighter fit
 
@@ -1154,6 +1165,7 @@ function henv_median(
     ch::Union{String, Vector{String}, Regex},
     dims::Int64,
     d::Int64 = 32,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     em::Matrix{Float64},
     el::Matrix{Float64},
@@ -1170,7 +1182,7 @@ function henv_median(
         nepochs(obj) >= 2 || throw(ArgumentError("Number of epochs must be ≥ 2."))
     end
 
-    henv_data = henv(obj; ch = ch, d = d)
+    henv_data = henv(obj; ch = ch, exclude_bad_channels = exclude_bad_channels, d = d)
     a = henv_data.e
     t = henv_data.t
 

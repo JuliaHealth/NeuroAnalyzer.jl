@@ -10,6 +10,7 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be an ERP or ERF object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -18,16 +19,14 @@ Calculate the variance across channels at each time point of an ERP/ERF object (
 function topo_var(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Vector{Float64}
     # validate
     datatype(obj) in ["erp", "erf"] ||
         throw(ArgumentError("topo_var() should be applied for ERP or ERF object only."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return dropdims(var(@view(obj.data[ch, :, 1]); dims = 1); dims = 1)
@@ -104,6 +103,7 @@ Operates on ERP/ERF objects only and uses epoch 1 (the trial-averaged waveform).
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object: must be an ERP or ERF object
 - `ch1::Union{String, Vector{String}, Regex}`: channel name(s) in `obj1`
 - `ch2::Union{String, Vector{String}, Regex}`: channel name(s) in `obj2`
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -117,6 +117,7 @@ function diss(
     obj2::NeuroAnalyzer.NEURO;
     ch1::Union{String, Vector{String}, Regex},
     ch2::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     gd::Vector{Float64},
     sc::Vector{Float64},
@@ -134,7 +135,7 @@ function diss(
         throw(ArgumentError("OBJ1 and OBJ2 must have the same epoch lengths."))
 
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) ||

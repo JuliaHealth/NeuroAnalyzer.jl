@@ -70,6 +70,7 @@ Zero-crossing rate (an example plugin function). For a sine of frequency `f` the
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference)
 
 # Returns
 
@@ -78,10 +79,9 @@ Zero-crossing rate (an example plugin function). For a sine of frequency `f` the
 function test_plugin_zcr(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Matrix{Float64}
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = get_channel(obj; ch = ch, exclude = exclude_bad_channels ? "bad" : "")
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _test_plugin_zcr(@view(obj.data[ch, :, :]); fs = sr(obj))

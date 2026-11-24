@@ -298,6 +298,7 @@ Calculate Fourier/Hilbert transform for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `pad::Int64=0`: (FFT only) number of zeros to append
 - `h::Bool=false`: if true, use Hilbert transform instead of FFT
 - `db::Bool=false`: normalize powers to dB
@@ -318,6 +319,7 @@ function transform(
     h::Bool = false,
     db::Bool = false,
     nf::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     c::Array{ComplexF64, 3},
     a::Array{Float64, 3},
@@ -325,10 +327,7 @@ function transform(
     ph::Array{Float64, 3},
 }
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _transform(
@@ -404,6 +403,7 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -412,12 +412,10 @@ Calculate complex analytic signal (`s + i·H(s)`) using Hilbert transformation f
 function hanalytic(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Array{ComplexF64, 3}
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return NeuroAnalyzer._hanalytic(@view(obj.data[ch, :, :]))

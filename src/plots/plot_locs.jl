@@ -126,6 +126,7 @@ Preview channel locations with customizable visualization and connection mapping
 - `weights::Union{Bool, Vector{<:Real}}=true`: if `true`, auto-scale line widths and transparency based on connection strength; if Vector, use provided weights to place at channel location
 - `ch_info::Vector{String}=string.(1:DataFrames.nrow(locs))`: channel information details
 - `ch_colors::Union{Nothing, AbstractVector}=nothing`: marker color of each channel in `ch` (overrides `sch` / `mono` coloring)
+- `bad::Union{Nothing, AbstractVector{Bool}}=nothing`: bad channels (one value per row of `locs`), drawn with a red ×
 
 # Returns
 
@@ -149,6 +150,7 @@ function plot_locs(
     weights::Union{Bool, Vector{<:Real}} = true,
     ch_info::Vector{String} = string.(1:DataFrames.nrow(locs)),
     ch_colors::Union{Nothing, AbstractVector} = nothing,
+    bad::Union{Nothing, AbstractVector{Bool}} = nothing,
     gui::Bool = true,
 )::GLMakie.Figure
     # locations are stored in their original units: scale the montage to the unit sphere
@@ -367,6 +369,16 @@ function plot_locs(
                 strokecolor = :black,
             )
         end
+        # bad channel: red × over the marker
+        if !isnothing(bad) && bad[idx]
+            GLMakie.scatter!(
+                loc_x[i],
+                loc_y[i];
+                marker     = :xcross,
+                markersize = marker_size * 1.8,
+                color      = :red,
+            )
+        end
     end
 
     # in the side (:yz, seen from the right) and coronal (:xz, seen from behind) views, channels of both
@@ -487,6 +499,8 @@ end
 
 Preview channel locations from a NEURO object with customizable 2D/3D visualization and optional connection mapping.
 
+All selected channels are shown; channels marked as bad are drawn with a red × (not for NIRS objects).
+
 For NIRS objects, the optodes (sources in red, detectors in green) and the source-detector pairs of the selected channels (`ch`; channels without optodes, e.g. auxiliary channels, are skipped) are shown; short-separation pairs (source-detector distance < 15 mm) are drawn with dashed lines. `sch` highlights the pairs of the given channels, `ch_labels` shows the channels (pairs) at the midpoints between their source and detector, numbered in the order of the pairs (as in `nirs_quality()`), and a `weights` vector gives one value per pair. `connections` are not supported for NIRS objects.
 
 # Arguments
@@ -555,17 +569,13 @@ function plot_locs(
     # validate
     datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 
-    # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    # all selected channels are shown (bad channels are marked)
+    ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     datatype(obj) == "nirs" && return _plot_locs_nirs_obj(
         obj, ch;
         sch          = sch,
-        exclude_bads = exclude_bads,
         ch_labels    = ch_labels,
         src_labels   = src_labels,
         det_labels   = det_labels,
@@ -595,10 +605,7 @@ function plot_locs(
     sch_resolved = if sch == ""
         Int64[]
     else
-        sch_idx =
-            exclude_bads ?
-            get_channel(obj; ch = sch, exclude = "bad") :
-            get_channel(obj; ch = sch, exclude = "")
+        sch_idx = get_channel(obj; ch = sch)
         sch_chs = intersect(locs[!, :label], labels(obj)[sch_idx])
         _find_bylabel(locs, sch_chs)
     end
@@ -621,6 +628,7 @@ function plot_locs(
             threshold_type = threshold_type,
             weights        = weights,
             ch_info        = ch_info,
+            bad            = in(Set(labels(obj)[obj.header.recording[:bad_channel]])).(locs[!, :label]),
             gui            = gui,
         )
     elseif datatype(obj) == "ecog"
@@ -647,7 +655,6 @@ function _plot_locs_nirs_obj(
     obj::NeuroAnalyzer.NEURO,
     ch::Vector{Int64};
     sch::Union{String, Vector{String}, Regex},
-    exclude_bads::Bool,
     ch_labels::Bool,
     src_labels::Bool,
     det_labels::Bool,
@@ -682,10 +689,7 @@ function _plot_locs_nirs_obj(
     # highlighted pairs: rows (in ch_opt) of the channels in sch
     spairs = Int64[]
     if sch != ""
-        sch_idx =
-            exclude_bads ?
-            get_channel(obj; ch = sch, exclude = "bad") :
-            get_channel(obj; ch = sch, exclude = "")
+        sch_idx = get_channel(obj; ch = sch)
         sp = Set((opt_pairs[c, 1], opt_pairs[c, 2]) for c in sch_idx if c <= n_opt)
         spairs = [k for (k, c) in enumerate(ch_opt) if (opt_pairs[c, 1], opt_pairs[c, 2]) in sp]
     end

@@ -289,6 +289,7 @@ Compute area under curve of an ERP/ERF/MEP (epoch 1).
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `seg::Tuple{Real, Real}=(obj.epoch_time[1], obj.epoch_time[end])`: time segment in seconds
 - `type::Symbol=:all`: which part of the signal to integrate:
     - `:all` - full waveform
@@ -304,6 +305,7 @@ function erp_auc(
     ch::Union{String, Vector{String}, Regex},
     seg::Tuple{Real, Real} = (obj.epoch_time[1], obj.epoch_time[end]),
     type::Symbol = :all,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Vector{Float64}
     # validate
     _check_datatype(obj, ["erp", "erf", "mep"])
@@ -315,10 +317,7 @@ function erp_auc(
     t2 = vsearch(seg[2], obj.epoch_time)
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # pre-allocate output

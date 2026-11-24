@@ -122,6 +122,7 @@ Calculate phase difference between channels and mean phase of reference `ch`.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s); each channel is compared with the other selected channels
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `avg::Symbol=:phase`: method of averaging:
     - `:phase`: phase is calculated for each reference channel separately and then averaged (circular mean)
     - `:signal`: signals are averaged prior to phase calculation
@@ -138,12 +139,10 @@ function phdiff(
     avg::Symbol = :phase,
     pad::Int64 = 0,
     h::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Array{Float64, 3}
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     return _phdiff(

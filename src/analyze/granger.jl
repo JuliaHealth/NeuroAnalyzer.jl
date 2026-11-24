@@ -726,6 +726,7 @@ A vector autoregressive (VAR) model is fitted to every channel pair (`conditiona
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s), at least 2
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `order::Union{Int, Nothing}=nothing`: VAR order; if `nothing`, chosen by BIC
 - `maxorder::Int=20`: upper bound for BIC search
 - `conditional::Bool=false`: if `true`, condition on all remaining channels (full multivariate GC), otherwise pairwise
@@ -767,12 +768,10 @@ function granger(
     rng::Int = 42,
     maxiter::Int = 500,
     tol::Real = 1e-10,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
 
     r = _granger(
@@ -798,6 +797,7 @@ Spectral Granger causality (Geweke 1982, 1984; formulation of Ding, Chen & Bress
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s), at least 2
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `order::Union{Int, Nothing}=nothing`: VAR order; if `nothing`, chosen by BIC (for every channel pair if `conditional=false`, for all channels if `conditional=true`)
 - `maxorder::Int=20`: upper bound for BIC search
 - `nfrq::Int=256`: number of frequencies in 0:fs/2
@@ -834,12 +834,10 @@ function granger_spectral(
     rng::Int = 42,
     maxiter::Int = 500,
     tol::Real = 1e-10,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
 
     r = _granger_spectral(

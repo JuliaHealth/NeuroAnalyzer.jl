@@ -22,6 +22,7 @@ The two-slice layout mirrors erop() and allows comparison between phase-locked (
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `method::Symbol=:stft`: spectrogram estimation method:
 - `:stft`: short-time Fourier transform
 - `:mt`: multi-tapered periodogram
@@ -59,6 +60,7 @@ function eros(
     gw::Real = 5,
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     wt::T = wavelet(Morlet(2π); β = 2),
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     s::Array{Float64, 3},
     f::Vector{Float64},
@@ -67,13 +69,13 @@ function eros(
 
     # validate
     isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(get_channel(obj; ch = ch)) == 1 ||
-        throw(ArgumentError("ch must resolve to exactly one channel."))
+    # exactly one channel, not a bad channel if excluded
+    _get_single_ch(obj, ch, exclude_bad_channels)
 
     # compute per-epoch power spectra for the selected channel
     spec_data = NeuroAnalyzer.spectrogram(
         obj;
-        ch = ch,
+        ch = ch, exclude_bad_channels = exclude_bad_channels,
         method = method,
         nt = nt,
         pad = pad,

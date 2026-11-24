@@ -55,23 +55,23 @@ out = capture_out(info)
 # settings are stored as preferences: set and restore
 pb0, vb0, eb0, cl0 = NeuroAnalyzer.progress_bar,
 NeuroAnalyzer.verbose,
-NeuroAnalyzer.exclude_bads,
+NeuroAnalyzer.exclude_bad_channels,
 NeuroAnalyzer.colors
 set_progress_bar(!pb0)
 @test NeuroAnalyzer.progress_bar == !pb0
 @test load_preference(NeuroAnalyzer, "progress_bar") == !pb0
 set_verbose(!vb0)
 @test NeuroAnalyzer.verbose == !vb0
-set_exclude_bads(!eb0)
-@test NeuroAnalyzer.exclude_bads == !eb0
+set_exclude_bad_channels(!eb0)
+@test NeuroAnalyzer.exclude_bad_channels == !eb0
 set_colors(!cl0)
 @test NeuroAnalyzer.colors == !cl0
 @test load_preference(NeuroAnalyzer, "colors") == !cl0
-set_prefs(; progress_bar = pb0, verbose = vb0, exclude_bads = eb0, colors = cl0)
+set_prefs(; progress_bar = pb0, verbose = vb0, exclude_bad_channels = eb0, colors = cl0)
 @test (
     NeuroAnalyzer.progress_bar,
     NeuroAnalyzer.verbose,
-    NeuroAnalyzer.exclude_bads,
+    NeuroAnalyzer.exclude_bad_channels,
     NeuroAnalyzer.colors,
 ) == (pb0, vb0, eb0, cl0)
 @test load_preference(NeuroAnalyzer, "verbose") == vb0

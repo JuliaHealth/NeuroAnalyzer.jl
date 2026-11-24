@@ -110,6 +110,7 @@ The signal is decomposed into Intrinsic Mode Functions (IMFs), from the fastest 
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `ep::Int64`: epoch index
 - `epsilon::Real=0.3`: sifting of each IMF stops when the relative change (SD criterion) drops below `epsilon`; smaller values give narrower-band IMFs
 - `max_imf::Int64=20`: maximum number of IMFs
@@ -124,14 +125,10 @@ function emd(
     ep::Int64,
     epsilon::Real = 0.3,
     max_imf::Int64 = 20,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Matrix{Float64}
     # resolve channel name to a single integer index; [1] selects the first (and expected only) result from get_channel
-    ch =
-        exclude_bads ? get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
-    isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(ch) == 1 || throw(ArgumentError("ch must resolve to exactly one channel."))
-    ch = ch[1]
+    ch = _get_single_ch(obj, ch, exclude_bad_channels)
 
     # validate
     _check_epochs(obj, ep)

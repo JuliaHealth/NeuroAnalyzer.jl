@@ -73,6 +73,7 @@ It is zero when all channels agree and maximal when they diverge. GFP peaks may 
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `norm::Bool=false`: if true, return the GFP-normalised signal instead of GFP values
 
 # Returns
@@ -89,15 +90,13 @@ function erp_gfp(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     norm::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Union{Vector{Float64}, Matrix{Float64}}
     # validate
     _check_datatype(obj, ["erp", "erf"])
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     length(ch) > 1 || throw(ArgumentError("More than 1 channel must be selected."))
 

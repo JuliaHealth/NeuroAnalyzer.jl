@@ -22,6 +22,8 @@ The two-column layout allows direct comparison between the "evoked" power (colum
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, bad segments (markers of type `"BAD"` of all channels or of the selected channels) of a continuous signal are not used: their samples are removed and the remaining parts are joined (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `method::Symbol=:welch`: power spectrum method:
     - `:welch`: Welch's periodogram
     - `:stft`: short-time Fourier transform
@@ -57,19 +59,21 @@ function erop(
     ncyc::Union{Int64, Tuple{Int64, Int64}} = 32,
     gw::Real = 5,
     demean::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
 )::@NamedTuple{
     p::Matrix{Float64},
     f::Vector{Float64},
 }
     # validate
     isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(get_channel(obj; ch = ch)) == 1 ||
-        throw(ArgumentError("ch must resolve to exactly one channel."))
+    # exactly one channel, not a bad channel if excluded
+    _get_single_ch(obj, ch, exclude_bad_channels)
 
     # compute per-epoch power spectra for the selected channel
     psd_data = psd(
         obj;
-        ch = ch,
+        ch = ch, exclude_bad_segments = exclude_bad_segments, exclude_bad_channels = exclude_bad_channels,
         db = db,
         method = method,
         nt = nt,

@@ -32,6 +32,7 @@ Plot epoched signal with interactive editing.
 - `n_epochs::Int64=5`: number of visible epochs
 - `res::Int64=1`: resampling factor (draw every `res`-nth sample)
 - `gui::Bool=true`: if `true`, keep window open and interactive
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the averages and 95% CIs of butterfly plots; all selected channels are shown (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -55,6 +56,7 @@ function plot_ep(
     n_epochs::Int64 = 5,
     res::Int64 = 1,
     gui::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
     # validate
     res >= 1 || throw(ArgumentError("res must be ≥ 1."))
@@ -230,10 +232,20 @@ function plot_ep(
         end
 
     elseif type === :butterfly
+        # rows (channels) of the channel type ctypes_uni[k] used for the average and 95% CI:
+        # without the bad channels if exclude_bad_channels (all rows if all are bad)
+        function _avg_rows(k)
+            local rows = ctypes .== ctypes_uni[k]
+            if exclude_bad_channels
+                local rows_good = rows .& .!bad_ch[][ch_idx]
+                any(rows_good) && (rows = rows_good)
+            end
+            return rows
+        end
         if ci95
             for idx in eachindex(ctypes_uni)
                 msci95_data =
-                    @lift(NeuroAnalyzer._msci95($s[ctypes .== ctypes_uni[idx], :]))
+                    @lift(NeuroAnalyzer._msci95($s[_avg_rows(idx), :]))
                 GLMakie.band!(
                     ax1,
                     @lift(_pts(idx .+ $gain .* $msci95_data.ul)),
@@ -265,7 +277,7 @@ function plot_ep(
                     s_avg = @lift(
                         _pts(
                             idx .+
-                            $gain .* mean($s[ctypes .== ctypes_uni[idx], :]; dims = 1)[:],
+                            $gain .* mean($s[_avg_rows(idx), :]; dims = 1)[:],
                         ),
                     )
                     GLMakie.lines!(ax1, s_avg; linewidth = 2, color = :black)

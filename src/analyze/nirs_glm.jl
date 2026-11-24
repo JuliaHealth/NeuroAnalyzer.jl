@@ -93,6 +93,7 @@ The object must be continuous (one epoch) and contain markers.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}=get_channel(obj; type = ["nirs_hbo", "nirs_hbr"])`: channel name(s), default is all HbO and HbR channels
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `cond::Union{Nothing, String, Vector{String}}=nothing`: conditions (condition labels, by default marker values); `nothing`: all conditions
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`)
 - `condition::Union{String, AbstractDict}="value"`: condition label of each marker: the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("1" => "task", "2" => "task")`: one regressor for both markers; values not in the dictionary are their own labels)
@@ -118,6 +119,7 @@ function nirs_glm(
     duration::Union{Nothing, Real} = nothing,
     drift::Real = 0.01,
     ar::Int64 = 2 * sr(obj),
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::DataFrame
     # validate
     _check_datatype(obj, "nirs")
@@ -126,7 +128,7 @@ function nirs_glm(
     isnothing(duration) || duration > 0 || throw(ArgumentError("duration must be > 0."))
     drift >= 0 || throw(ArgumentError("drift must be ≥ 0."))
     ar >= 0 || throw(ArgumentError("ar must be ≥ 0."))
-    ch = get_channel(obj; ch = ch)
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     fs = sr(obj)

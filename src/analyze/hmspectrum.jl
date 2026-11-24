@@ -11,6 +11,7 @@ The Hilbert marginal spectrum is computed from the Hilbert-Huang Transform (HHT)
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::String`: channel name; must resolve to exactly one channel
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -26,17 +27,18 @@ Named tuple:
 function hmspectrum(
     obj::NeuroAnalyzer.NEURO;
     ch::String,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     p::Matrix{Float64},
     f::Vector{Float64},
 }
     # validate
     isempty(ch) && throw(ArgumentError("No channels selected."))
-    length(get_channel(obj; ch = ch)) == 1 ||
-        throw(ArgumentError("ch must resolve to exactly one channel."))
+    # exactly one channel, not a bad channel if excluded
+    _get_single_ch(obj, ch, exclude_bad_channels)
 
     # compute HHT time-frequency spectrogram (power, no dB scaling)
-    spec = NeuroAnalyzer.spectrogram(obj; ch = ch, method = :hht, db = false)
+    spec = NeuroAnalyzer.spectrogram(obj; ch = ch, exclude_bad_channels = exclude_bad_channels, method = :hht, db = false)
 
     p = dropdims(spec.p; dims = 3)
     p = dropdims(sum(p; dims = 2); dims = 2)

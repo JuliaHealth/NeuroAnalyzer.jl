@@ -178,6 +178,7 @@ Calculate the mean difference and its bootstrap p-value for two NEURO objects.
 - `method::Symbol=:absdiff`: test statistic:
     - `:absdiff`: maximum absolute difference
     - `:diff2int`: integrated area of the squared difference
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 
 # Returns
 
@@ -196,13 +197,14 @@ function mdiff(
     ep2::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}} = _c(nepochs(obj2)),
     n::Int64 = 3,
     method::Symbol = :absdiff,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     st::Matrix{Float64},
     sts::Vector{Float64},
     p::Vector{Float64},
 }
     # resolve the channel pairs (user order kept, bad pairs removed)
-    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2)
+    ch1, ch2 = _ch_pairs(obj1, ch1, obj2, ch2, exclude_bad_channels)
     isempty(ch1) && throw(ArgumentError("No channels selected."))
     isempty(ch2) && throw(ArgumentError("No channels selected."))
     length(ch1) == length(ch2) || throw(

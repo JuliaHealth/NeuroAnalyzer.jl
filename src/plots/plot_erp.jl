@@ -105,6 +105,8 @@ Plot multi-channel Event-Related Potential/Field with optional averaging and con
 - `leg::Bool=true`: if `true`, draw a legend with channel labels (outside the plot, on the right; not drawn if it does not fit: too many channels)
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
+- `bad::AbstractVector{Bool}=falses(size(s, 1))`: bad channels, drawn in light gray with a dashed line and labeled "(bad)"
+- `exclude_bad::Bool=false`: if `true`, the bad channels are not used for the average and the 95% CI
 
 # Returns
 
@@ -124,12 +126,19 @@ function plot_erp(
     leg::Bool = true,
     zl::Bool = true,
     mono::Bool = false,
+    bad::AbstractVector{Bool} = falses(size(s, 1)),
+    exclude_bad::Bool = false,
 )::GLMakie.Figure
     # validate
     size(s, 2) == length(t) ||
         throw(ArgumentError("Signal matrix columns must match time vector length"))
     length(clabels) == size(s, 1) ||
         throw(ArgumentError("Number of channel labels must match number of channels"))
+    length(bad) == size(s, 1) ||
+        throw(ArgumentError("Length of bad must match number of channels"))
+    # channels used for the average and the 95% CI
+    s_avg = exclude_bad && any(bad) ? s[.!bad, :] : s
+    size(s_avg, 1) > 0 || throw(ArgumentError("All channels are bad."))
     all(isfinite, s) ||
         throw(ArgumentError("Signal contains non-finite values"))
 
@@ -171,7 +180,7 @@ function plot_erp(
         leg = false
 
         # calculate mean and 95% CI
-        msci95_data = NeuroAnalyzer._msci95(s)
+        msci95_data = NeuroAnalyzer._msci95(s_avg)
         s_m = msci95_data.sm
         s_u = msci95_data.ul
         s_l = msci95_data.ll
@@ -189,17 +198,18 @@ function plot_erp(
                 ax,
                 t,
                 s[idx, :];
-                color = cmap[idx],
+                color = bad[idx] ? :lightgray : cmap[idx],
                 colormap = pal,
                 linewidth = 1,
+                linestyle = bad[idx] ? :dash : :solid,
                 alpha = avg ? 0.25 : 1.0,
-                label = clabels[idx],
+                label = bad[idx] ? clabels[idx] * " (bad)" : clabels[idx],
             )
         end
     end
 
     # plot averaged signal if requested
-    avg && GLMakie.lines!(ax, t, mean(s; dims = 1)[:]; color = :black, linewidth = 2)
+    avg && GLMakie.lines!(ax, t, mean(s_avg; dims = 1)[:]; color = :black, linewidth = 2)
 
     # plot response time if provided
     if !isnothing(rt) && rt / 1000 ∈ t
@@ -233,6 +243,7 @@ Plot topographical maps of Event-Related Potentials/Fields.
 - `zl::Bool`: if `true`, draw vertical line at t = 0
 - `mono::Bool=false`: if `true`, use a monochrome palette
 - `gui::Bool=true`: if `true`, keep window open and interactive
+- `bad::AbstractVector{Bool}=falses(size(s, 1))`: bad channels (one value per row of `locs`), drawn in light gray and labeled "(bad)"
 
 # Returns
 
@@ -253,6 +264,7 @@ function plot_erp_topo(
     zl::Bool = true,
     mono::Bool = false,
     gui::Bool = true,
+    bad::AbstractVector{Bool} = falses(size(s, 1)),
 )::GLMakie.Figure
     # locations are stored in their original units: scale the montage to the unit sphere
     locs = _locs_unit(locs)
@@ -324,7 +336,7 @@ function plot_erp_topo(
             gl[1, 1];
             xlabel = "",
             ylabel = "",
-            title = locs[idx, :label],
+            title = bad[idx] ? locs[idx, :label] * " (bad)" : locs[idx, :label],
             yreversed = yrev,
             xautolimitmargin = (0, 0),
             yautolimitmargin = (0.1, 0.1),
@@ -336,7 +348,7 @@ function plot_erp_topo(
         # plot ERP with zero line
         GLMakie.hlines!(ax, 0; color = :black, linewidth = 1)
         zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 1)
-        GLMakie.lines!(ax, t, s[idx, :]; linewidth = 1, color = :black)
+        GLMakie.lines!(ax, t, s[idx, :]; linewidth = 1, color = bad[idx] ? :lightgray : :black)
 
         # plot response time if provided
         if !isnothing(rt) && rt / 1000 ∈ t
@@ -639,6 +651,7 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object containing ERP/ERF data
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the average, the 95% CI (`type = :normal`) and the GFP (`type = :gfp`); all selected channels are shown, bad channels are marked (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
@@ -695,6 +708,7 @@ function plot_erp(
     ch_locs::Bool = false,
     ch_locs_pos::Symbol = :outside,
     gui::Bool = true,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
     _check_var(ch_locs_pos, [:outside, :rt, :lt, :rb, :lb], "ch_locs_pos")
 
@@ -702,12 +716,11 @@ function plot_erp(
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
 
-    # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    # all selected channels are shown (bad channels are marked); with exclude_bad_channels
+    # the bad channels are not used for the average, the 95% CI and the GFP
+    ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
+    bad = obj.header.recording[:bad_channel][ch]
     if length(ch) > 1
         length(unique(obj.header.recording[:channel_type][ch])) == 1 ||
             throw(ArgumentError("All channels must be of the same type."))
@@ -778,7 +791,7 @@ function plot_erp(
                 title,
                 "Time [s]",
                 "Amplitude [$units]",
-                "ERP amplitude, $(clabels[1]), avgₑ: $ep_n",
+                "ERP amplitude, $(clabels[1])$(bad[1] ? " (bad)" : ""), avgₑ: $ep_n",
             )
             fig = plot_erp(
                 t,
@@ -820,6 +833,8 @@ function plot_erp(
             leg = leg,
             zl = zl,
             mono = mono,
+            bad = bad,
+            exclude_bad = exclude_bad_channels,
         )
         ch_locs && _ch_locs_inset!(
             fig, obj, ch, _trace_colors(length(ch); mono = mono, black = ci95);
@@ -843,7 +858,7 @@ function plot_erp(
             xlabel = xl,
             ylabel = yl,
             title = tt,
-            clabels = clabels,
+            clabels = [b ? l * " (bad)" : l for (l, b) in zip(clabels, bad)],
             cb = cb,
             cb_title = cb_title,
             smooth = smooth,
@@ -853,7 +868,7 @@ function plot_erp(
         )
 
     elseif type === :gfp
-        g = erp_gfp(obj; ch = clabels)
+        g = erp_gfp(obj; ch = clabels, exclude_bad_channels = exclude_bad_channels)
         xl, yl, tt = _set_defaults(
             xlabel,
             ylabel,
@@ -906,6 +921,7 @@ function plot_erp(
             mono = mono,
             zl = zl,
             gui = gui,
+            bad = in(Set(labels(obj)[ch][bad])).(locs[!, :label]),
         )
     end
 

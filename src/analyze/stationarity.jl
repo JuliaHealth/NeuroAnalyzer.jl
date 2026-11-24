@@ -89,6 +89,7 @@ Calculate stationarity for a NEURO object.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `window::Int64=10`: for `:mean` and `:var`: number of segments; for `:cov`: segment length in samples
 - `method::Symbol=:hilbert`: stationarity method:
     - `:mean`: mean of each of `window` segments, shape (channels, window, epochs)
@@ -106,6 +107,7 @@ function stationarity(
     ch::Union{String, Vector{String}, Regex},
     window::Int64 = 10,
     method::Symbol = :hilbert,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Union{Matrix{Float64}, Array{Float64, 3}}
     # validate
     _check_var(method, [:mean, :var, :cov, :hilbert, :adf], "method")
@@ -113,10 +115,7 @@ function stationarity(
     window <= epoch_len(obj) || throw(ArgumentError("window must be ≤ $(epoch_len(obj))."))
 
     # resolve channel names to integer indices, optionally skipping bad channels
-    ch =
-        exclude_bads ?
-        get_channel(obj; ch = ch, exclude = "bad") :
-        get_channel(obj; ch = ch, exclude = "")
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     # number of channels

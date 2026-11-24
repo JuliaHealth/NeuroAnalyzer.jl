@@ -3,7 +3,8 @@ export set_progress_bar
 export set_prefs
 export set_verbose
 export set_colors
-export set_exclude_bads
+export set_exclude_bad_channels
+export set_exclude_bad_segments
 export version
 
 """Helper: print NA settings"""
@@ -15,7 +16,8 @@ function _print_settings()::Nothing
     println("    Resources path: $res_path")
     println(" Show progress bar: $progress_bar")
     println("           Verbose: $(NeuroAnalyzer.verbose)")
-    println("      Exclude bads: $(NeuroAnalyzer.exclude_bads)")
+    println("Exclude bad channels: $(NeuroAnalyzer.exclude_bad_channels)")
+    println("Exclude bad segments: $(NeuroAnalyzer.exclude_bad_segments)")
     println("            Colors: $(NeuroAnalyzer.colors)")
     println(
         "           Threads: $(Threads.nthreads()) [set using `JULIA_NUM_THREADS` " *
@@ -146,7 +148,8 @@ Set and save NeuroAnalyzer preferences.
 
 - `progress_bar::Bool`
 - `verbose::Bool`
-- `exclude_bads::Bool`
+- `exclude_bad_channels::Bool`
+- `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`
 - `colors::Bool`
 
 # Returns
@@ -156,12 +159,14 @@ Set and save NeuroAnalyzer preferences.
 function set_prefs(;
     progress_bar::Bool,
     verbose::Bool,
-    exclude_bads::Bool,
+    exclude_bad_channels::Bool,
+    exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
     colors::Bool,
 )::Nothing
     set_progress_bar(progress_bar)
     set_verbose(verbose)
-    set_exclude_bads(exclude_bads)
+    set_exclude_bad_channels(exclude_bad_channels)
+    set_exclude_bad_segments(exclude_bad_segments)
     set_colors(colors)
 
     return nothing
@@ -192,9 +197,9 @@ function version()::String
 end
 
 """
-    set_exclude_bads(value)
+    set_exclude_bad_channels(value)
 
-Change `exclude_bads` preference.
+Change the `exclude_bad_channels` preference: the default of the `exclude_bad_channels` argument of the functions that select channels (if `true`, channels marked as bad are not used).
 
 # Arguments
 
@@ -204,9 +209,29 @@ Change `exclude_bads` preference.
 
 - `Nothing`
 """
-function set_exclude_bads(value::Bool)::Nothing
-    NeuroAnalyzer.exclude_bads = value
-    @set_preferences!("exclude_bads" => value)
+function set_exclude_bad_channels(value::Bool)::Nothing
+    NeuroAnalyzer.exclude_bad_channels = value
+    @set_preferences!("exclude_bad_channels" => value)
+
+    return nothing
+end
+
+"""
+    set_exclude_bad_segments(value)
+
+Change the `exclude_bad_segments` preference: the default of the `exclude_bad_segments` argument of `epoch()` and of the analyses of continuous signals (if `true`, segments marked as bad, i.e. markers of type `"BAD"`, are not used).
+
+# Arguments
+
+- `value::Bool`: value
+
+# Returns
+
+- `Nothing`
+"""
+function set_exclude_bad_segments(value::Bool)::Nothing
+    NeuroAnalyzer.exclude_bad_segments = value
+    @set_preferences!("exclude_bad_segments" => value)
 
     return nothing
 end

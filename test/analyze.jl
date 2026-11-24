@@ -1993,4 +1993,59 @@ gr = NeuroAnalyzer._gc_gram(xv, 2; block = 1000)
 @test gr.G ≈ Z' * Z && gr.C ≈ Z' * Y && gr.YY ≈ Y' * Y
 @test NeuroAnalyzer._gc_rss_gram(gr, 1, 1:4) ≈ NeuroAnalyzer._gc_rss(Y[:, 1], Z)
 
+@info "Test: exclude_bad_segments in analyses of continuous signals"
+e_bs = deepcopy(eeg)
+e_bs.markers = e_bs.markers[1:0, :]
+add_marker!(e_bs; type = "BAD", start = 10.0, len = 5.0, value = "x")
+fp1 = get_channel(e_bs; ch = "Fp1")
+bad_s = NeuroAnalyzer._bad_samples(e_bs, fp1)
+@test abs(count(bad_s) - 5 * sr(e_bs)) <= 2
+# samples of the bad segments are removed
+@test amp(e_bs; ch = "Fp1", exclude_bad_segments = true) ==
+      NeuroAnalyzer._amp(e_bs.data[fp1, .!bad_s, :])
+@test amp(e_bs; ch = "Fp1", exclude_bad_segments = false) == NeuroAnalyzer._amp(e_bs.data[fp1, :, :])
+# a bad segment of another channel is not used
+add_marker!(e_bs; type = "BAD", start = 30.0, len = 5.0, value = "x", ch = "O1")
+@test amp(e_bs; ch = "Fp1", exclude_bad_segments = true) ==
+      NeuroAnalyzer._amp(e_bs.data[fp1, .!bad_s, :])
+@test count(NeuroAnalyzer._bad_samples(e_bs, get_channel(e_bs; ch = "O1"))) > count(bad_s)
+# spectra and their wrappers
+p_in = psd(e_bs; ch = "Fp1")
+p_ex = psd(e_bs; ch = "Fp1", exclude_bad_segments = true)
+@test size(p_ex.p) == size(p_in.p) && p_ex.p != p_in.p
+# epoched objects are not changed (see the reject column of the epoch metadata)
+@test psd(e10; ch = "Fp1", exclude_bad_segments = true).p == psd(e10; ch = "Fp1").p
+
+@info "Test: exclude_bad_channels in analyses, wrappers, single channels and ICA"
+e_bc = deepcopy(e10)
+o1 = get_channel(e_bc; ch = "O1")[1]
+e_bc.header.recording[:bad_channel][o1] = true
+@test NeuroAnalyzer._get_single_ch(e_bc, "O1", false) == o1
+@test_throws ArgumentError NeuroAnalyzer._get_single_ch(e_bc, "O1", true)
+# single-channel wrapper: a clear error instead of "no channels" from psd()
+@test size(erop(e_bc; ch = "O1", exclude_bad_channels = false).p, 1) > 0
+err_bc = try
+    erop(e_bc; ch = "O1", exclude_bad_channels = true)
+    ""
+catch err_
+    sprint(showerror, err_)
+end
+@test occursin("marked as bad", err_bc)
+# analysis selecting channels itself
+@test_throws ArgumentError asy_idx(e_bc; ch1 = "O1", ch2 = "O2", flim = (8, 12),
+                                   exclude_bad_channels = true)
+@test asy_idx(e_bc; ch1 = "O1", ch2 = "O2", flim = (8, 12)).asi isa Float64
+# wrappers pass the argument on
+tm_all = tenv_mean(e_bc; ch = ["O1", "O2"], dims = 1)
+tm_ex = tenv_mean(e_bc; ch = ["O1", "O2"], dims = 1, exclude_bad_channels = true)
+@test tm_ex.em != tm_all.em
+# ICA: bad channels are not used for fitting; removal uses the same channels
+e_ica = keep_channel(eeg; ch = "eeg")
+e_ica.header.recording[:bad_channel][get_channel(e_ica; ch = "O1")[1]] = true
+ica_bc = ica_decompose(e_ica; ch = "eeg", n = 5, iter = 10, exclude_bad_channels = true)
+@test size(ica_bc.ic_mw, 1) == nchannels(e_ica) - 1
+e_ica2 = ica_remove(e_ica; ch = "eeg", ic = ica_bc.ic, ic_mw = ica_bc.ic_mw, ic_idx = 1,
+                    exclude_bad_channels = true)
+@test e_ica2.data[get_channel(e_ica; ch = "O1"), :, :] == e_ica.data[get_channel(e_ica; ch = "O1"), :, :]
+
 true

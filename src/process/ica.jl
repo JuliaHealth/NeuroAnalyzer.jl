@@ -106,6 +106,7 @@ Decompose selected channels of a NEURO object into Independent Components (ICs) 
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `n::Union{Nothing, Int64}=nothing`: number of independent components to extract; default: the number of selected channels
 - `iter::Int=100`: max iterations per tolerance level
 - `f::Symbol=:tanh`: nonlinear function for neg-entropy approximation (`:tanh` or `:gaus`)
@@ -126,6 +127,7 @@ function ica_decompose(
     iter::Int64 = 100,
     f::Symbol = :tanh,
     rng::Int64 = 42,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     ic::Matrix{Float64},
     ic_mw::Matrix{Float64},
@@ -138,7 +140,7 @@ function ica_decompose(
         _warn("For ICA decomposition the signal length should be >10 seconds.")
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
     isnothing(n) && (n = length(ch))
 
@@ -226,6 +228,7 @@ Remove independent component(s) from selected channels of a NEURO object: the ba
 # Arguments
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to remove
@@ -242,9 +245,10 @@ function ica_remove(
     ic_mw::Matrix{Float64},
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    ica_remove!(obj_new; ch = ch, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
+    ica_remove!(obj_new; ch = ch, exclude_bad_channels = exclude_bad_channels, ic_idx = ic_idx, ic = ic, ic_mw = ic_mw, keep = keep)
 
     return obj_new
 end
@@ -258,6 +262,7 @@ Reconstruct selected channels of a NEURO object by removing independent componen
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s), default is all channels
+- `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}}`: indices of components to keep or remove
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
@@ -274,13 +279,14 @@ function ica_remove!(
     ic_mw::Matrix{Float64},
     ic_idx::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
     keep::Bool = false,
+    exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::Nothing
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("ica_remove() must be applied to continuous object."))
 
     # resolve channel names to integer indices
-    ch = get_channel(obj; ch = ch)
+    ch = _get_ch(obj, ch, exclude_bad_channels)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     size(ic_mw, 1) == length(ch) ||
         throw(
