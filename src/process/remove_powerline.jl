@@ -179,6 +179,7 @@ function remove_powerline!(
                 bw = bws[argmin(v)]
                 x = _notch(x, fs, h, bw)
                 push!(df, (clabels[ch_idx], h, bw))
+                _notch_add!(obj, [ch_idx], h)
             end
             obj.data[ch_idx, :, 1] = x
 

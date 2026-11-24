@@ -1186,6 +1186,11 @@ function import_fiff(
         notes = "",
         design = "",
     )
+    # low-pass and high-pass frequencies of the recording as stored in the file (Hz, not
+    # rounded; not stored: Nyquist frequency and 0), the same for all channels
+    r[:lowpass] = fill(isnothing(mi[:lowpass]) ? sampling_rate / 2 : min(Float64(mi[:lowpass]), sampling_rate / 2), ch_n)
+    r[:highpass] = fill(isnothing(mi[:highpass]) ? 0.0 : Float64(mi[:highpass]), ch_n)
+
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     locs = _initialize_locs()

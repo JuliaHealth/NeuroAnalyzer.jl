@@ -246,22 +246,22 @@ function create_data!(
     obj.header.recording[:channel_order] = collect(1:ch_n)
     obj.header.recording[:bad_channel]   = zeros(Bool, ch_n)
     obj.header.recording[:sampling_rate] = fs
+    # low-pass and high-pass frequency of each channel: no filter
+    obj.header.recording[:lowpass]       = fill(fs / 2, ch_n)
+    obj.header.recording[:highpass]      = zeros(ch_n)
+    obj.header.recording[:notch]         = [Float64[] for _ = 1:ch_n]
 
     # per-channel fields specific to the data type
     rec = obj.header.recording
     dt = rec[:data_type]
     if dt in _EEG_LIKE_DATA
         rec[:transducers] = fill("", ch_n)
-        rec[:prefiltering] = fill("", ch_n)
         rec[:gain] = ones(ch_n)
     elseif dt in _MEG_LIKE_DATA
-        rec[:prefiltering] = fill("", ch_n)
         rec[:coil_type] = fill("", ch_n)
         rec[:ssp_channels] = zeros(Bool, ch_n)
         type == "mag" && (rec[:magnetometers] = collect(1:ch_n))
         type == "grad" && (rec[:gradiometers] = collect(1:ch_n))
-    elseif dt in ("sensors", "eda", "tpt")
-        rec[:prefiltering] = fill("", ch_n)
     elseif dt == "mep"
         rec[:stimulation_intensity] = zeros(Int64, ch_n)
         rec[:coil_type] = fill("", ch_n)

@@ -85,7 +85,7 @@ end
 
 Estimate the hemodynamic activation of NIRS channels using the general linear model (GLM).
 
-For each condition (marker value), a boxcar function of the stimulation blocks (marker onsets, block durations from the marker lengths or `duration`) is convolved with the canonical HRF (`nirs_hrf()`). The design matrix contains these regressors, a constant and a discrete cosine basis modeling slow drifts (periods longer than 1 / `drift` seconds). The model is fitted to each channel by ordinary least squares; the serially correlated noise of NIRS signals is accounted for by prewhitening with an autoregressive model of the residuals (AR(p), order selected by BIC up to `ar`, as in the AR-IRLS method of Barker et al. 2013, without the robust weighting).
+For each condition (by default a marker value; see `condition`), a boxcar function of the stimulation blocks (marker onsets, block durations from the marker lengths or `duration`) is convolved with the canonical HRF (`nirs_hrf()`). The design matrix contains these regressors, a constant and a discrete cosine basis modeling slow drifts (periods longer than 1 / `drift` seconds). The model is fitted to each channel by ordinary least squares; the serially correlated noise of NIRS signals is accounted for by prewhitening with an autoregressive model of the residuals (AR(p), order selected by BIC up to `ar`, as in the AR-IRLS method of Barker et al. 2013, without the robust weighting).
 
 The object must be continuous (one epoch) and contain markers.
 
@@ -93,7 +93,9 @@ The object must be continuous (one epoch) and contain markers.
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `ch::Union{String, Vector{String}, Regex}=get_channel(obj; type = ["nirs_hbo", "nirs_hbr"])`: channel name(s), default is all HbO and HbR channels
-- `cond::Union{Nothing, String, Vector{String}}=nothing`: conditions (marker values); `nothing`: all marker values
+- `cond::Union{Nothing, String, Vector{String}}=nothing`: conditions (condition labels, by default marker values); `nothing`: all conditions
+- `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`)
+- `condition::Union{String, AbstractDict}="value"`: condition label of each marker: the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("1" => "task", "2" => "task")`: one regressor for both markers; values not in the dictionary are their own labels)
 - `duration::Union{Nothing, Real}=nothing`: block duration in seconds; `nothing`: the marker lengths
 - `drift::Real=0.01`: cut-off frequency of the drift model in Hz (`0`: no drift regressors)
 - `ar::Int64=2 * sr(obj)`: maximum order of the AR prewhitening model (`0`: no prewhitening)
@@ -111,6 +113,8 @@ function nirs_glm(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = ["nirs_hbo", "nirs_hbr"]),
     cond::Union{Nothing, String, Vector{String}} = nothing,
+    marker_type::String = "",
+    condition::Union{String, AbstractDict} = "value",
     duration::Union{Nothing, Real} = nothing,
     drift::Real = 0.01,
     ar::Int64 = 2 * sr(obj),
@@ -128,10 +132,14 @@ function nirs_glm(
     fs = sr(obj)
     n = epoch_len(obj)
     mrk = obj.markers
-    conds = isnothing(cond) ? unique(string.(mrk[!, :value])) :
-            (cond isa String ? [cond] : cond)
+    # condition label of each marker (markers of other types and without a label are not used)
+    m_cond = _marker_conditions(mrk, condition)
+    m_use = _marker_select(mrk, "", marker_type) .& (m_cond .!= "")
+    avail = unique(m_cond[m_use])
+    conds = isnothing(cond) ? avail : (cond isa String ? [cond] : cond)
+    isempty(conds) && throw(ArgumentError("No markers to model."))
     for c in conds
-        c in string.(mrk[!, :value]) || throw(ArgumentError("No markers with value $c."))
+        c in avail || throw(ArgumentError("No markers of condition $c."))
     end
 
     # task regressors: boxcars convolved with the canonical HRF
@@ -139,11 +147,11 @@ function nirs_glm(
     X_task = zeros(n, length(conds))
     for (k, c) in enumerate(conds)
         u = zeros(n)
-        for r in eachrow(mrk)
-            string(r[:value]) == c || continue
+        for (i, r) in enumerate(eachrow(mrk))
+            (m_use[i] && m_cond[i] == c) || continue
             dur = isnothing(duration) ? r[:length] : duration
             dur > 0 || throw(
-                ArgumentError("Marker $c has length 0: block duration must be given."),
+                ArgumentError("Markers of condition $c have length 0: block duration must be given."),
             )
             i1 = clamp(round(Int64, r[:start] * fs) + 1, 1, n)
             i2 = clamp(round(Int64, (r[:start] + dur) * fs), 1, n)

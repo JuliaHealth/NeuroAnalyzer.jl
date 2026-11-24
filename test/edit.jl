@@ -53,6 +53,7 @@ add_label!(e10_tmp; clabels = l)
 @info "Test: delete_channel()"
 e10_tmp = delete_channel(e10; ch = "F3")
 @test nchannels(e10_tmp) == nchannels(e10) - 1
+@test length(e10_tmp.header.recording[:lowpass]) == nchannels(e10_tmp)
 @test_throws ArgumentError delete_channel(e10; ch = String[])
 
 @info "Test: delete_channel!()"
@@ -233,6 +234,10 @@ add_channel!(
     unit = repeat(["μV"], 2),
 )
 @test size(e.data) == (2, 10, 1)
+# new channels: no filter (Nyquist frequency, 0 Hz)
+@test e.header.recording[:lowpass] == [5.0, 5.0] && e.header.recording[:highpass] == [0.0, 0.0]
+@test e.header.recording[:notch] == [Float64[], Float64[]]
+@test e.header.recording[:notch][1] !== e.header.recording[:notch][2]
 
 @info "Test: create_time()"
 e = create_object(; data_type = "ecog")
@@ -583,6 +588,45 @@ e_ep = add_marker(e_ep; type = "annotation", start = 50.0, value = "A")
 @test nepochs(epoch(e_ep; marker_value = "A", ep_len = 2)) == 3
 @test nepochs(epoch(e_ep; marker_value = "A", marker_type = "stim", ep_len = 2)) == 2
 @test_throws ArgumentError epoch(e_ep; marker_value = "A", marker_type = "response", ep_len = 2)
+# epoching by several markers at once: condition labels in the epoch metadata
+e_mc = add_marker(eeg; type = "stim", start = 10.0, value = "s70")
+add_marker!(e_mc; type = "stim", start = 20.0, value = "s71")
+add_marker!(e_mc; type = "stim", start = 30.0, value = "s130")
+add_marker!(e_mc; type = "stim", start = 40.0, value = "s71")
+e_mc.markers[!, :trial_type] = ["face", "face", "house", "face"]
+ep_mc = epoch(e_mc; marker_value = ["s70", "s71"], offset = 0.5, ep_len = 2)
+@test nepochs(ep_mc) == 3 && ep_mc.epochs.condition == ["s70", "s71", "s71"]
+@test ep_mc.epochs.onset ≈ [9.5, 19.5, 39.5]
+cond_map = Dict("s70" => "face", "s71" => "face", "s130" => "house")
+ep_mc = epoch(e_mc; marker_value = r"^s", offset = 0.5, ep_len = 2, condition = cond_map)
+@test ep_mc.epochs.condition == ["face", "face", "house", "face"]
+@test epoch_conditions(ep_mc) == ["face", "house"]
+@test get_epochs(ep_mc; condition = "face") == [1, 2, 4]
+@test get_epochs(ep_mc; condition = r"ou") == [3]
+@test get_epochs(ep_mc; condition = ["house", "car"]) == [3]
+@test get_epochs(ep_mc) == 1:4
+# condition from a marker column (e.g. trial_type of BIDS events)
+@test epoch(e_mc; marker_value = r"^s", offset = 0.5, ep_len = 2,
+            condition = "trial_type").epochs.condition == ep_mc.epochs.condition
+@test_throws ArgumentError epoch(e_mc; marker_value = r"^s", ep_len = 2, condition = "xx")
+@test_throws ArgumentError epoch(e_mc; marker_value = String[], ep_len = 2)
+@test_throws ArgumentError epoch(e_mc; marker_value = ["s1", "s2"], ep_len = 2)
+@test isempty(epoch_conditions(epoch(eeg; ep_len = 10)))
+# rejected epochs are excluded by get_epochs() and average_epochs()
+ep_mc.epochs.reject[2] = true
+@test get_epochs(ep_mc; condition = "face") == [1, 4]
+@test get_epochs(ep_mc; condition = "face", rejected = true) == [1, 2, 4]
+a_mc = average_epochs(ep_mc; condition = "face")
+@test nepochs(a_mc) == 3 && a_mc.epochs.condition == ["face", "face", "face"]
+@test a_mc.data[:, :, 1] ≈ (a_mc.data[:, :, 2] .+ a_mc.data[:, :, 3]) ./ 2
+@test nepochs(average_epochs(ep_mc)) == 4
+@test nepochs(average_epochs(ep_mc; rejected = true)) == 5
+@test_throws ArgumentError average_epochs(ep_mc; condition = "car")
+# statistics: conditions compared within one object (paired tests need equal numbers of epochs)
+md = mdiff(ep_mc, ep_mc; ch1 = "Fp1", ch2 = "Fp1",
+           ep1 = get_epochs(ep_mc; condition = "face")[1:1],
+           ep2 = get_epochs(ep_mc; condition = "house"), n = 10)
+@test all(0 .<= md.p .<= 1)
 # extra marker columns are kept by all marker functions (missing in markers added by NeuroAnalyzer)
 mrk_x = DataFrame(:type => ["stim", "stim"], :start => [10.0, 30.0], :length => zeros(2),
                   :value => ["A", "B"], :channel => [String[], String[]],

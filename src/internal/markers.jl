@@ -479,3 +479,53 @@ function _bids_events(events::DataFrame, fs::Real)::DataFrame
     end
     return markers
 end
+
+"""
+    _marker_select(markers, value, type)
+
+Markers with the value(s) `value` (a value, a list of values or a regular expression; `""`: all markers) and the type `type` (`""`: any type).
+
+# Returns
+
+- `BitVector`
+"""
+function _marker_select(
+    markers::DataFrame,
+    value::Union{String, Vector{String}, Regex},
+    type::String,
+)::BitVector
+    v = string.(markers[!, :value])
+    sel = if value isa Regex
+        occursin.(value, v)
+    elseif value isa Vector
+        in(Set(value)).(v)
+    else
+        value == "" ? trues(length(v)) : v .== value
+    end
+    type == "" || (sel .&= markers[!, :type] .== type)
+    return BitVector(sel)
+end
+
+"""
+    _marker_conditions(markers, condition)
+
+Condition label of each marker: the values of the marker column `condition` (`missing`: `""`), or the marker values mapped by the dictionary `condition` (values not in the dictionary are their own labels).
+
+# Returns
+
+- `Vector{String}`
+"""
+function _marker_conditions(
+    markers::DataFrame,
+    condition::Union{String, AbstractDict},
+)::Vector{String}
+    v = String[string(x) for x in markers[!, :value]]
+    condition isa AbstractDict && return String[string(get(condition, x, x)) for x in v]
+    condition in names(markers) || throw(
+        ArgumentError(
+            "Marker column $condition does not exist; available: $(join(names(markers), ", ")).",
+        ),
+    )
+    condition == "channel" && throw(ArgumentError("condition cannot be the channel column."))
+    return String[ismissing(x) ? "" : string(x) for x in markers[!, condition]]
+end

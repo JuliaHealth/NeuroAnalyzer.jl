@@ -277,7 +277,7 @@ mutable struct NEURO
     header::NeuroAnalyzer.HEADER
     history::Vector{String}
     markers::DataFrame
-    epochs::DataFrame   # epoch metadata, one row per epoch: condition, source, reject, onset
+    epochs::DataFrame
     locs::DataFrame
     time_pts::Vector{Float64}
     epoch_time::Vector{Float64}

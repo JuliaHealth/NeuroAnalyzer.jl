@@ -824,6 +824,10 @@ function filter_apply!(
     end
     progress_bar && finish!(progbar)
 
+    # low-pass and high-pass frequencies of the filtered channels (known if ftype and cutoff
+    # are given; band-stop and notch filters do not change them)
+    _filters_update!(obj, ch, ftype, cutoff)
+
     push!(obj.history, "filter_apply(obj; ch=$ch, dir=:$dir) [$(r.summary)]")
 
     return nothing
@@ -1032,6 +1036,50 @@ function filter!(
     )
     # history: design line followed by the filter_apply line with the measured summary
     insert!(obj.history, length(obj.history), desc)
+    # notch filter: its frequency is added to the notch frequencies of the channels
+    fprototype === :iirnotch && cutoff isa Real &&
+        _notch_add!(obj, get_channel(obj; ch = ch), Float64(cutoff))
 
+    return nothing
+end
+
+"""
+    _filters_update!(obj, ch, ftype, cutoff)
+
+Update the low-pass and high-pass frequencies (`:lowpass`, `:highpass`) of the channels `ch` after filtering: low-pass (`:lp`) at `cutoff`: low-pass frequency = min(current, `cutoff`); high-pass (`:hp`): high-pass frequency = max(current, `cutoff`); band-pass (`:bp`, `(f1, f2)`): both; band-stop (`:bs`) or unknown filter (`ftype` or `cutoff` is `nothing`): unchanged.
+"""
+function _filters_update!(
+    obj::NeuroAnalyzer.NEURO,
+    ch::AbstractVector{<:Integer},
+    ftype::Union{Nothing, Symbol},
+    cutoff::Union{Nothing, Real, Tuple{Real, Real}},
+)::Nothing
+    (isnothing(ftype) || isnothing(cutoff)) && return nothing
+    rec = obj.header.recording
+    _rec_filters!(rec)
+    for c in ch
+        if ftype === :lp && cutoff isa Real
+            rec[:lowpass][c] = min(rec[:lowpass][c], Float64(cutoff))
+        elseif ftype === :hp && cutoff isa Real
+            rec[:highpass][c] = max(rec[:highpass][c], Float64(cutoff))
+        elseif ftype === :bp && cutoff isa Tuple
+            rec[:highpass][c] = max(rec[:highpass][c], Float64(minimum(cutoff)))
+            rec[:lowpass][c] = min(rec[:lowpass][c], Float64(maximum(cutoff)))
+        end
+    end
+    return nothing
+end
+
+"""
+    _notch_add!(obj, ch, f)
+
+Add the notch frequency `f` (Hz) to the notch frequencies (`:notch`) of the channels `ch`.
+"""
+function _notch_add!(obj::NeuroAnalyzer.NEURO, ch::AbstractVector{<:Integer}, f::Real)::Nothing
+    rec = obj.header.recording
+    _rec_filters!(rec)
+    for c in ch
+        any(≈(f), rec[:notch][c]) || (rec[:notch][c] = sort(vcat(rec[:notch][c], Float64(f))))
+    end
     return nothing
 end

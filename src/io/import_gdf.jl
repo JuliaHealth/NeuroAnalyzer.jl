@@ -262,7 +262,8 @@ function import_gdf(
 
             # combine LP/HP into prefiltering strings (overrides the obsolete field)
             prefiltering = [
-                "LP: $(prefiltering_lp[i]) Hz; HP: $(prefiltering_hp[i]) Hz"
+                "LP: $(prefiltering_lp[i]) Hz; HP: $(prefiltering_hp[i]) Hz" *
+                (prefiltering_bs[i] > 0 ? "; N: $(prefiltering_bs[i]) Hz" : "")
                 for i = 1:ch_n
             ]
 

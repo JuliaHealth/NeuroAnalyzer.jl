@@ -82,6 +82,8 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     # marker channels saved as numbers by older versions → channel labels
     _markers_upgrade!(obj)
     _epochs_upgrade!(obj)
+    # :prefiltering descriptions → per-channel low-pass and high-pass frequencies
+    _rec_filters!(obj.header.recording)
 
     _info(
         "Loaded: " *

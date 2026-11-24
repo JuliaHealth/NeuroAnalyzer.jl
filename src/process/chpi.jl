@@ -222,7 +222,9 @@ function chpi_head_positions(
             "HPI frequencies $(freqs) Hz are not below the Nyquist frequency ($(fs / 2) Hz).",
         ),
     )
-    get(rec, :lowpass, nothing) isa Real && 0 < rec[:lowpass] < maximum(freqs) &&
+    # (no filter: low-pass at the Nyquist frequency, above all HPI frequencies)
+    lp = get(rec, :lowpass, Float64[])
+    lp isa AbstractVector && !isempty(lp) && minimum(lp) < maximum(freqs) &&
         _warn("Data are low-pass filtered below the highest HPI frequency.")
 
     # ------------------------------------------------------------------ #

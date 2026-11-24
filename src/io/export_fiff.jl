@@ -51,14 +51,6 @@ function _fiff_meas_date(d::AbstractString, t::AbstractString)::Union{Nothing, I
     return round(Int64, datetime2unix(dt))
 end
 
-# low-pass and high-pass frequencies from a prefiltering string "LP: x Hz; HP: y Hz"
-function _fiff_prefiltering(s::AbstractString)::Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}
-    num(r) = (m = match(r, s); isnothing(m) ? nothing : tryparse(Float64, m.captures[1]))
-    lp = num(r"LP:?\s*([0-9.]+)"i)
-    hp = num(r"HP:?\s*([0-9.]+)"i)
-    return (isnothing(lp) || lp <= 0 ? nothing : lp), (isnothing(hp) ? nothing : hp)
-end
-
 # factor converting NeuroAnalyzer locs coordinates to meters
 function _fiff_locs_scale(xyz::AbstractMatrix{<:Real}, unit::Symbol)::Float64
     unit === :m && return 1.0
@@ -90,7 +82,7 @@ Written:
 - channel information: FIFF channel kind (from channel type), coil type, unit and the 12-element `loc` vector (sensor position and orientation); channel names longer than 15 characters are stored as MNE-Python does (short unique names in `ch_info` + full names in per-channel blocks)
 - MEG geometry stored by `import_fiff()` (`:coil_loc`, `:coil_id`, `:dev_head_t`): MEG sensors in the device frame, EEG electrodes in the head frame; without it, positions come from `OBJ.locs` (head frame, meters) and MEG sensors get default coil types and orientations
 - EEG/sEEG/ECoG electrode positions also as digitization points; cHPI coil frequencies and digitized positions
-- SSP projectors (inactive), bad channels, sampling rate, line frequency, low-pass/high-pass (from the prefiltering string), measurement date, subject (ID, names, handedness, weight, height), recording description and experiment name
+- SSP projectors (inactive), bad channels, sampling rate, line frequency, low-pass/high-pass frequency (the lowest `:lowpass` and the highest `:highpass` of the channels), measurement date, subject (ID, names, handedness, weight, height), recording description and experiment name
 - markers as MNE annotations (onset relative to the first sample, duration, description = marker value, or the type if the value is empty; `BAD` markers are written as `BAD_<value>` and `boundary` markers as `BAD boundary`, which MNE-Python treats as bad segments); marker channels as the channels of the annotations (`ch_names` in MNE-Python); marker types, values and extra marker columns as the annotation extras (`extras` in MNE-Python), read back by `import_fiff()`
 - MEG `first_time` as `first_samp`; IAS (MaxShield) objects as MaxShield raw data
 
@@ -226,8 +218,12 @@ function export_fiff(
     # metadata                                                           #
     # ------------------------------------------------------------------ #
     meas_date = _fiff_meas_date(string(get(rec, :recording_date, "")), string(get(rec, :recording_time, "")))
-    lp, hp = isempty(rec[:prefiltering]) ? (nothing, nothing) : _fiff_prefiltering(string(rec[:prefiltering][1]))
-    !isnothing(lp) && lp > sr / 2 && (lp = nothing)
+    # FIFF stores one low-pass and one high-pass frequency: the lowest low-pass and the
+    # highest high-pass frequency of the channels (as MNE-Python merges channel information)
+    rec_f = Dict(k => rec[k] for k in (:label, :sampling_rate, :lowpass, :highpass, :prefiltering) if haskey(rec, k))
+    _rec_filters!(rec_f)
+    lp = isempty(rec_f[:lowpass]) ? nothing : minimum(rec_f[:lowpass])
+    hp = isempty(rec_f[:highpass]) ? nothing : maximum(rec_f[:highpass])
     line_freq = get(rec, :line_frequency, 0)
     first_samp = round(Int64, get(rec, :first_time, 0.0) * sr)
     maxshield = get(rec, :maxshield, false) === true

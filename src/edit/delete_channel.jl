@@ -95,18 +95,16 @@ function _delete_channel!(
     obj.locs = obj.locs[.!in(del_labels).(obj.locs[!, :label]), :]
 
     # universal per-channel header vectors
-    for field in (:label, :channel_type, :bad_channel, :unit)
+    _rec_filters!(rec)
+    for field in (:label, :channel_type, :bad_channel, :unit, :lowpass, :highpass, :notch)
         rec[field] = rec[field][keep]
     end
 
     # type-specific per-channel header vectors
     if dt in _EEG_LIKE_DATA
-        for field in (:prefiltering, :transducers, :gain)
+        for field in (:transducers, :gain)
             rec[field] = rec[field][keep]
         end
-
-    elseif dt in ("sensors", "eda", "tpt")
-        rec[:prefiltering] = rec[:prefiltering][keep]
 
     elseif dt == "mep"
         for field in (:stimulation_intensity, :coil_type)
@@ -114,7 +112,7 @@ function _delete_channel!(
         end
 
     elseif dt in _MEG_LIKE_DATA
-        for field in (:prefiltering, :coil_type)
+        for field in (:coil_type,)
             rec[field] = rec[field][keep]
         end
 

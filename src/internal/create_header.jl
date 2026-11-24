@@ -1,4 +1,96 @@
 # ---------------------------------------------------------------------------
+# low-pass and high-pass frequencies of the channels
+# ---------------------------------------------------------------------------
+
+"""
+    _prefilter_freqs(s, fs)
+
+Low-pass and high-pass frequency (Hz) from the description of the filters of a channel stored by a file format, e.g. `"HP:0.1Hz LP:70Hz N:50Hz"` (EDF), `"HP: DC; LP: 500 Hz"`, `"LP: 172.2 Hz; HP: 0.1 Hz"`, `"HP:0,18Hz LP:104,0Hz"` (decimal comma). A high-pass given in seconds (time constant τ) is converted to 1 / (2πτ) Hz. Missing, non-positive or non-numeric values (e.g. `DC`, `n/a`, `0`): no filter, i.e. the low-pass frequency is the Nyquist frequency and the high-pass frequency is 0 (as in MNE-Python); the low-pass frequency is at most the Nyquist frequency.
+
+# Returns
+
+- `Tuple{Float64, Float64}`: low-pass and high-pass frequency in Hz
+"""
+function _prefilter_freqs(s::AbstractString, fs::Real)::Tuple{Float64, Float64}
+    nyq = fs / 2
+    # decimal comma (e.g. "0,18Hz")
+    t = replace(string(s), r"(\d),(\d)" => s"\1.\2")
+    function val(re)
+        m = match(re, t)
+        isnothing(m) && return nothing
+        v = tryparse(Float64, m[1])
+        (isnothing(v) || !isfinite(v) || v <= 0) && return nothing
+        return (v, lowercase(something(m[2], "")))
+    end
+    num = raw"([0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*(hz|s)?"
+    lp = val(Regex("(?:\\bLP|low[\\s_-]*pass)\\s*[:=]?\\s*" * num, "i"))
+    hp = val(Regex("(?:\\bHP|high[\\s_-]*pass)\\s*[:=]?\\s*" * num, "i"))
+    f_lp = isnothing(lp) ? nyq : min(lp[1], nyq)
+    f_hp = if isnothing(hp)
+        0.0
+    else
+        # time constant in seconds → cut-off frequency
+        hp[2] == "s" ? 1 / (2π * hp[1]) : hp[1]
+    end
+    return f_lp, min(f_hp, nyq)
+end
+
+"""
+    _prefilter_notch(s, fs)
+
+Notch filter frequencies (Hz) from the description of the filters of a channel stored by a file format, e.g. `"HP:0.1Hz LP:70Hz N:50Hz"` (EDF) or `"Notch: 50 Hz"`; frequencies that are not positive or not below the Nyquist frequency are ignored.
+
+# Returns
+
+- `Vector{Float64}`: unique notch frequencies, sorted
+"""
+function _prefilter_notch(s::AbstractString, fs::Real)::Vector{Float64}
+    t = replace(string(s), r"(\d),(\d)" => s"\1.\2")
+    re = r"(?:\bN|notch)\s*[:=]?\s*([0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)"i
+    f = Float64[]
+    for m in eachmatch(re, t)
+        v = tryparse(Float64, m[1])
+        (isnothing(v) || !isfinite(v) || v <= 0 || v >= fs / 2) && continue
+        push!(f, v)
+    end
+    return sort(unique(f))
+end
+
+"""
+    _rec_filters!(rec)
+
+Make sure that the recording header `rec` has the per-channel low-pass, high-pass and notch filter frequencies (`:lowpass`, `:highpass`: one value per channel; `:notch`: a vector of frequencies per channel): missing or wrongly sized fields are created from the `:prefiltering` descriptions of objects saved before v0.26.12 (which are then removed) or set to no filter (low-pass: Nyquist frequency, high-pass: 0, notch: none).
+
+# Returns
+
+- `Nothing`
+"""
+function _rec_filters!(rec::Dict)::Nothing
+    n = length(rec[:label])
+    fs = rec[:sampling_rate]
+    pf = get(rec, :prefiltering, nothing)
+    ok(k) = haskey(rec, k) && rec[k] isa AbstractVector{<:Real} && length(rec[k]) == n
+    if !(ok(:lowpass) && ok(:highpass))
+        f = if pf isa AbstractVector && length(pf) == n
+            [_prefilter_freqs(string(x), fs) for x in pf]
+        else
+            fill((fs / 2, 0.0), n)
+        end
+        rec[:lowpass] = Float64[x[1] for x in f]
+        rec[:highpass] = Float64[x[2] for x in f]
+    end
+    if !(haskey(rec, :notch) && rec[:notch] isa AbstractVector && length(rec[:notch]) == n)
+        rec[:notch] = if pf isa AbstractVector && length(pf) == n
+            Vector{Float64}[_prefilter_notch(string(x), fs) for x in pf]
+        else
+            [Float64[] for _ = 1:n]
+        end
+    end
+    delete!(rec, :prefiltering)
+    return nothing
+end
+
+# ---------------------------------------------------------------------------
 # internal helper: build the fields shared by every recording type
 # ---------------------------------------------------------------------------
 function _common_recording_fields(;
@@ -16,8 +108,20 @@ function _common_recording_fields(;
     units::Vector{String},
     sampling_rate::Int64,
     bad_channels::Vector{Bool},
+    prefiltering::Vector{String} = String[],
 )::Dict
+    # low-pass and high-pass frequency of each channel (Hz), from the filter descriptions
+    # of the file (`prefiltering`); no filter: Nyquist frequency and 0
+    f = length(prefiltering) == length(clabels) ?
+        [_prefilter_freqs(p, sampling_rate) for p in prefiltering] :
+        fill((sampling_rate / 2, 0.0), length(clabels))
+    notch = length(prefiltering) == length(clabels) ?
+        Vector{Float64}[_prefilter_notch(p, sampling_rate) for p in prefiltering] :
+        [Float64[] for _ in clabels]
     return Dict(
+        :lowpass => Float64[x[1] for x in f],
+        :highpass => Float64[x[2] for x in f],
+        :notch => notch,
         :data_type => data_type,
         :file_name => file_name,
         :file_size_mb => file_size_mb,
@@ -90,13 +194,13 @@ function _create_recording_eeg_like(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        prefiltering,
     )
     merge!(
         d,
         Dict(
             :reference => reference,
             :transducers => transducers,
-            :prefiltering => prefiltering,
             :line_frequency => line_frequency,
             :gain => gain,
         ),
@@ -168,12 +272,12 @@ function _create_recording_meg(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
+        prefiltering,
     )
     merge!(
         d,
         Dict(
             :reference => reference,
-            :prefiltering => prefiltering,
             :line_frequency => line_frequency,
             :magnetometers => magnetometers,
             :gradiometers => gradiometers,
@@ -268,11 +372,7 @@ function _create_recording_prefiltered(;
         data_type, file_name, file_size_mb, file_type, recording,
         recording_date, recording_time, recording_notes,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
-    )
-    merge!(
-        d, Dict(
-        :prefiltering => prefiltering,
-    ),
+        prefiltering,
     )
     return d
 end

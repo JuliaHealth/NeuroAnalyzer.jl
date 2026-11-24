@@ -10,15 +10,16 @@ export subepoch!
 
 Return a copy of `obj` split into epochs.
 
-Epochs are created either by splitting at marker positions (when `marker_value` is specified) or by dividing the signal into fixed-length windows (`ep_len`).
+Epochs are created either by splitting at marker positions (when `marker_value` is specified) or by dividing the signal into fixed-length windows (`ep_len`). Marker-based epochs get a condition label (epoch metadata, `obj.epochs.condition`; see `get_epochs()`, `epoch_conditions()`).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be continuous (1 epoch)
-- `marker_value::String=""`: marker value to split at; if empty, split by `ep_len`
+- `marker_value::Union{String, Vector{String}, Regex}=""`: value(s) of the markers to split at: one value, a list of values or a regular expression (e.g. `r"^s7"`); if empty, split by `ep_len`
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+- `condition::Union{String, AbstractDict}="value"`: condition label of each marker-based epoch (`obj.epochs.condition`): the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("s70" => "face", "s71" => "face", "s130" => "house")`; values not in the dictionary are their own labels)
 - `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
 # Returns
@@ -27,11 +28,12 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 """
 function epoch(
     obj::NeuroAnalyzer.NEURO;
-    marker_value::String = "",
+    marker_value::Union{String, Vector{String}, Regex} = "",
     marker_type::String = "",
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
     overlap::Real = 0,
+    condition::Union{String, AbstractDict} = "value",
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     epoch!(
@@ -41,6 +43,7 @@ function epoch(
         offset = offset,
         ep_len = ep_len,
         overlap = overlap,
+        condition = condition,
     )
 
     return obj_new
@@ -51,15 +54,16 @@ end
 
 Split `obj` into epochs in-place.
 
-Epochs are created either by splitting at marker positions (when `marker_value` is specified) or by dividing the signal into fixed-length windows (`ep_len`).
+Epochs are created either by splitting at marker positions (when `marker_value` is specified) or by dividing the signal into fixed-length windows (`ep_len`). Marker-based epochs get a condition label (epoch metadata, `obj.epochs.condition`; see `get_epochs()`, `epoch_conditions()`).
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be continuous (1 epoch)
-- `marker_value::String=""`: marker value to split at; if empty, split by `ep_len`
+- `marker_value::Union{String, Vector{String}, Regex}=""`: value(s) of the markers to split at: one value, a list of values or a regular expression (e.g. `r"^s7"`); if empty, split by `ep_len`
 - `marker_type::String=""`: if not empty, only markers of this type are used (e.g. `"stim"`, so that an annotation with the same value is not used)
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
+- `condition::Union{String, AbstractDict}="value"`: condition label of each marker-based epoch (`obj.epochs.condition`): the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("s70" => "face", "s71" => "face", "s130" => "house")`; values not in the dictionary are their own labels)
 - `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
 # Returns
@@ -68,17 +72,22 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 """
 function epoch!(
     obj::NeuroAnalyzer.NEURO;
-    marker_value::String = "",
+    marker_value::Union{String, Vector{String}, Regex} = "",
     marker_type::String = "",
     offset::Real = 0,
     ep_len::Union{Real, Nothing} = nothing,
     overlap::Real = 0,
+    condition::Union{String, AbstractDict} = "value",
 )::Nothing
     # validate
     nepochs(obj) == 1 ||
         throw(ArgumentError("epoch() must be applied to continuous object."))
     overlap >= 0 || throw(ArgumentError("overlap must be ≥ 0."))
-    overlap == 0 || (marker_value == "" && !isnothing(ep_len)) || throw(
+    # marker-based epoching
+    by_marker = !(marker_value isa String && marker_value == "")
+    marker_value isa Vector && isempty(marker_value) &&
+        throw(ArgumentError("marker_value must not be an empty list."))
+    overlap == 0 || (!by_marker && !isnothing(ep_len)) || throw(
         ArgumentError("overlap can only be used for fixed-length epoching (ep_len)."),
     )
     overlap == 0 || overlap < ep_len ||
@@ -91,31 +100,26 @@ function epoch!(
     source   = ep_tbl[1, :source]
     fs       = sr(obj)
 
-    if marker_value != ""
+    if by_marker
         # marker-based epoching
         _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
         isnothing(ep_len) &&
             throw(ArgumentError("ep_len must be specified for marker-based epoching."))
 
-        mrk_sel = obj.markers.value .== marker_value
-        marker_type == "" || (mrk_sel .&= obj.markers.type .== marker_type)
+        mrk_sel = _marker_select(obj.markers, marker_value, marker_type)
         any(mrk_sel) || throw(
             ArgumentError(
-                "Marker '$marker_value'" * (marker_type == "" ? "" : " of type '$marker_type'") *
-                " not found.",
+                "Marker $(repr(marker_value))" *
+                (marker_type == "" ? "" : " of type '$marker_type'") * " not found.",
             ),
         )
-        mrk_idx   = findall(mrk_sel)
+        # condition label of each selected marker
+        mrk_cond = _marker_conditions(obj.markers, condition)
+        mrk_idx  = findall(mrk_sel)
+        # remove markers that would begin before the signal start
+        mrk_idx   = [idx for idx in mrk_idx if obj.markers[idx, :start] - offset >= obj.time_pts[1]]
         mrk_start = obj.markers[mrk_idx, :start]
         mrk_len   = obj.markers[mrk_idx, :length]
-
-        # remove markers that would begin before the signal start
-        for idx = length(mrk_start):-1:1
-            if mrk_start[idx] - offset < obj.time_pts[1]
-                deleteat!(mrk_start, idx)
-                deleteat!(mrk_len, idx)
-            end
-        end
 
         isempty(mrk_start) && throw(
             ArgumentError(
@@ -133,7 +137,7 @@ function epoch!(
         mrk_smp = t2s.(mrk_start, fs)
         epochs, obj.markers = _make_epochs_bymarkers(
             obj.data;
-            marker  = marker_value,
+            marker  = "",
             markers = deepcopy(obj.markers),
             marker_start = mrk_smp,
             offset       = t2n(offset, fs),
@@ -143,8 +147,9 @@ function epoch!(
         # first samples of the epochs kept by _make_epochs_bymarkers (epochs that fall,
         # even partially, outside the signal are dropped)
         ep_starts = mrk_smp .- t2n(offset, fs)
-        ep_starts = ep_starts[(ep_starts .>= 1) .& (ep_starts .+ t2n(ep_len, fs) .- 1 .<= signal_len(obj))]
-        condition = marker_value
+        ep_keep = (ep_starts .>= 1) .& (ep_starts .+ t2n(ep_len, fs) .- 1 .<= signal_len(obj))
+        ep_starts = ep_starts[ep_keep]
+        ep_cond = mrk_cond[mrk_idx][ep_keep]
 
     else
         # fixed-length epoching
@@ -186,14 +191,14 @@ function epoch!(
                 fs           = sr(obj),
             )
         end
-        condition = ""
+        ep_cond = fill("", length(ep_starts))
     end
 
     size(epochs, 3) == length(ep_starts) ||
         throw(ArgumentError("Internal error: epochs and their onsets do not match."))
     obj.data = epochs
     obj.epochs = DataFrame(
-        :condition => fill(condition, length(ep_starts)),
+        :condition => ep_cond,
         :source    => fill(source, length(ep_starts)),
         :reject    => falses(length(ep_starts)),
         :onset     => onset0 .+ (ep_starts .- 1) ./ fs,
@@ -203,7 +208,7 @@ function epoch!(
 
     push!(
         obj.history,
-        "epoch(obj; marker_value=$marker_value, marker_type=$marker_type, offset=$offset, ep_len=$ep_len, overlap=$overlap)",
+        "epoch(obj; marker_value=$(repr(marker_value)), marker_type=$marker_type, offset=$offset, ep_len=$ep_len, overlap=$overlap, condition=$(repr(condition)))",
     )
 
     return nothing

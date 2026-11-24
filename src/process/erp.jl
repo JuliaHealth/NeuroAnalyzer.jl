@@ -13,6 +13,8 @@ Average EEG/MEG/NIRS epochs and prepend the average as epoch 1. Non-signal chann
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `bl::Tuple{Real, Real}=(0, 0)`: baseline window in seconds; when not `(0, 0)` the mean of this window is subtracted from the signal
 - `blfirst::Bool=false`: when `true`, subtract the baseline from each epoch before averaging; when `false`, subtract the baseline from the averaged epoch only
+- `condition::Union{Nothing, String, Vector{String}, Regex}=nothing`: average only the epochs of these condition(s) (epoch metadata, see `get_epochs()`); `nothing`: all epochs
+- `rejected::Bool=false`: if `true`, include the epochs marked as rejected (`obj.epochs.reject`, see `epoch_reject!()`); by default they are removed
 
 # Returns
 
@@ -22,9 +24,13 @@ function average_epochs(
     obj::NeuroAnalyzer.NEURO;
     bl::Tuple{Real, Real} = (0, 0),
     blfirst::Bool = false,
+    condition::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    rejected::Bool = false,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    average_epochs!(obj_new; bl = bl, blfirst = blfirst)
+    average_epochs!(
+        obj_new; bl = bl, blfirst = blfirst, condition = condition, rejected = rejected,
+    )
 
     return obj_new
 end
@@ -39,6 +45,8 @@ Average EEG/MEG epochs in-place and prepend the average as epoch 1. Non-signal c
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `bl::Tuple{Real, Real}=(0, 0)`: baseline window in seconds; when not `(0, 0)` the mean of this window is subtracted from the signal
 - `blfirst::Bool=false`: when `true`, subtract the baseline from each epoch before averaging; when `false`, subtract the baseline from the averaged epoch only
+- `condition::Union{Nothing, String, Vector{String}, Regex}=nothing`: average only the epochs of these condition(s) (epoch metadata, see `get_epochs()`); `nothing`: all epochs
+- `rejected::Bool=false`: if `true`, include the epochs marked as rejected (`obj.epochs.reject`, see `epoch_reject!()`); by default they are removed
 
 # Returns
 
@@ -48,9 +56,22 @@ function average_epochs!(
     obj::NeuroAnalyzer.NEURO;
     bl::Tuple{Real, Real} = (0, 0),
     blfirst::Bool = false,
+    condition::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    rejected::Bool = false,
 )::Nothing
     # validate
     _check_datatype(obj, ["eeg", "meg", "nirs"])
+
+    # epochs to average: condition(s), without the rejected ones (the others are removed)
+    ep_sel = get_epochs(obj; condition = condition, rejected = rejected)
+    isempty(ep_sel) && throw(
+        ArgumentError(
+            "No epochs to average" *
+            (isnothing(condition) ? "" : " for condition $(repr(condition))") *
+            (rejected ? "." : " (rejected epochs are excluded)."),
+        ),
+    )
+    length(ep_sel) < nepochs(obj) && keep_epoch!(obj; ep = ep_sel)
 
     # signal channels (get_channel(; type) returns names)
     sig_ch = if datatype(obj) == "eeg"
@@ -115,7 +136,10 @@ function average_epochs!(
     # markers (in seconds) follow their epochs, which are shifted by the prepended average epoch
     obj.markers[!, :start] .+= n2t(size(obj.data, 2), sr(obj))
 
-    push!(obj.history, "average_epochs(obj, bl=$bl, blfirst=$blfirst)")
+    push!(
+        obj.history,
+        "average_epochs(obj, bl=$bl, blfirst=$blfirst, condition=$(repr(condition)), rejected=$rejected)",
+    )
 
     return nothing
 end

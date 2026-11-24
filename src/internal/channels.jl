@@ -83,7 +83,7 @@ _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
 
 # ---------------------------------------------------------------------------
 # data types sharing the EEG-like / MEG-like recording header schema
-# (per-channel :prefiltering, :transducers, :gain / :prefiltering, :coil_type, …)
+# (per-channel :transducers, :gain / :coil_type, …; :lowpass, :highpass for all data types)
 # ---------------------------------------------------------------------------
 const _EEG_LIKE_DATA = ("eeg", "seeg", "ecog", "ieeg", "csd", "erp")
 const _MEG_LIKE_DATA = ("meg", "erf")

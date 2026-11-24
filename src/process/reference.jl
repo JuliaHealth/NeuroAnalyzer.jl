@@ -1125,6 +1125,21 @@ function reference_custom!(
     n_new = length(ref_list)
     ep_n = nepochs(obj)
     rec0 = obj.header.recording
+    _rec_filters!(rec0)
+    # filters of a montage channel: the lower low-pass and the higher high-pass frequency of
+    # its electrodes
+    lp_new = [
+        isnothing(b) ? rec0[:lowpass][lbl2idx[a]] :
+        min(rec0[:lowpass][lbl2idx[a]], rec0[:lowpass][lbl2idx[b]]) for (a, b) in entries
+    ]
+    hp_new = [
+        isnothing(b) ? rec0[:highpass][lbl2idx[a]] :
+        max(rec0[:highpass][lbl2idx[a]], rec0[:highpass][lbl2idx[b]]) for (a, b) in entries
+    ]
+    notch_new = [
+        isnothing(b) ? copy(rec0[:notch][lbl2idx[a]]) :
+        sort(unique(vcat(rec0[:notch][lbl2idx[a]], rec0[:notch][lbl2idx[b]]))) for (a, b) in entries
+    ]
     s = zeros(n_new, epoch_len(obj), ep_n)
     bad_new = zeros(Bool, n_new)
     for (k, (a, b)) in enumerate(entries)
@@ -1154,9 +1169,12 @@ function reference_custom!(
     n_del = _markers_map_channels!(obj.markers, mmap)
     n_del > 0 && _info("$n_del marker(s) of channels not used by the montage removed")
     rec[:channel_type] = vcat(fill("eeg", n_new), rec0[:channel_type][keep])
-    for f in (:unit, :prefiltering, :transducers, :gain)
+    for f in (:unit, :transducers, :gain)
         rec[f] = vcat(fill(rec0[f][ch[1]], n_new), rec0[f][keep])
     end
+    rec[:lowpass] = vcat(lp_new, rec0[:lowpass][keep])
+    rec[:highpass] = vcat(hp_new, rec0[:highpass][keep])
+    rec[:notch] = vcat(notch_new, rec0[:notch][keep])
     rec[:bad_channel] = vcat(bad_new, collect(Bool, rec0[:bad_channel][keep]))
     rec[:channel_order] = _sort_channels(rec[:channel_type])
     rec[:reference] = ref_name

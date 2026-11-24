@@ -87,6 +87,8 @@ function intensity2od!(
 
     # optical channels (described by :wavelength_index and :optode_pairs) come first
     rec = obj.header.recording
+    # low-pass/high-pass fields (checked before the channels are added)
+    _rec_filters!(rec)
     n_opt = length(rec[:wavelength_index])
     all(<=(n_opt), ch) ||
         throw(
@@ -134,6 +136,10 @@ function intensity2od!(
     r[:label] = vcat(rec[:label][opt], rec[:label][ch] .* " OD", rec[:label][rest])
     # OD is dimensionless
     r[:unit] = vcat(rec[:unit][opt], fill("", length(ch)), rec[:unit][rest])
+    # OD channels inherit the filters of their intensity channels
+    r[:lowpass] = vcat(rec[:lowpass][opt], rec[:lowpass][ch], rec[:lowpass][rest])
+    r[:highpass] = vcat(rec[:highpass][opt], rec[:highpass][ch], rec[:highpass][rest])
+    r[:notch] = vcat(rec[:notch][opt], copy.(rec[:notch][ch]), rec[:notch][rest])
     # OD channels inherit the bad-channel flags of their intensity channels
     r[:bad_channel] =
         vcat(rec[:bad_channel][opt], rec[:bad_channel][ch], rec[:bad_channel][rest])

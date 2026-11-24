@@ -117,6 +117,8 @@ function od2conc!(
         ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."),
     )
     rec = obj.header.recording
+    # low-pass/high-pass fields (checked before the channels are added)
+    _rec_filters!(rec)
     wl = rec[:wavelengths]
     !isnothing(ppf) && !isnothing(age) &&
         throw(ArgumentError("ppf and age cannot be specified together."))
@@ -214,12 +216,20 @@ function od2conc!(
     hb_unit = fill(use_rho ? "μM" : "μM·mm", n_hb)
     hb_label = String[]
     hb_bad = Bool[]
+    hb_lp = Float64[]
+    hb_hp = Float64[]
+    hb_notch = Vector{Float64}[]
     hb_pairs = zeros(Int64, n_hb, 2)
     for (idx, idx1) in enumerate(lst)
         l = split(rec[:label][ch[idx1]], ' ')[1]
         append!(hb_label, ["$l HbO", "$l HbR", "$l HbT"])
         # a concentration channel is bad if any of its OD channels is bad
         append!(hb_bad, fill(any(rec[:bad_channel][ch[vcat(idx1, other_wl(idx1))]]), 3))
+        # filters: the lowest low-pass and the highest high-pass frequency of its OD channels
+        append!(hb_lp, fill(minimum(rec[:lowpass][ch[vcat(idx1, other_wl(idx1))]]), 3))
+        append!(hb_hp, fill(maximum(rec[:highpass][ch[vcat(idx1, other_wl(idx1))]]), 3))
+        nt = sort(unique(reduce(vcat, rec[:notch][ch[vcat(idx1, other_wl(idx1))]]; init = Float64[])))
+        append!(hb_notch, [copy(nt) for _ = 1:3])
         hb_pairs[(3 * idx - 2):(3 * idx), :] .= chp[idx1, :]'
     end
 
@@ -234,6 +244,9 @@ function od2conc!(
     r[:unit] = vcat(rec[:unit][opt], hb_unit, rec[:unit][rest])
     r[:label] = vcat(rec[:label][opt], hb_label, rec[:label][rest])
     r[:bad_channel] = vcat(rec[:bad_channel][opt], hb_bad, rec[:bad_channel][rest])
+    r[:lowpass] = vcat(rec[:lowpass][opt], hb_lp, rec[:lowpass][rest])
+    r[:highpass] = vcat(rec[:highpass][opt], hb_hp, rec[:highpass][rest])
+    r[:notch] = vcat(rec[:notch][opt], hb_notch, rec[:notch][rest])
     # concentration channels belong to their optode pair, but not to a wavelength (index 0)
     r[:wavelength_index] = vcat(rec[:wavelength_index], zeros(Int64, n_hb))
     r[:optode_pairs] = vcat(rec[:optode_pairs], hb_pairs)

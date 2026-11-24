@@ -5,6 +5,8 @@ export signal_len
 export epoch_len
 export signal_duration
 export epoch_duration
+export get_epochs
+export epoch_conditions
 export history
 export labels
 export optode_labels
@@ -172,6 +174,63 @@ Return the epoch duration in seconds.
 """
 function epoch_duration(obj::NeuroAnalyzer.NEURO)::Float64
     return size(obj, 2) / sr(obj)
+end
+
+"""
+    get_epochs(obj; <keyword arguments>)
+
+Return the numbers of the epochs of the given condition(s) (epoch metadata, `obj.epochs`), e.g. to select them with `keep_epoch()` or `delete_epoch()`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `condition::Union{Nothing, String, Vector{String}, Regex}=nothing`: condition label(s): one label, a list of labels or a regular expression; `nothing`: all conditions
+- `rejected::Bool=false`: if `true`, include the epochs marked as rejected (`obj.epochs.reject`, see `epoch_reject!()`)
+
+# Returns
+
+- `Vector{Int64}`: epoch numbers
+
+# Examples
+
+```julia
+faces = keep_epoch(obj; ep = get_epochs(obj; condition = "face"))
+```
+"""
+function get_epochs(
+    obj::NeuroAnalyzer.NEURO;
+    condition::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    rejected::Bool = false,
+)::Vector{Int64}
+    ep_tbl = _epochs_table(obj)
+    sel = if isnothing(condition)
+        trues(DataFrames.nrow(ep_tbl))
+    elseif condition isa Regex
+        occursin.(condition, ep_tbl.condition)
+    elseif condition isa Vector
+        in(Set(condition)).(ep_tbl.condition)
+    else
+        ep_tbl.condition .== condition
+    end
+    rejected || (sel .&= .!ep_tbl.reject)
+    return findall(sel)
+end
+
+"""
+    epoch_conditions(obj)
+
+Return the condition labels of the epochs (epoch metadata, `obj.epochs`), in the order of their first epochs.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+
+# Returns
+
+- `Vector{String}`: unique condition labels (without the empty label of epochs without a condition)
+"""
+function epoch_conditions(obj::NeuroAnalyzer.NEURO)::Vector{String}
+    return Base.filter(!isempty, unique(_epochs_table(obj).condition))
 end
 
 """

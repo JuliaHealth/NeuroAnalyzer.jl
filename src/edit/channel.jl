@@ -391,7 +391,7 @@ Return a copy of `obj` with new channel(s) appended.
 
 If `obj.data` is empty the object is initialized with the provided data (time axes are created from the sampling rate); otherwise the new channels are concatenated along the first (channel) dimension.
 
-All per-channel header fields are extended with defaults: `""` for prefiltering, transducers and coil type, `1.0` for gain, a zero row for MEG sensor geometry (`:coil_loc`) and `0` for its coil code (`:coil_id`), `false` for SSP channel mask, `0` for MEP stimulation intensity. New MEG channels of type `"mag"`/`"grad"` are added to the magnetometer/gradiometer lists. NIRS channels must be added with optode functions.
+All per-channel header fields are extended with defaults: no filter for the low-pass, high-pass and notch frequencies (Nyquist frequency, 0 Hz, none), `""` for transducers and coil type, `1.0` for gain, a zero row for MEG sensor geometry (`:coil_loc`) and `0` for its coil code (`:coil_id`), `false` for SSP channel mask, `0` for MEP stimulation intensity. New MEG channels of type `"mag"`/`"grad"` are added to the magnetometer/gradiometer lists. NIRS channels must be added with optode functions.
 
 # Arguments
 
@@ -500,21 +500,24 @@ function add_channel!(
     r[:channel_type] = vcat(has_data ? r[:channel_type] : String[], type_v)
     r[:unit] = vcat(has_data ? r[:unit] : String[], unit_v)
     _extend!(:bad_channel, false)
+    # low-pass and high-pass frequency: no filter
+    _extend!(:lowpass, Float64(r[:sampling_rate]) / 2)
+    _extend!(:highpass, 0.0)
+    # notch frequencies: none (one vector per channel, not shared)
+    r[:notch] = vcat(
+        (has_data && haskey(r, :notch)) ? r[:notch] : Vector{Float64}[],
+        [Float64[] for _ = 1:ch_n],
+    )
 
     if dt in _EEG_LIKE_DATA
-        _extend!(:prefiltering, "")
         _extend!(:transducers, "")
         _extend!(:gain, 1.0)
-
-    elseif dt in ("sensors", "eda", "tpt")
-        _extend!(:prefiltering, "")
 
     elseif dt == "mep"
         _extend!(:stimulation_intensity, 0)
         _extend!(:coil_type, "")
 
     elseif dt in _MEG_LIKE_DATA
-        _extend!(:prefiltering, "")
         _extend!(:coil_type, "")
         _extend!(:ssp_channels, false)
         if haskey(r, :coil_loc) && !isempty(r[:coil_loc])

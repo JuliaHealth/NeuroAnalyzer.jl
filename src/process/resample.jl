@@ -158,8 +158,15 @@ function _resample_obj!(
     )
 
     obj.data = NeuroAnalyzer._resample(obj.data; old_sr = sr(obj), new_sr = new_sr)
+    # anti-aliasing: the signal contains no frequencies above the new Nyquist frequency
+    rec = obj.header.recording
+    _rec_filters!(rec)
+    rec[:lowpass] = min.(rec[:lowpass], new_sr / 2)
+    rec[:highpass] = min.(rec[:highpass], new_sr / 2)
+    # notches at or above the new Nyquist frequency are outside the signal band
+    rec[:notch] = Vector{Float64}[Base.filter(<(new_sr / 2), n) for n in rec[:notch]]
     # the new sampling rate must be set before the time axes are rebuilt
-    obj.header.recording[:sampling_rate] = new_sr
+    rec[:sampling_rate] = new_sr
     obj.time_pts, obj.epoch_time = _get_t(obj)
     push!(obj.history, "$fname(obj, new_sr=$new_sr)")
 

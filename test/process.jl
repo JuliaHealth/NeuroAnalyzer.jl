@@ -263,6 +263,33 @@ e10_tmp = filter_poly(e10; ch = "all")
 @test size(e10_tmp) == size(e10)
 
 @info "Test: filter()"
+# low-pass and high-pass frequencies of the channels follow the filters (EDF: HP 0.18 Hz, LP 104 Hz)
+rec0 = eeg.header.recording
+@test rec0[:lowpass][1] == 104.0 && rec0[:highpass][1] == 0.18 && !haskey(rec0, :prefiltering)
+f_tmp = NeuroAnalyzer.filter(eeg; ch = "Fp1", fprototype = :butterworth, ftype = :lp,
+                             cutoff = 40, order = 4)
+i1, i2 = get_channel(f_tmp; ch = ["Fp1", "Fp2"])
+@test f_tmp.header.recording[:lowpass][i1] == 40.0
+@test f_tmp.header.recording[:lowpass][i2] == 104.0 && rec0[:lowpass][i1] == 104.0
+f_tmp = NeuroAnalyzer.filter(f_tmp; ch = "Fp1", fprototype = :butterworth, ftype = :bp,
+                             cutoff = (1, 80), order = 4)
+@test f_tmp.header.recording[:lowpass][i1] == 40.0 && f_tmp.header.recording[:highpass][i1] == 1.0
+@test all(isempty, rec0[:notch])
+f_tmp2 = NeuroAnalyzer.filter(f_tmp; ch = "Fp1", fprototype = :iirnotch, cutoff = 50, bw = 2)
+@test f_tmp2.header.recording[:lowpass] == f_tmp.header.recording[:lowpass]
+@test f_tmp2.header.recording[:highpass] == f_tmp.header.recording[:highpass]
+# notch filters are recorded in :notch (once per frequency)
+@test f_tmp2.header.recording[:notch][i1] == [50.0] && isempty(f_tmp2.header.recording[:notch][i2])
+NeuroAnalyzer.filter!(f_tmp2; ch = "Fp1", fprototype = :iirnotch, cutoff = 50, bw = 2)
+@test f_tmp2.header.recording[:notch][i1] == [50.0]
+# resampling: notches above the new Nyquist frequency are dropped
+@test isempty(resample(f_tmp2; new_sr = 64).header.recording[:notch][i1])
+f_tmp2 = NeuroAnalyzer.filter(f_tmp; ch = "Fp1", fprototype = :butterworth, ftype = :hp,
+                             cutoff = 0.5, order = 4)
+@test f_tmp2.header.recording[:highpass][i1] == 1.0
+# resampling: no frequencies above the new Nyquist frequency
+@test all(==(64.0), resample(eeg; new_sr = 128).header.recording[:lowpass])
+@test all(==(104.0), resample(eeg; new_sr = 512).header.recording[:lowpass])
 eeg_tmp = NeuroAnalyzer.filter(
     e10;
     ch = "all",
@@ -1121,6 +1148,14 @@ g = nirs_glm(n_sim)
 @test g.beta[1] ≈ amp rtol = 0.3
 @test g.p[3] > 0.01
 @test_throws ArgumentError nirs_glm(n_tmp2)
+# several marker values modeled as one condition
+n_c = deepcopy(n_sim)
+n_c.markers[1:2:end, :value] .= "task_b"
+g_c = nirs_glm(n_c; condition = Dict("task_b" => "task"))
+@test g_c.beta ≈ g.beta && all(==("task"), g_c.condition)
+@test nrow(nirs_glm(n_c)) == 2 * nrow(g)
+@test_throws ArgumentError nirs_glm(n_c; cond = "x")
+@test_throws ArgumentError nirs_glm(n_sim; marker_type = "response")
 
 @info "Test: nirs_ssr()"
 n_s = nirs_ssr(n_sim)
@@ -1229,6 +1264,7 @@ pc, _, _, pc_model = NeuroAnalyzer._pca_decompose(x; n = 4)
 @info "Test: reference_custom()"
 e10_tmp = reference_custom(e10)
 @test size(e10_tmp) == (23, 2560, 10)
+@test length(e10_tmp.header.recording[:lowpass]) == length(e10_tmp.header.recording[:highpass]) == 23
 
 @info "Test: normpower()"
 @test NeuroAnalyzer._rms(NeuroAnalyzer._normpower(1:10)) ≈ 1
@@ -2121,6 +2157,9 @@ amp_f(s, f) = (
 @test amp_f(e_out.data[1, :, 1], 50) < 0.05
 @test amp_f(e_out.data[1, :, 1], 10) > 0.95
 @test df_pl[1, :channel] == "Fp1" && df_pl[1, :frequency] == 50 && df_pl[1, :bandwidth] > 0
+# the removed frequencies are recorded in :notch
+@test e_out.header.recording[:notch][1] == Float64.(df_pl[df_pl.channel .== "Fp1", :frequency])
+@test isempty(e_out.header.recording[:notch][2])
 # only channels with a peak are filtered; no harmonic in this signal
 @test nrow(df_pl) == 1
 # other channels are not modified

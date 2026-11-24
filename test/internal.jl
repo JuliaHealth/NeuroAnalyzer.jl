@@ -1061,9 +1061,39 @@ for f in (NeuroAnalyzer._create_recording_seeg, NeuroAnalyzer._create_recording_
 end
 for f in (NeuroAnalyzer._create_recording_sensors, NeuroAnalyzer._create_recording_eda,
     NeuroAnalyzer._create_recording_tpt, NeuroAnalyzer._create_recording_prefiltered)
-    local r_tmp = f(; common..., prefiltering = ["p"])
-    @test r_tmp[:prefiltering] == ["p"] && r_tmp[:data_type] == "x"
+    local r_tmp = f(; common..., prefiltering = ["HP: 0.5 Hz; LP: 30 Hz"])
+    @test r_tmp[:lowpass] == [30.0] && r_tmp[:highpass] == [0.5] && r_tmp[:data_type] == "x"
+    @test !haskey(r_tmp, :prefiltering)
 end
+# all data types: low-pass and high-pass frequency of each channel (no filter: Nyquist, 0)
+@test c_tmp[:lowpass] == [50.0] && c_tmp[:highpass] == [0.0]
+P = NeuroAnalyzer._prefilter_freqs
+@test P("HP:0.1Hz LP:70Hz N:50Hz", 256) == (70.0, 0.1)
+@test P("HP:0,18Hz LP:104,0Hz", 256) == (104.0, 0.18)
+@test P("HP: DC; LP: 500 Hz", 256) == (128.0, 0.0)
+@test P("LP: 0.0 Hz; HP: 0.0 Hz", 256) == (128.0, 0.0)
+@test P("No filtering", 256) == (128.0, 0.0)
+@test P("HP: n/a, LP: 4 Hz", 256) == (4.0, 0.0)
+@test P("HP: 0.3 s", 256)[2] ≈ 1 / (2π * 0.3)
+@test P("LowPass: 35 Hz HighPass: 0.5 Hz", 256) == (35.0, 0.5)
+# objects saved before v0.26.12: :prefiltering → :lowpass, :highpass
+rec_old = Dict{Symbol, Any}(:label => ["a", "b"], :sampling_rate => 200,
+                            :prefiltering => ["HP: 1 Hz", ""])
+NeuroAnalyzer._rec_filters!(rec_old)
+@test rec_old[:lowpass] == [100.0, 100.0] && rec_old[:highpass] == [1.0, 0.0]
+@test rec_old[:notch] == [Float64[], Float64[]]
+@test !haskey(rec_old, :prefiltering)
+# notch frequencies
+N = NeuroAnalyzer._prefilter_notch
+@test N("HP:0.1Hz LP:70Hz N:50Hz", 256) == [50.0]
+@test N("LP: 100 Hz; HP: 0.1 Hz; N: 60.0 Hz", 256) == [60.0]
+@test N("Notch: 50 Hz, Notch: 100 Hz", 256) == [50.0, 100.0]
+@test N("No filtering", 256) == Float64[] && N("N: 0 Hz", 256) == Float64[]
+@test N("N: 200 Hz", 256) == Float64[]
+@test c_tmp[:notch] == [Float64[]]
+rec_old = Dict{Symbol, Any}(:label => ["a"], :sampling_rate => 200, :prefiltering => ["HP:0.1Hz N:50Hz"])
+NeuroAnalyzer._rec_filters!(rec_old)
+@test rec_old[:notch] == [[50.0]]
 r_tmp = NeuroAnalyzer._create_recording_nirs(; common..., wavelengths = [760.0, 850.0],
     wavelength_index = [1],
     optode_pairs = [1 1], src_labels = ["S1"], det_labels = ["D1"],

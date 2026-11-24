@@ -375,6 +375,11 @@ meg = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fiff"))
 # non-integer sampling rate (600.615 Hz): stored as 601 Hz without resampling (MEG data must not be
 # resampled before Maxwell filtering); the markers stay at their samples
 meg = import_fiff(joinpath(testfiles_path, "meg", "test_raw.fif"))
+# low-pass and high-pass frequencies as stored in the file (MNE-Python: 172.176 Hz, 0.1 Hz)
+@test all(≈(172.1763; atol = 1e-3), meg.header.recording[:lowpass])
+@test all(≈(0.1; atol = 1e-6), meg.header.recording[:highpass])
+@test length(meg.header.recording[:lowpass]) == nchannels(meg)
+@test !haskey(meg.header.recording, :prefiltering)
 @test (sr(meg), nchannels(meg), signal_len(meg)) == (601, 376, 14400)
 # MNE: ch_names[:3] == ["MEG 0113", "MEG 0112", "MEG 0111"]
 @test labels(meg)[1:3] == ["MEG 0113", "MEG 0112", "MEG 0111"]
@@ -944,6 +949,7 @@ r1, r2 = meg.header.recording, meg2.header.recording
 for k in (
     :channel_type, :unit, :coil_type, :coil_id, :bad_channel, :magnetometers, :gradiometers,
     :ssp_labels, :ssp_channels, :sampling_rate, :recording_date, :recording_time,
+    :lowpass, :highpass,
 )
     @test r2[k] == r1[k]
 end
@@ -999,7 +1005,6 @@ eeg2 = import_fiff(f; clean_labels = false)
 @test NeuroAnalyzer._fiff_meas_date("3-12-2002", "19:1:10") ==
       round(Int64, NeuroAnalyzer.datetime2unix(NeuroAnalyzer.DateTime(2002, 12, 3, 19, 1, 10)))
 @test isnothing(NeuroAnalyzer._fiff_meas_date("", ""))
-@test NeuroAnalyzer._fiff_prefiltering("LP: 172.2 Hz; HP: 0.1 Hz") == (172.2, 0.1)
 
 @info "Test: export_recording()"
 f = joinpath(tmp, "rec_raw.fif")
