@@ -226,7 +226,7 @@ Plot a 3D representation of multi-channel phase spectrum.
 - `zlabel::String=""`: y-axis label
 - `title::String=""`: plot title
 - `mono::Bool=false`: if `true`, use a monochrome palette
-- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
+- `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic; Makie 3D axes have no log scale, so log10-transformed frequencies are plotted with ticks labeled in Hz; a 0 Hz lower bound is truncated to the next frequency)
 - `variant::Symbol=:w`: 3D visualization type:
     - `:w`: waterfall plot
     - `:s`: surface plot
@@ -264,8 +264,7 @@ function plot_phs_3d(
     ch_n = size(ph, 1)
 
     # prepare log-scaled frequencies axis
-    if frq === :log && flim[1] == 0
-        _warn("Currently log scale is not supported by Makie.")
+    if frq === :log && flim[1] <= 0
         _warn("Lower frequency bound truncated to $(f[2]) Hz.")
         flim = (f[2], flim[2])
     end
@@ -273,6 +272,10 @@ function plot_phs_3d(
     # frequency limits
     f1 = vsearch(flim[1], f)
     f2 = vsearch(flim[2], f)
+    # Axis3 has no log scale: log10-transformed frequencies with ticks labeled in Hz
+    frq === :log && f[f1] <= 0 && (f1 += 1)
+    fx = frq === :log ? log10.(f[f1:f2]) : f[f1:f2]
+    xt = frq === :log ? _log_freq_ticks(f[f1], f[f2]) : LinearTicks(15)
 
     yts = ch_n > 64 ? 5 : ch_n > 32 ? 2 : 1
 
@@ -288,10 +291,7 @@ function plot_phs_3d(
         ylabel = ylabel,
         zlabel = zlabel,
         title = title,
-        xticks = LinearTicks(15),
-        #xminorticksvisible=true,
-        #xminorticks=IntervalsBetween(10),
-        #xscale=frq === :lin ? identity : log,
+        xticks = xt,
         yticks = (1:yts:ch_n, clabels[1:yts:end]),
         zoommode = :disable,
         xtranslationlock = true,
@@ -310,7 +310,7 @@ function plot_phs_3d(
         cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
         for idx = 1:ch_n
             GLMakie.lines!(
-                f[f1:f2],
+                fx,
                 ones(f2 - f1 + 1) .* idx,
                 ph[idx, f1:f2];
                 linewidth = 2,
@@ -323,7 +323,7 @@ function plot_phs_3d(
 
         # plot powers
         cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
-        GLMakie.surface!(f[f1:f2], eachindex(clabels), ph[:, f1:f2]'; colormap = pal)
+        GLMakie.surface!(fx, eachindex(clabels), ph[:, f1:f2]'; colormap = pal)
     end
 
     return fig

@@ -711,3 +711,32 @@ function _plot_scale_group!(
 
     return sc
 end
+
+"""
+    _log_freq_ticks(lo, hi)
+
+Return ticks for a log-transformed frequency axis (e.g. of `GLMakie.Axis3`, which has no log scale): positions are `log10` of the frequencies, labels are the frequencies in Hz. Frequencies of the 1-2-5 sequence within `[lo, hi]` are used; if fewer than 3 of them fit, 1-9 multiples of powers of 10 are used.
+
+# Arguments
+
+- `lo::Real`: lowest frequency (> 0)
+- `hi::Real`: highest frequency
+
+# Returns
+
+- `Tuple{Vector{Float64}, Vector{String}}`: tick positions (`log10` of frequency) and labels
+"""
+function _log_freq_ticks(lo::Real, hi::Real)::Tuple{Vector{Float64}, Vector{String}}
+    lo > 0 || throw(ArgumentError("lo must be > 0."))
+    hi >= lo || throw(ArgumentError("hi must be ≥ lo."))
+    tol = 1e-9 * hi
+    dec = floor(Int64, log10(lo)):ceil(Int64, log10(hi))
+    pick(m) = [x * 10.0^d for d in dec for x in m if lo - tol <= x * 10.0^d <= hi + tol]
+    v = pick((1, 2, 5))
+    length(v) < 3 && (v = pick(1:9))
+    # very narrow range: the limits only
+    length(v) < 2 && (v = unique([Float64(lo), Float64(hi)]))
+    lab = [(r = round(x; sigdigits = 3);
+            isinteger(r) ? string(round(Int64, r)) : string(r)) for x in v]
+    return (log10.(v), lab)
+end

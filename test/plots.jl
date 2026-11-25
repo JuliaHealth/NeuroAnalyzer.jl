@@ -859,10 +859,27 @@ hm_st = only(filter(x -> x isa Heatmap, axes_of(p)[1].scene.plots))
 
 @info "Test: plot_psd_3d() / plot_psd_topo() / plot_phs_3d() / plot_phs_topo() / plot_spectrogram_topo()"
 pw, fw = NeuroAnalyzer._psd(e10.data[ch_eeg, :, 1]; fs = sr(e10))
+ph_3d, fp_3d = NeuroAnalyzer._phs(e10.data[ch_eeg, :, 1]; fs = sr(e10))
 p = plot_psd_3d(fw, pw; clabels = labels(e10)[ch_eeg])
 @test p isa GLMakie.Figure
 p = plot_psd_3d(fw, pw; clabels = labels(e10)[ch_eeg], db = false, flim = (0, 40))
 @test p isa GLMakie.Figure
+# log frequency scale: log10-transformed frequencies, ticks labeled in Hz
+@test NeuroAnalyzer._log_freq_ticks(1, 40) ==
+      (log10.([1.0, 2.0, 5.0, 10.0, 20.0]), ["1", "2", "5", "10", "20"])
+@test NeuroAnalyzer._log_freq_ticks(0.5, 3)[2] == ["0.5", "1", "2"]
+@test NeuroAnalyzer._log_freq_ticks(3, 9)[2] == ["3", "4", "5", "6", "7", "8", "9"]
+@test_throws ArgumentError NeuroAnalyzer._log_freq_ticks(0, 40)
+for (fun, ff, v) in ((plot_psd_3d, fw, pw), (plot_phs_3d, fp_3d, ph_3d)),
+    variant in (:w, :s)
+    local p = fun(ff, v; clabels = labels(e10)[ch_eeg], flim = (0, 40), frq = :log,
+                  variant = variant)
+    local ax = only(filter(x -> x isa Axis3, p.content))
+    local pl = ax.scene.plots[1]
+    local x = variant === :w ? [pt[1] for pt in pl[1][]] : collect(pl[1][])
+    @test minimum(x) ≈ log10(ff[2]) && maximum(x) ≈ log10(40)
+    @test ax.xticks[] == NeuroAnalyzer._log_freq_ticks(ff[2], 40)
+end
 p = plot_psd_topo(locs_e, fw, pw; gui = false)
 @test p isa GLMakie.Figure
 ph, fp = NeuroAnalyzer._phs(e10.data[ch_eeg, :, 1]; fs = sr(e10))
