@@ -258,7 +258,7 @@ add_marker!(eeg_mrk; type = "test", start = 1988, len = 1, value = "test")
 
 @info "Test: edit_marker()"
 @test eeg_mrk.markers[45, :type] == "test"
-edit_marker!(eeg_mrk; n = 45, type = "TEST", start = 1989, len = 1, value = "test")
+edit_marker!(eeg_mrk; n = 45, new_type = "TEST", start = 1989, len = 1)
 @test eeg_mrk.markers[45, :type] == "TEST"
 
 @info "Test: channel2marker()"
@@ -554,8 +554,49 @@ e_tmp = add_marker(e_tmp; type = "c", start = 5.0, value = "z")
 e_tmp2 = delete_marker(e_tmp; n = 2)
 @test e_tmp2.markers[!, :value] == ["x", "y"]
 @test_throws ArgumentError delete_marker(e_tmp; n = 9)
-e_tmp2 = edit_marker(e_tmp; n = 1, type = "a", start = 20.0, value = "x2")
+e_tmp2 = edit_marker(e_tmp; n = 1, start = 20.0, new_value = "x2")
 @test e_tmp2.markers[!, :value] == ["z", "y", "x2"]
+# bulk editing: e_tmp markers x (a, 1.0 s), z (c, 5.0 s), y (b, 12.5 s)
+# merging values, renaming by dictionary, by type or regex
+@test edit_marker(e_tmp; value = ["x", "y"], new_value = "t").markers[!, :value] ==
+      ["t", "z", "t"]
+@test edit_marker(e_tmp; new_value = Dict("x" => "1", "z" => "2")).markers[!, :value] ==
+      ["1", "2", "y"]
+@test edit_marker(e_tmp; type = "c", new_value = "c1").markers[!, :value] == ["x", "c1", "y"]
+@test edit_marker(e_tmp; value = r"^[xy]$", new_type = "stim").markers[!, :type] ==
+      ["stim", "c", "stim"]
+e_tmp2 = edit_marker(e_tmp; type = ["a", "b"], len = 0.25, ch = "Fp1")
+@test e_tmp2.markers[!, :length] == [0.25, 0.0, 0.25]
+@test e_tmp2.markers[!, :channel] == [["Fp1"], String[], ["Fp1"]]
+# shifting all markers or selected ones; markers leaving the signal are deleted
+@test edit_marker(e_tmp; shift = 0.5).markers[!, :start] == [1.5, 5.5, 13.0]
+@test edit_marker(e_tmp; value = "z", shift = 10).markers[!, :value] == ["x", "y", "z"]
+@test edit_marker(e_tmp; shift = -2).markers[!, :value] == ["z", "y"]
+e_tmp2 = edit_marker(e_tmp; n = 3, shift = e_tmp.time_pts[end] - 12.6)
+@test e_tmp2.markers[3, :length] ≈ 0.1
+@test e_tmp2.history[end] == "edit_marker(obj; n=3, value=nothing, type=nothing, " *
+      "new_value=nothing, new_type=nothing, start=nothing, len=nothing, ch=nothing, " *
+      "shift=$(e_tmp.time_pts[end] - 12.6))"
+# no match: unchanged
+@test edit_marker(e_tmp; value = "q", new_value = "w").markers == e_tmp.markers
+@test_throws ArgumentError edit_marker(e_tmp; n = 1)
+@test_throws ArgumentError edit_marker(e_tmp; type = "a", start = 1, shift = 1)
+@test_throws ArgumentError edit_marker(e_tmp; start = 2.0)
+@test_throws ArgumentError edit_marker(e_tmp; n = 1, value = "x", new_value = "q")
+@test_throws ArgumentError edit_marker(e_tmp; n = 9, new_value = "q")
+@test_throws ArgumentError edit_marker(e_tmp; n = 1, len = 1e6)
+@test_throws ArgumentError edit_marker(e_tmp; n = 1, ch = "XX")
+# deleting by numbers, value, type or regex
+@test delete_marker(e_tmp; n = [1, 3]).markers[!, :value] == ["z"]
+@test delete_marker(e_tmp; n = 1:2).markers[!, :value] == ["y"]
+@test delete_marker(e_tmp; value = ["x", "z"]).markers[!, :value] == ["y"]
+@test delete_marker(e_tmp; value = r"[yz]").markers[!, :value] == ["x"]
+@test delete_marker(e_tmp; type = "c").markers[!, :value] == ["x", "y"]
+@test delete_marker(e_tmp; value = "x", type = "b").markers == e_tmp.markers
+@test delete_marker(e_tmp; type = r"^[ab]$").history[end] ==
+      "delete_marker(obj; n=nothing, value=nothing, type=r\"^[ab]\$\")"
+@test_throws ArgumentError delete_marker(e_tmp)
+@test_throws ArgumentError delete_marker(e_tmp; n = 1, type = "a")
 # marker channels: labels (empty vector = all channels)
 @test e_tmp.markers[!, :channel] == [String[], String[], String[]]
 e_tmp2 = add_marker(e_tmp; type = "BAD", start = 0.5, len = 1.0, value = "", ch = "Fp1")
@@ -563,7 +604,7 @@ e_tmp2 = add_marker(e_tmp; type = "BAD", start = 0.5, len = 1.0, value = "", ch 
 e_tmp2 = add_marker(e_tmp; type = "BAD", start = 0.5, len = 1.0, value = "", ch = ["Fp1", "F7"])
 @test e_tmp2.markers[1, :channel] == ["Fp1", "F7"]
 @test_throws ArgumentError add_marker(e_tmp; type = "c", start = 2.0, value = "z", ch = "XX")
-e_tmp3 = edit_marker(e_tmp2; n = 1, type = "BAD", start = 0.5, len = 1.0, value = "", ch = "O1")
+e_tmp3 = edit_marker(e_tmp2; n = 1, ch = "O1")
 @test e_tmp3.markers[1, :channel] == ["O1"]
 out = mktemp() do path, io
     redirect_stdout(io) do
@@ -736,7 +777,7 @@ e_x = add_markers(eeg; markers = mrk_x)
 add_marker!(e_x; type = "BAD", start = 20.0, len = 1.0, value = "", ch = "Fp1")
 @test nrow(e_x.markers) == 3 && ismissing(e_x.markers[2, :trial_type])
 @test e_x.markers[[1, 3], :response_time] == [0.512, 0.634]
-e_x2 = edit_marker(e_x; n = 1, type = "stim", start = 11.0, value = "A2")
+e_x2 = edit_marker(e_x; n = 1, start = 11.0, new_value = "A2")
 @test e_x2.markers[1, :trial_type] == "face"
 @test delete_marker(e_x; n = 2).markers[!, :trial_type] == ["face", "house"]
 e_x2 = NeuroAnalyzer.trim(e_x; seg = (15, 16))

@@ -101,20 +101,31 @@ end
 """
     delete_marker(obj; <keyword arguments>)
 
-Delete a marker.
+Delete markers: by number (`n`) or by value and/or type.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `n::Int64`: marker number
+- `n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}}=nothing`: marker number(s)
+- `value::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker value(s) or regex
+- `type::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker type(s) or regex
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
+
+# Notes
+
+`n` cannot be combined with `value` or `type`; markers matching both `value` and `type` are deleted if both are given. At least one of `n`, `value` and `type` must be given.
 """
-function delete_marker(obj::NeuroAnalyzer.NEURO; n::Int64)::NeuroAnalyzer.NEURO
+function delete_marker(
+    obj::NeuroAnalyzer.NEURO;
+    n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}} = nothing,
+    value::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    type::Union{Nothing, String, Vector{String}, Regex} = nothing,
+)::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    delete_marker!(obj_new; n = n)
+    delete_marker!(obj_new; n = n, value = value, type = type)
 
     return obj_new
 end
@@ -122,26 +133,40 @@ end
 """
     delete_marker!(obj; <keyword arguments>)
 
-Delete a marker in-place.
+Delete markers in-place: by number (`n`) or by value and/or type.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `n::Int64`: marker number
+- `n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}}=nothing`: marker number(s)
+- `value::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker value(s) or regex
+- `type::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker type(s) or regex
 
 # Returns
 
 - `Nothing`
+
+# Notes
+
+`n` cannot be combined with `value` or `type`; markers matching both `value` and `type` are deleted if both are given. At least one of `n`, `value` and `type` must be given.
 """
-function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
+function delete_marker!(
+    obj::NeuroAnalyzer.NEURO;
+    n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}} = nothing,
+    value::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    type::Union{Nothing, String, Vector{String}, Regex} = nothing,
+)::Nothing
     _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
+    idx = _marker_idx(obj.markers, n, value, type; required = true)
+    if isempty(idx)
+        _warn("No markers match; nothing deleted.")
+        return nothing
+    end
 
-    nn = DataFrames.nrow(obj.markers)
-    _in(n, (1, nn), "n")
+    deleteat!(obj.markers, idx)
+    isnothing(n) && _info("$(length(idx)) marker(s) deleted")
 
-    deleteat!(obj.markers, n)
-
-    _history!(obj, "delete_marker", (; n))
+    _history!(obj, "delete_marker", (; n, value, type))
 
     return nothing
 end
@@ -229,34 +254,64 @@ end
 """
     edit_marker(obj; <keyword arguments>)
 
-Edit a marker.
+Edit markers: change the value, type, start time, duration or channels of one or more markers, rename and merge values, or shift markers by a fixed delay.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `n::Int64`: marker number to edit
-- `type::String="stim"`: marker type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
-- `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
-- `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
-- `value::String`: marker value
-- `ch::Union{String, Vector{String}}=""`: channel label(s); `""` (or `String[]`) means the marker applies to all channels
+
+Markers to edit (without `n`, `value` and `type`: all markers):
+
+- `n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}}=nothing`: marker number(s)
+- `value::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker value(s) or regex
+- `type::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker type(s) or regex
+
+Changes (at least one must be given):
+
+- `new_value::Union{Nothing, String, AbstractDict}=nothing`: new value; several values merged into one (e.g. the codes of all target stimuli into `"target"`), or a dictionary of old => new values (values not in the dictionary are not changed)
+- `new_type::Union{Nothing, String}=nothing`: new type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
+- `start::Union{Nothing, Real}=nothing`: new start time in seconds (one marker only)
+- `len::Union{Nothing, Real}=nothing`: new duration in seconds
+- `ch::Union{Nothing, String, Vector{String}}=nothing`: new channel label(s); `""` (or `String[]`) means all channels
+- `shift::Union{Nothing, Real}=nothing`: delay in seconds added to the start times (positive: markers are moved later), e.g. to correct the latency of a trigger measured with a photodiode; markers moved outside the signal are deleted (with a warning), markers ending after the signal end are shortened
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
+
+# Examples
+
+```julia
+edit_marker(obj; n = 2, start = 45, len = 0.5)         # one marker
+edit_marker(obj; value = ["11", "12"], new_value = "target")    # merge values
+edit_marker(obj; new_value = Dict("1" => "std", "2" => "dev"))  # rename values
+edit_marker(obj; type = "stim", shift = 0.023)          # latency correction
+```
 """
 function edit_marker(
     obj::NeuroAnalyzer.NEURO;
-    n::Int64,
-    type::String = "stim",
-    start::Real,
-    len::Real = 0.0,
-    value::String,
-    ch::Union{String, Vector{String}} = "",
+    n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}} = nothing,
+    value::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    type::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    new_value::Union{Nothing, String, AbstractDict} = nothing,
+    new_type::Union{Nothing, String} = nothing,
+    start::Union{Nothing, Real} = nothing,
+    len::Union{Nothing, Real} = nothing,
+    ch::Union{Nothing, String, Vector{String}} = nothing,
+    shift::Union{Nothing, Real} = nothing,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     edit_marker!(
-        obj_new; n = n, type = type, start = start, len = len, value = value, ch = ch,
+        obj_new;
+        n = n,
+        value = value,
+        type = type,
+        new_value = new_value,
+        new_type = new_type,
+        start = start,
+        len = len,
+        ch = ch,
+        shift = shift,
     )
 
     return obj_new
@@ -265,50 +320,118 @@ end
 """
     edit_marker!(obj; <keyword arguments>)
 
-Edit a marker in-place.
+Edit markers in-place: change the value, type, start time, duration or channels of one or more markers, rename and merge values, or shift markers by a fixed delay.
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
-- `n::Int64`: marker number to edit
-- `type::String="stim"`: marker type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
-- `start::Real`: marker start time in seconds (must be ≥ 0 and within signal)
-- `len::Real=0.0`: marker duration in seconds (must be ≥ 0)
-- `value::String`: marker value
-- `ch::Union{String, Vector{String}}=""`: channel label(s); `""` (or `String[]`) means the marker applies to all channels
+
+Markers to edit (without `n`, `value` and `type`: all markers):
+
+- `n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}}=nothing`: marker number(s)
+- `value::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker value(s) or regex
+- `type::Union{Nothing, String, Vector{String}, Regex}=nothing`: marker type(s) or regex
+
+Changes (at least one must be given):
+
+- `new_value::Union{Nothing, String, AbstractDict}=nothing`: new value; several values merged into one (e.g. the codes of all target stimuli into `"target"`), or a dictionary of old => new values (values not in the dictionary are not changed)
+- `new_type::Union{Nothing, String}=nothing`: new type: `"stim"`, `"response"`, `"annotation"`, `"BAD"` (bad segment), `"boundary"` (discontinuity), `"epoch"` or `"other"`
+- `start::Union{Nothing, Real}=nothing`: new start time in seconds (one marker only)
+- `len::Union{Nothing, Real}=nothing`: new duration in seconds
+- `ch::Union{Nothing, String, Vector{String}}=nothing`: new channel label(s); `""` (or `String[]`) means all channels
+- `shift::Union{Nothing, Real}=nothing`: delay in seconds added to the start times (positive: markers are moved later), e.g. to correct the latency of a trigger measured with a photodiode; markers moved outside the signal are deleted (with a warning), markers ending after the signal end are shortened
 
 # Returns
 
 - `Nothing`
+
+# Examples
+
+```julia
+edit_marker(obj; n = 2, start = 45, len = 0.5)         # one marker
+edit_marker(obj; value = ["11", "12"], new_value = "target")    # merge values
+edit_marker(obj; new_value = Dict("1" => "std", "2" => "dev"))  # rename values
+edit_marker(obj; type = "stim", shift = 0.023)          # latency correction
+```
 """
 function edit_marker!(
     obj::NeuroAnalyzer.NEURO;
-    n::Int64,
-    type::String = "stim",
-    start::Real,
-    len::Real = 0.0,
-    value::String,
-    ch::Union{String, Vector{String}} = "",
+    n::Union{Nothing, Int64, Vector{Int64}, AbstractUnitRange{Int64}} = nothing,
+    value::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    type::Union{Nothing, String, Vector{String}, Regex} = nothing,
+    new_value::Union{Nothing, String, AbstractDict} = nothing,
+    new_type::Union{Nothing, String} = nothing,
+    start::Union{Nothing, Real} = nothing,
+    len::Union{Nothing, Real} = nothing,
+    ch::Union{Nothing, String, Vector{String}} = nothing,
+    shift::Union{Nothing, Real} = nothing,
 )::Nothing
+    # validate
     _has_markers(obj) || throw(ArgumentError("OBJ has no markers."))
-    start >= 0 || throw(ArgumentError("start must be > 0."))
-    len >= 0 || throw(ArgumentError("len must be ≥ 0."))
-    start < signal_len(obj) / sr(obj) ||
-        throw(ArgumentError("start must be < $(signal_len(obj) / sr(obj))."))
-    start + len <= signal_len(obj) / sr(obj) ||
-        throw(ArgumentError("start + len must be ≤ $(signal_len(obj) / sr(obj))."))
+    all(isnothing, (new_value, new_type, start, len, ch, shift)) && throw(
+        ArgumentError("At least one of new_value, new_type, start, len, ch, shift must be given."),
+    )
+    isnothing(start) || isnothing(shift) ||
+        throw(ArgumentError("start and shift cannot be used together."))
+    isnothing(shift) || isfinite(shift) || throw(ArgumentError("shift must be finite."))
+    t_end = obj.time_pts[end]
+    isnothing(start) || 0 <= start <= t_end ||
+        throw(ArgumentError("start must be in [0, $t_end]."))
+    isnothing(len) || len >= 0 || throw(ArgumentError("len must be ≥ 0."))
+    mch = isnothing(ch) ? nothing : _mrk_ch(ch, labels(obj))
 
-    nn = size(obj.markers, 1)
-    1 <= n <= nn || throw(ArgumentError("n must be in [1, $nn]."))
-    mch = _mrk_ch(ch, labels(obj))
+    m = obj.markers
+    idx = _marker_idx(m, n, value, type)
+    isnothing(start) || length(idx) == 1 ||
+        throw(ArgumentError("start can be set for one marker only ($(length(idx)) selected)."))
+    if !isnothing(start) || !isnothing(len)
+        for i in idx
+            s0 = isnothing(start) ? m[i, :start] : start
+            l0 = isnothing(len) ? m[i, :length] : len
+            s0 + l0 <= t_end ||
+                throw(ArgumentError("start + len must be ≤ $t_end (marker $i)."))
+        end
+    end
+    if isempty(idx)
+        _warn("No markers match; nothing changed.")
+        return nothing
+    end
 
-    obj.markers[n, :type] = type
-    obj.markers[n, :start] = start
-    obj.markers[n, :length] = len
-    obj.markers[n, :value] = value
-    obj.markers[n, :channel] = mch
-    sort!(obj.markers, :start)
-    _history!(obj, "edit_marker", (; n, type, start, len, value, ch))
+    # values: one new value (merging) or old => new values
+    if new_value isa AbstractDict
+        d = Dict{String, String}(string(k) => string(v) for (k, v) in new_value)
+        for i in idx
+            v = string(m[i, :value])
+            haskey(d, v) && (m[i, :value] = d[v])
+        end
+    elseif !isnothing(new_value)
+        m[idx, :value] .= new_value
+    end
+    isnothing(new_type) || (m[idx, :type] .= new_type)
+    isnothing(start) || (m[idx[1], :start] = Float64(start))
+    isnothing(len) || (m[idx, :length] .= Float64(len))
+    if !isnothing(mch)
+        for i in idx
+            m[i, :channel] = copy(mch)
+        end
+    end
+
+    # shift: markers outside the signal are deleted, markers past the end shortened
+    if !isnothing(shift)
+        m[idx, :start] .+= shift
+        out = Base.filter(i -> m[i, :start] < 0 || m[i, :start] > t_end, idx)
+        for i in setdiff(idx, out)
+            m[i, :start] + m[i, :length] > t_end && (m[i, :length] = t_end - m[i, :start])
+        end
+        if !isempty(out)
+            _warn("$(length(out)) marker(s) moved outside the signal were deleted.")
+            deleteat!(m, out)
+        end
+    end
+    sort!(m, :start)
+    length(idx) > 1 && _info("$(length(idx)) markers edited")
+
+    _history!(obj, "edit_marker", (; n, value, type, new_value, new_type, start, len, ch, shift))
 
     return nothing
 end

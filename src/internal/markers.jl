@@ -507,6 +507,38 @@ function _marker_select(
 end
 
 """
+    _marker_idx(markers, n, value, type; required=false)
+
+Numbers of the markers selected by number (`n`) or by value and type (`nothing`: any; a string, a vector of strings or a regex). Without any selection all markers are selected, or an error is thrown if `required`.
+"""
+function _marker_idx(
+    markers::DataFrame,
+    n::Union{Nothing, Int64, AbstractVector{Int64}},
+    value::Union{Nothing, String, Vector{String}, Regex},
+    type::Union{Nothing, String, Vector{String}, Regex};
+    required::Bool = false,
+)::Vector{Int64}
+    nn = DataFrames.nrow(markers)
+    if !isnothing(n)
+        isnothing(value) && isnothing(type) ||
+            throw(ArgumentError("n cannot be combined with value or type."))
+        idx = sort(unique(n isa Integer ? [n] : collect(n)))
+        isempty(idx) && throw(ArgumentError("n must not be empty."))
+        for i in idx
+            _in(i, (1, nn), "n")
+        end
+        return idx
+    end
+    required && isnothing(value) && isnothing(type) &&
+        throw(ArgumentError("n, value or type must be given."))
+    m(x, s) = isnothing(s) ? true : s isa Regex ? occursin(s, x) : s isa Vector ? x in s : x == s
+    return Int64[
+        i for i in 1:nn if
+        m(string(markers[i, :value]), value) && m(string(markers[i, :type]), type)
+    ]
+end
+
+"""
     _marker_conditions(markers, condition)
 
 Condition label of each marker: the values of the marker column `condition` (`missing`: `""`), or the marker values mapped by the dictionary `condition` (values not in the dictionary are their own labels).
@@ -561,9 +593,7 @@ function _unmark_bad!(obj::NeuroAnalyzer.NEURO, t1::Real, t2::Real)::Int64
         i -> m[i, :type] == "BAD" && m[i, :start] < t2 && m[i, :start] + m[i, :length] > t1,
         1:DataFrames.nrow(m),
     )
-    for i in reverse(del)
-        delete_marker!(obj; n = i)
-    end
+    isempty(del) || delete_marker!(obj; n = del)
     return length(del)
 end
 
