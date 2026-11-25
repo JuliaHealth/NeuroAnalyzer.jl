@@ -9,8 +9,10 @@ export replace_channel
 export replace_channel!
 export add_label
 export add_label!
-export add_channel
-export add_channel!
+export append_channel
+export append_channel!
+export insert_channel
+export insert_channel!
 
 # ---------------------------------------------------------------------------
 # internal helpers
@@ -386,13 +388,15 @@ function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
 end
 
 """
-    add_channel(obj; <keyword arguments>)
+    append_channel(obj; <keyword arguments>)
 
 Return a copy of `obj` with new channel(s) appended.
 
 If `obj.data` is empty the object is initialized with the provided data (time axes are created from the sampling rate); otherwise the new channels are concatenated along the first (channel) dimension.
 
-All per-channel header fields are extended with defaults: no filter for the low-pass, high-pass and notch frequencies (Nyquist frequency, 0 Hz, none), `""` for transducers and coil type, `1.0` for gain, a zero row for MEG sensor geometry (`:coil_loc`) and `0` for its coil code (`:coil_id`), `false` for SSP channel mask, `0` for MEP stimulation intensity. New MEG channels of type `"mag"`/`"grad"` are added to the magnetometer/gradiometer lists. NIRS channels must be added with optode functions.
+All per-channel header fields are extended with defaults: no filter for the low-pass, high-pass and notch frequencies (Nyquist frequency, 0 Hz, none), `""` for transducers and coil type, `1.0` for gain, a zero row for MEG sensor geometry (`:coil_loc`) and `0` for its coil code (`:coil_id`), `false` for SSP channel mask, `0` for MEP stimulation intensity. New MEG channels of type `"mag"`/`"grad"` are added to the magnetometer/gradiometer lists. NIRS channels cannot be appended (they are described by optode pairs); other channels (e.g. EEG, auxiliary) can be appended to NIRS objects.
+
+Channels of another object are appended with `append_channel(obj1, obj2)`.
 
 # Arguments
 
@@ -406,7 +410,7 @@ All per-channel header fields are extended with defaults: no filter for the low-
 
 - `NeuroAnalyzer.NEURO`: output NEURO object
 """
-function add_channel(
+function append_channel(
     obj::NeuroAnalyzer.NEURO;
     data::Array{<:Number, 3},
     label::Union{String, Vector{String}},
@@ -414,13 +418,13 @@ function add_channel(
     unit::Union{String, Vector{String}},
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
-    add_channel!(obj_new; data = data, label = label, type = type, unit = unit)
+    append_channel!(obj_new; data = data, label = label, type = type, unit = unit)
 
     return obj_new
 end
 
 """
-    add_channel!(obj; <keyword arguments>)
+    append_channel!(obj; <keyword arguments>)
 
 Add new channel(s) in-place.
 
@@ -436,7 +440,7 @@ Add new channel(s) in-place.
 
 - `Nothing`
 """
-function add_channel!(
+function append_channel!(
     obj::NeuroAnalyzer.NEURO;
     data::Array{<:Number, 3},
     label::Union{String, Vector{String}},
@@ -453,7 +457,9 @@ function add_channel!(
 
     rec = obj.header.recording
     dt = rec[:data_type]
-    dt == "nirs" &&
+    # NIRS objects: NIRS channels are described by optode pairs, other channels (e.g. EEG,
+    # auxiliary) can be appended
+    dt == "nirs" && any(t -> startswith(t, "nirs") && t != "nirs_aux", type_v) &&
         throw(ArgumentError("NIRS channels must be added using optode functions."))
 
     # validate
@@ -549,7 +555,212 @@ function add_channel!(
         obj.epoch_time = _time_axis(n_s, fs)
     end
 
-    _history!(obj, "add_channel", (; label = label_v, type = type_v, unit = unit_v, data))
+    _history!(obj, "append_channel", (; label = label_v, type = type_v, unit = unit_v, data))
+
+    return nothing
+end
+
+"""
+    append_channel(obj1, obj2; <keyword arguments>)
+
+Return a copy of `obj1` with channels of `obj2` appended, e.g. EEG with auxiliary, EOG or ECG channels recorded separately, or EEG recorded simultaneously with NIRS.
+
+The objects must have the same sampling rate, epoch length and number of epochs (the signals must be synchronized). The channel types, units, low-pass, high-pass and notch frequencies, bad channel flags, gain and transducers (EEG), coil type, geometry and code (MEG) and locations of the channels are copied; markers are not.
+
+# Arguments
+
+- `obj1::NeuroAnalyzer.NEURO`: object the channels are appended to
+- `obj2::NeuroAnalyzer.NEURO`: object the channels are taken from
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name(s) of `obj2`
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: output NEURO object
+
+# Notes
+
+The channel labels of `obj2` must not exist in `obj1` (rename them with `rename_channel()`). NIRS channels can be merged into a NIRS object only with optode functions; to analyze EEG recorded simultaneously with NIRS, append the EEG channels to the NIRS object.
+"""
+function append_channel(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+)::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj1)
+    append_channel!(obj_new, obj2; ch = ch)
+
+    return obj_new
+end
+
+"""
+    append_channel!(obj1, obj2; <keyword arguments>)
+
+Append channels of `obj2` to `obj1` in-place, e.g. EEG with auxiliary, EOG or ECG channels recorded separately, or EEG recorded simultaneously with NIRS.
+
+The objects must have the same sampling rate, epoch length and number of epochs (the signals must be synchronized). The channel types, units, low-pass, high-pass and notch frequencies, bad channel flags, gain and transducers (EEG), coil type, geometry and code (MEG) and locations of the channels are copied; markers are not.
+
+# Arguments
+
+- `obj1::NeuroAnalyzer.NEURO`: object the channels are appended to; modified in-place
+- `obj2::NeuroAnalyzer.NEURO`: object the channels are taken from
+- `ch::Union{String, Vector{String}, Regex}="all"`: channel name(s) of `obj2`
+
+# Returns
+
+- `Nothing`
+
+# Notes
+
+The channel labels of `obj2` must not exist in `obj1` (rename them with `rename_channel()`). NIRS channels can be merged into a NIRS object only with optode functions; to analyze EEG recorded simultaneously with NIRS, append the EEG channels to the NIRS object.
+"""
+function append_channel!(
+    obj1::NeuroAnalyzer.NEURO,
+    obj2::NeuroAnalyzer.NEURO;
+    ch::Union{String, Vector{String}, Regex} = "all",
+)::Nothing
+    # validate
+    sr(obj1) == sr(obj2) || throw(
+        ArgumentError(
+            "Sampling rates differ ($(sr(obj1)) and $(sr(obj2)) Hz); resample one of the objects first.",
+        ),
+    )
+    epoch_len(obj1) == epoch_len(obj2) && nepochs(obj1) == nepochs(obj2) || throw(
+        ArgumentError(
+            "Signal lengths differ: $(epoch_len(obj1)) × $(nepochs(obj1)) and $(epoch_len(obj2)) × $(nepochs(obj2)) samples × epochs.",
+        ),
+    )
+    idx = get_channel(obj2; ch = ch)
+    idx = idx isa Integer ? [Int64(idx)] : Vector{Int64}(idx)
+    isempty(idx) && throw(ArgumentError("No channels selected."))
+
+    r2 = obj2.header.recording
+    _rec_filters!(r2)
+    lbl = labels(obj2)[idx]
+    n_old = nchannels(obj1)
+    n0 = length(obj1.history)
+    append_channel!(
+        obj1;
+        data = obj2.data[idx, :, :],
+        label = lbl,
+        type = r2[:channel_type][idx],
+        unit = r2[:unit][idx],
+    )
+
+    # per-channel header fields of obj2
+    r1 = obj1.header.recording
+    new = (n_old + 1):(n_old + length(idx))
+    for f in (:lowpass, :highpass, :bad_channel)
+        r1[f][new] = r2[f][idx]
+    end
+    r1[:notch][new] = [copy(n) for n in r2[:notch][idx]]
+    dt1, dt2 = r1[:data_type], r2[:data_type]
+    if dt1 in _EEG_LIKE_DATA && dt2 in _EEG_LIKE_DATA
+        for f in (:gain, :transducers)
+            haskey(r2, f) && (r1[f][new] = r2[f][idx])
+        end
+    elseif dt1 in _MEG_LIKE_DATA && dt2 in _MEG_LIKE_DATA
+        r1[:coil_type][new] = r2[:coil_type][idx]
+        for f in (:coil_loc, :coil_id)
+            (haskey(r1, f) && !isempty(r1[f]) && haskey(r2, f) && !isempty(r2[f])) || continue
+            f === :coil_loc ? (r1[f][new, :] = r2[f][idx, :]) : (r1[f][new] = r2[f][idx])
+        end
+    end
+
+    # locations of the appended channels
+    if DataFrames.nrow(obj2.locs) > 0
+        l2 = obj2.locs[in(lbl).(obj2.locs[!, :label]), :]
+        l2 = l2[.!in(obj1.locs[!, :label]).(l2[!, :label]), :]
+        if DataFrames.nrow(l2) > 0
+            obj1.locs = DataFrames.nrow(obj1.locs) == 0 ? copy(l2) :
+                vcat(obj1.locs, l2; cols = :union)
+        end
+    end
+
+    _history!(obj1, "append_channel", (; ch = lbl); args = (obj2,), from = n0)
+
+    return nothing
+end
+
+"""
+    insert_channel(obj; <keyword arguments>)
+
+Return a copy of `obj` with new channel(s) inserted at a given position.
+
+The per-channel header fields of the new channels are set as by `append_channel()`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `data::Array{<:Number, 3}`: channel data, shape (ch_n, epoch_len, epoch_n)
+- `label::Union{String, Vector{String}}`: channel label(s)
+- `type::Union{String, Vector{String}}`: channel type(s)
+- `unit::Union{String, Vector{String}}`: channel unit(s)
+- `pos::Int64`: position of the (first) new channel: `1` inserts before the first channel, `nchannels(obj) + 1` appends (as `append_channel()`)
+
+# Returns
+
+- `NeuroAnalyzer.NEURO`: output NEURO object
+"""
+function insert_channel(
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+    pos::Int64,
+)::NeuroAnalyzer.NEURO
+    obj_new = deepcopy(obj)
+    insert_channel!(obj_new; data = data, label = label, type = type, unit = unit, pos = pos)
+
+    return obj_new
+end
+
+"""
+    insert_channel!(obj; <keyword arguments>)
+
+Insert new channel(s) at a given position in-place.
+
+The per-channel header fields of the new channels are set as by `append_channel()`.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: input NEURO object
+- `data::Array{<:Number, 3}`: channel data, shape (ch_n, epoch_len, epoch_n)
+- `label::Union{String, Vector{String}}`: channel label(s)
+- `type::Union{String, Vector{String}}`: channel type(s)
+- `unit::Union{String, Vector{String}}`: channel unit(s)
+- `pos::Int64`: position of the (first) new channel: `1` inserts before the first channel, `nchannels(obj) + 1` appends (as `append_channel()`)
+
+# Returns
+
+- `Nothing`
+"""
+function insert_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+    pos::Int64,
+)::Nothing
+    # validate
+    ch_n = length(obj.data) > 0 ? nchannels(obj) : 0
+    _in(pos, (1, ch_n + 1), "pos")
+
+    # appended, then moved to pos (all per-channel fields follow the channels)
+    n0 = length(obj.history)
+    append_channel!(obj; data = data, label = label, type = type, unit = unit)
+    n_new = nchannels(obj) - ch_n
+    if pos <= ch_n
+        _select_channels!(obj, vcat(1:(pos - 1), (ch_n + 1):(ch_n + n_new), pos:ch_n))
+    end
+
+    _history!(
+        obj,
+        "insert_channel",
+        (; label = labels(obj)[pos:(pos + n_new - 1)], type, unit, pos, data);
+        from = n0,
+    )
 
     return nothing
 end

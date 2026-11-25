@@ -73,6 +73,66 @@ kept_channels = ["Fp1", "Fp2", "F3", "F4"]
 keep_channel!(e10_copy; ch = kept_channels)
 @test nchannels(e10_copy) == length(kept_channels)
 
+@info "Test: reorder_channel()"
+lbl = labels(e10)
+e_r = reorder_channel(e10; order = ["Cz", "fp1", "XX"])
+@test labels(e_r)[1:2] == ["Cz", "Fp1"]
+@test sort(labels(e_r)) == sort(lbl) && labels(e_r)[3:end] == setdiff(lbl, ["Cz", "Fp1"])
+@test e_r.data[1, :, :] == e10.data[findfirst(==("Cz"), lbl), :, :]
+@test e_r.data[3, :, :] == e10.data[findfirst(==(labels(e_r)[3]), lbl), :, :]
+for f in (:channel_type, :unit, :bad_channel, :gain, :transducers, :lowpass)
+    @test e_r.header.recording[f] ==
+          e10.header.recording[f][[findfirst(==(l), lbl) for l in labels(e_r)]]
+end
+@test e_r.history[end] == "reorder_channel(obj; order=[\"Cz\", \"fp1\", \"XX\"], keep_rest=true)"
+@test channel_order(e_r) == NeuroAnalyzer._sort_channels(e_r.header.recording[:channel_type])
+e_r = reorder_channel(e10; order = ["O2", "O1"], keep_rest = false)
+@test labels(e_r) == ["O2", "O1"] && size(e_r.data, 1) == 2
+@test length(e_r.history) == length(e10.history) + 1
+e_r = reorder_channel(e10; order = :type)
+@test labels(e_r) == lbl[channel_order(e10)]
+e_r = reorder_channel(e10; order = :locs)
+@test labels(e_r)[1:nrow(e10.locs)] == e10.locs[!, :label][in(lbl).(e10.locs[!, :label])]
+e_r = reorder_channel(e10; order = reverse(lbl))
+@test reorder_channel(e_r; order = lbl).data == e10.data
+@test_throws ArgumentError reorder_channel(e10; order = ["Fp1", "Fp1"])
+@test_throws ArgumentError reorder_channel(e10; order = ["XX"])
+@test_throws ArgumentError reorder_channel(e10; order = :abc)
+e_r = deepcopy(e10)
+reorder_channel!(e_r; order = ["Pz"])
+@test labels(e_r)[1] == "Pz"
+# MEG: sensor lists, coil geometry and SSP follow the channels
+meg = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"))
+r0 = meg.header.recording
+ml = labels(meg)
+m_r = reorder_channel(meg; order = reverse(ml))
+r1 = m_r.header.recording
+@test labels(m_r) == reverse(ml)
+@test sort(labels(m_r)[r1[:magnetometers]]) == sort(ml[r0[:magnetometers]])
+@test sort(labels(m_r)[r1[:gradiometers]]) == sort(ml[r0[:gradiometers]])
+@test r1[:coil_loc] == r0[:coil_loc][end:-1:1, :]
+# SSP: projection vectors follow the channels (and are applied identically)
+meg = import_fiff(joinpath(testfiles_path, "meg", "test_raw.fif"))
+r0 = meg.header.recording
+@test any(r0[:ssp_channels]) && !isempty(r0[:ssp_data])
+m_r = reorder_channel(meg; order = reverse(labels(meg)))
+r1 = m_r.header.recording
+@test r1[:ssp_channels] == reverse(r0[:ssp_channels])
+@test r1[:ssp_data] == r0[:ssp_data][:, end:-1:1]
+p0 = apply_ssp_projectors(meg)
+p1 = apply_ssp_projectors(m_r)
+@test p1.data ≈ p0.data[end:-1:1, :, :]
+# NIRS: optode channels must stay first
+n_r = import_nirs(joinpath(testfiles_path, "nirs", "fnirs-test-nirs.nirs"))
+nl = labels(n_r)
+n_opt = length(n_r.header.recording[:wavelength_index])
+n_r2 = reorder_channel(n_r; order = nl[[2, 1]])
+@test labels(n_r2)[1:2] == nl[[2, 1]]
+@test n_r2.header.recording[:optode_pairs][1, :] == n_r.header.recording[:optode_pairs][2, :]
+@test n_r2.header.recording[:wavelength_index][1:2] == n_r.header.recording[:wavelength_index][[2, 1]]
+@test n_opt < length(nl)
+@test_throws ArgumentError reorder_channel(n_r; order = [nl[end]])
+
 @info "Test: create_data()"
 e = create_object(; data_type = "eda")
 create_data!(e; data = rand(10, 100, 1), fs = 10, type = "eda")
@@ -285,11 +345,11 @@ e10 = epoch(eeg; ep_len = 10)
 e2 = subepoch(e10; ep_start = 2.0, ep_end = 3.996)
 @test size(e2) == (24, 512, 120)
 
-@info "Test: join()"
+@info "Test: join_epoch()"
 eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edfplus.edf"))
 e10 = epoch(eeg; ep_len = 10)
 keep_epoch!(e10; ep = 1:10)
-e10_tmp = NeuroAnalyzer.join(e10, e10)
+e10_tmp = join_epoch(e10, e10)
 @test size(e10_tmp) == (29, 4000, 10)
 
 @info "Test: create_object()"
@@ -302,10 +362,10 @@ e10_tmp = NeuroAnalyzer.join(e10, e10)
 @test create_object(data_type = "sensors") isa NeuroAnalyzer.NEURO
 @test create_object(data_type = "eda") isa NeuroAnalyzer.NEURO
 
-@info "Test: add_channel()"
+@info "Test: append_channel()"
 e = create_object(; data_type = "ecog")
 e.header.recording[:sampling_rate] = 10
-add_channel!(
+append_channel!(
     e;
     data = rand(2, 10, 1),
     label = ["ecog1", "ecog2"],
@@ -318,10 +378,92 @@ add_channel!(
 @test e.header.recording[:notch] == [Float64[], Float64[]]
 @test e.header.recording[:notch][1] !== e.header.recording[:notch][2]
 
+@info "Test: append_channel(obj1, obj2)"
+# EEG with channels of another object (e.g. separately recorded EOG/ECG)
+e_ab = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
+e_ab = keep_epoch(epoch(e_ab; ep_len = 10); ep = 1:10)
+e_a = keep_channel(e_ab; ch = ["Fp1", "Fp2", "Cz"])
+e_b = keep_channel(e_ab; ch = ["O1", "O2", "ECG"])
+e_b.header.recording[:bad_channel][2] = true
+e_b.header.recording[:lowpass][1] = 40.0
+e_b.header.recording[:notch][1] = [50.0]
+e_m = append_channel(e_a, e_b)
+@test labels(e_m) == ["Fp1", "Fp2", "Cz", "O1", "O2", "ECG"]
+@test e_m.data[4:6, :, :] == e_b.data
+r = e_m.header.recording
+@test r[:channel_type][4:6] == e_b.header.recording[:channel_type]
+@test r[:unit][4:6] == e_b.header.recording[:unit]
+@test r[:bad_channel][4:6] == [false, true, false]
+@test r[:lowpass][4] == 40.0 && r[:notch][4] == [50.0]
+@test r[:notch][4] !== e_b.header.recording[:notch][1]
+@test r[:gain][4:6] == e_b.header.recording[:gain]
+@test sort(e_m.locs[!, :label]) ==
+      sort(e_ab.locs[in(labels(e_m)).(e_ab.locs[!, :label]), :label])
+@test length(e_m.history) == length(e_a.history) + 1
+@test e_m.history[end] == "append_channel(obj, <not stored: NEURO>; ch=[\"O1\", \"O2\", \"ECG\"])"
+e_m = append_channel(e_a, e_b; ch = r"^O")
+@test labels(e_m)[4:end] == ["O1", "O2"]
+e_m = deepcopy(e_a)
+append_channel!(e_m, e_b; ch = "ECG")
+@test labels(e_m)[end] == "ECG"
+@test_throws ArgumentError append_channel(e_a, e_a)
+@test_throws ArgumentError append_channel(e_a, keep_epoch(e_b; ep = 1:5))
+@test_throws ArgumentError append_channel(e_a, resample(e_b; new_sr = 128))
+# EEG recorded simultaneously with NIRS: EEG channels appended to the NIRS object
+n_m = import_nirs(joinpath(testfiles_path, "nirs", "fnirs-test-nirs.nirs"))
+e_n = create_object(; data_type = "eeg")
+e_n.header.recording[:sampling_rate] = sr(n_m)
+append_channel!(e_n; data = rand(2, epoch_len(n_m), 1), label = ["Fp1", "Cz"],
+                type = ["eeg", "eeg"], unit = ["μV", "μV"])
+n_m2 = append_channel(n_m, e_n)
+@test labels(n_m2)[end-1:end] == ["Fp1", "Cz"] && datatype(n_m2) == "nirs"
+@test n_m2.header.recording[:optode_pairs] == n_m.header.recording[:optode_pairs]
+@test_throws ArgumentError append_channel(n_m, n_m)
+
+@info "Test: insert_channel()"
+lbl = labels(e10)
+d = rand(2, epoch_len(e10), nepochs(e10))
+e_i = insert_channel(e10; data = d, label = ["X1", "X2"], type = ["eeg", "eeg"],
+                     unit = ["μV", "μV"], pos = 3)
+@test labels(e_i) == vcat(lbl[1:2], ["X1", "X2"], lbl[3:end])
+@test e_i.data[3:4, :, :] == d
+@test e_i.data[[1, 2, 5], :, :] == e10.data[[1, 2, 3], :, :]
+r = e_i.header.recording
+@test r[:channel_type][3:4] == ["eeg", "eeg"] && r[:unit][3:4] == ["μV", "μV"]
+@test r[:lowpass][3] == sr(e10) / 2 && r[:highpass][3] == 0.0 && r[:gain][3] == 1.0
+@test r[:lowpass][5] == e10.header.recording[:lowpass][3]
+@test r[:bad_channel] == vcat(e10.header.recording[:bad_channel][1:2], [false, false],
+                              e10.header.recording[:bad_channel][3:end])
+@test channel_order(e_i) == NeuroAnalyzer._sort_channels(r[:channel_type])
+@test length(e_i.history) == length(e10.history) + 1
+@test startswith(e_i.history[end], "insert_channel(obj; label=[\"X1\", \"X2\"]")
+# first and last position
+e_i = insert_channel(e10; data = d[1:1, :, :], label = "X", type = "eeg", unit = "μV", pos = 1)
+@test labels(e_i)[1] == "X" && labels(e_i)[2:end] == lbl
+e_i = insert_channel(e10; data = d[1:1, :, :], label = "X", type = "eeg", unit = "μV",
+                     pos = length(lbl) + 1)
+@test labels(e_i) == vcat(lbl, "X")
+e_i = deepcopy(e10)
+insert_channel!(e_i; data = d[1:1, :, :], label = "X", type = "eeg", unit = "μV", pos = 2)
+@test labels(e_i)[2] == "X"
+@test_throws ArgumentError insert_channel(e10; data = d[1:1, :, :], label = "X", type = "eeg",
+                                          unit = "μV", pos = 0)
+@test_throws ArgumentError insert_channel(e10; data = d[1:1, :, :], label = "X", type = "eeg",
+                                          unit = "μV", pos = length(lbl) + 2)
+@test_throws ArgumentError insert_channel(e10; data = d[1:1, :, :], label = "Fp1", type = "eeg",
+                                          unit = "μV", pos = 2)
+# MEG: magnetometer list renumbered
+meg = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"))
+m_i = insert_channel(meg; data = zeros(1, epoch_len(meg), nepochs(meg)), label = "MAGX",
+                     type = "mag", unit = "fT", pos = 1)
+@test labels(m_i)[m_i.header.recording[:magnetometers]] ==
+      vcat("MAGX", labels(meg)[meg.header.recording[:magnetometers]])
+@test m_i.header.recording[:coil_loc][2:end, :] == meg.header.recording[:coil_loc]
+
 @info "Test: create_time()"
 e = create_object(; data_type = "ecog")
 e.header.recording[:sampling_rate] = 10
-add_channel!(
+append_channel!(
     e;
     data = rand(2, 10, 1),
     label = ["ecog1", "ecog2"],
@@ -786,8 +928,9 @@ e_x2 = NeuroAnalyzer.trim(e_x; seg = (15, 16))
 @test nrow(delete_channel(e_x; ch = "Fp1").markers) == 2
 @test "trial_type" in names(rename_channel(e_x; ch = "Fp1", name = "FP1").markers)
 @test epoch(e_x; marker_value = "B", offset = 1, ep_len = 2).markers[1, :response_time] == 0.634
-e_j = NeuroAnalyzer.join(e_x, eeg)
-@test "trial_type" in names(e_j.markers) && nrow(e_j.markers) == 3
+e_j = join_epoch(e_x, eeg)
+@test "trial_type" in names(e_j.markers) && nrow(e_j.markers) == 4
+@test count(==("boundary"), e_j.markers[!, :type]) == 1
 out = mktemp() do path, io
     redirect_stdout(io) do
         return view_marker(e_x)
@@ -847,19 +990,81 @@ NeuroAnalyzer.chop!(er2; n = 256)
 @test er2.data == e10.data
 @test_throws ArgumentError NeuroAnalyzer.chop(e10; n = 2000)
 
-@info "Test: join() values"
+@info "Test: join_epoch() values"
 e1 = keep_epoch(e10; ep = 1:2)
-j = NeuroAnalyzer.join(e1, e1)
+j = join_epoch(e1, e1)
 @test j.data[:, 1:2560, 1] == e1.data[:, :, 1]
 @test j.data[:, 2561:5120, 1] == e1.data[:, :, 1]
 j2 = deepcopy(e1)
-NeuroAnalyzer.join!(j2, e1)
+join_epoch!(j2, e1)
 @test j2.data == j.data
-@test_throws ArgumentError NeuroAnalyzer.join(e1, keep_epoch(e10; ep = 1:3))
-@test_throws ArgumentError NeuroAnalyzer.join(
+@test_throws ArgumentError join_epoch(e1, keep_epoch(e10; ep = 1:3))
+@test_throws ArgumentError join_epoch(
     e1,
     rename_channel(e1; ch = "Fp1", name = "X"),
 )
+# boundary markers at the joints (first sample of the second object in each epoch)
+b = j.markers[j.markers[!, :type] .== "boundary", :]
+@test nrow(b) == 2 && all(b[!, :value] .== "join")
+@test t2s.(b[!, :start], sr(j)) == [2561, 5120 + 2561]
+@test j.history[end] == "join_epoch(obj, <not stored: NEURO>)"
+
+@info "Test: filtering between boundary markers"
+# two different continuous signals joined: the filter does not run across the joint
+c1 = crop(eeg; seg = (0, 20))
+c2 = crop(eeg; seg = (100, 120))
+cj = join_epoch(c1, c2)
+fkw = (; ch = "Fp1", fprototype = :butterworth, ftype = :hp, cutoff = 1, order = 4,
+       report = false)
+f1 = NeuroAnalyzer.filter(c1; fkw...)
+f2 = NeuroAnalyzer.filter(c2; fkw...)
+fj = NeuroAnalyzer.filter(cj; fkw...)
+n1 = epoch_len(c1)
+@test fj.data[1, 1:n1, 1] ≈ f1.data[1, :, 1]
+@test fj.data[1, (n1 + 1):end, 1] ≈ f2.data[1, :, 1]
+fj2 = NeuroAnalyzer.filter(cj; fkw..., boundaries = false)
+@test !(fj2.data[1, 1:n1, 1] ≈ f1.data[1, :, 1])
+@test occursin("boundaries=true", fj.history[end])
+# FIR: segments shorter than the filter are left unfiltered
+cs = join_epoch(c1, crop(eeg; seg = (100, 100.1)))
+fs_ = NeuroAnalyzer.filter(cs; ch = "Fp1", fprototype = :fir, ftype = :hp, cutoff = 1,
+                           bw = 0.5, report = false)
+@test fs_.data[1, (n1 + 1):end, 1] == cs.data[1, (n1 + 1):end, 1]
+@test fs_.data[1, 1:n1, 1] ≈ NeuroAnalyzer.filter(c1; ch = "Fp1", fprototype = :fir,
+          ftype = :hp, cutoff = 1, bw = 0.5, report = false).data[1, :, 1]
+# boundaries of trim()
+ct = NeuroAnalyzer.trim(cj; seg = (5, 6))
+@test length(NeuroAnalyzer._boundary_segments(ct)[1]) == 3
+
+@info "Test: append_epoch()"
+e1 = keep_epoch(e10; ep = 1:2)
+e2 = keep_epoch(e10; ep = 3:5)
+a = append_epoch(e1, e2)
+@test size(a.data) == (nchannels(e10), epoch_len(e10), 5)
+@test a.data == e10.data[:, :, 1:5]
+@test nrow(a.epochs) == 5
+@test a.epochs[!, :onset] == vcat(NeuroAnalyzer._epochs_table(e1)[!, :onset],
+                                  NeuroAnalyzer._epochs_table(e2)[!, :onset])
+@test a.epoch_time == e10.epoch_time && length(a.time_pts) == 5 * epoch_len(e10)
+@test a.history[end] == "append_epoch(obj, <not stored: NEURO>)"
+# several objects; markers shifted to their epochs
+e3 = add_marker(keep_epoch(e10; ep = 6); type = "stim", start = 1.0, value = "x")
+a = append_epoch(e1, e2, e3)
+@test nepochs(a) == 6
+@test a.markers[a.markers[!, :value] .== "x", :start][1] ≈ 5 * epoch_len(e10) / sr(e10) + 1.0
+# continuous objects of the same length become epochs; source from the file name
+c3 = append_epoch(c1, crop(eeg; seg = (40, 60)))
+@test nepochs(c3) == 2 && all(!isempty, c3.epochs[!, :source])
+# bad channels of any object
+e2b = deepcopy(e2)
+e2b.header.recording[:bad_channel][3] = true
+@test append_epoch(e1, e2b).header.recording[:bad_channel][3]
+e_ap = deepcopy(e1)
+append_epoch!(e_ap, e2)
+@test nepochs(e_ap) == 5
+@test_throws ArgumentError append_epoch(e1)
+@test_throws ArgumentError append_epoch(e1, c1)
+@test_throws ArgumentError append_epoch(e1, rename_channel(e2; ch = "Fp1", name = "X"))
 
 @info "Test: subepoch() / extract_epoch() / trim() / crop() in-place variants"
 e_tmp = deepcopy(e10)
@@ -995,7 +1200,7 @@ x_b[2:end] .+= 300 .* exp.(-(0:(n_p - 2)) ./ 40)
 # NEURO object: channel 1 with the pops, channel 2 clean
 o_p = create_object(; data_type = "eeg")
 o_p.header.recording[:sampling_rate] = fs_p
-add_channel!(
+append_channel!(
     o_p;
     data = reshape(vcat(x', clean_p'), 2, n_p, 1),
     label = ["P1", "P2"],

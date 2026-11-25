@@ -1783,7 +1783,7 @@ e_tmp = keep_channel(e10; ch = "Fp1")
 @info "Test: tpt_detect() / tpt_analyze()"
 tp = create_object(; data_type = "tpt")
 tp.header.recording[:sampling_rate] = 50
-add_channel!(
+append_channel!(
     tp;
     data = zeros(6, 1000, 1),
     label = ["x", "y", "z", "p1", "p2", "p3"],

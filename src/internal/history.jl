@@ -10,6 +10,8 @@ _hist_ok(v)::Bool =
     (v isa Tuple && all(_hist_ok, v)) ||
     (v isa NamedTuple && all(_hist_ok, values(v))) ||
     (v isa AbstractArray && ndims(v) <= 2 && length(v) <= 256 && all(_hist_ok, v)) ||
+    # labels (e.g. the channel order of a MEG recording)
+    (v isa AbstractVector{<:AbstractString} && length(v) <= 1024) ||
     (v isa AbstractDict && length(v) <= 64 && all(x -> _hist_ok(x[1]) && _hist_ok(x[2]), v))
 
 """

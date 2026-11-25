@@ -686,6 +686,7 @@ Apply a pre-designed filter to selected channels of a NEURO object.
 - `report::Bool=true`: print the filter properties and measured frequency response (see `filter_report`)
 - `ftype::Union{Nothing, Symbol}=nothing`, `cutoff::Union{Nothing, Real, Tuple{Real, Real}}=nothing`, `bw::Union{Nothing, Real}=nothing`: optional design parameters; if all three are given, pass-band deviation and stop-band attenuation are also reported
 - `fcheck::AbstractVector{<:Real}=Float64[]`: frequencies (Hz) at which to report the gain
+- `boundaries::Bool=true`: filter the segments between markers of type `"boundary"` (e.g. joints of `join_epoch()` or cuts of `trim()`) separately, so that the filter does not run across discontinuities of the signal; segments too short to be filtered are left unfiltered (with a warning)
 
 # Returns
 
@@ -706,6 +707,7 @@ function filter_apply(
     cutoff::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     bw::Union{Nothing, Real} = nothing,
     fcheck::AbstractVector{<:Real} = Float64[],
+    boundaries::Bool = true,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     filter_apply!(
@@ -718,6 +720,7 @@ function filter_apply(
         cutoff = cutoff,
         bw = bw,
         fcheck = fcheck,
+        boundaries = boundaries,
     )
 
     return obj_new
@@ -732,9 +735,33 @@ function _filter_one(
     dir::Symbol,
 )
     s = @view(obj.data[ch_idx, :, ep_idx])
+    return _filter_seg(s, flt, dir)
+end
+
+function _filter_seg(s::AbstractVector, flt::_FLT_TYPES, dir::Symbol)
     dir === :onepass && return filt(flt, s)
     dir === :twopass && return filtfilt(flt, s)
     return reverse(filt(flt, reverse(s)))
+end
+
+# segments of each epoch between markers of type "boundary" (a boundary marker is the first
+# sample of a new segment); one segment per epoch if there are no boundaries
+function _boundary_segments(obj::NeuroAnalyzer.NEURO)::Vector{Vector{UnitRange{Int64}}}
+    l = epoch_len(obj)
+    fs = sr(obj)
+    cuts = [Int64[] for _ = 1:nepochs(obj)]
+    for m in eachrow(obj.markers)
+        m[:type] == "boundary" || continue
+        s = t2s(m[:start], fs)
+        ep = (s - 1) ÷ l + 1
+        p = (s - 1) % l + 1
+        1 <= ep <= nepochs(obj) && p > 1 && push!(cuts[ep], p)
+    end
+    return [begin
+        c = sort(unique(cuts[ep]))
+        b = vcat(1, c, l + 1)
+        [b[k]:(b[k + 1] - 1) for k = 1:(length(b) - 1)]
+    end for ep = 1:nepochs(obj)]
 end
 
 """
@@ -753,6 +780,7 @@ Delegates to `filter_apply` and copies the result back.
 - `report::Bool=true`: print the filter properties and measured frequency response (see `filter_report`)
 - `ftype::Union{Nothing, Symbol}=nothing`, `cutoff::Union{Nothing, Real, Tuple{Real, Real}}=nothing`, `bw::Union{Nothing, Real}=nothing`: optional design parameters; if all three are given, pass-band deviation and stop-band attenuation are also reported
 - `fcheck::AbstractVector{<:Real}=Float64[]`: frequencies (Hz) at which to report the gain
+- `boundaries::Bool=true`: filter the segments between markers of type `"boundary"` (e.g. joints of `join_epoch()` or cuts of `trim()`) separately, so that the filter does not run across discontinuities of the signal; segments too short to be filtered are left unfiltered (with a warning)
 
 # Returns
 
@@ -768,6 +796,7 @@ function filter_apply!(
     cutoff::Union{Nothing, Real, Tuple{Real, Real}} = nothing,
     bw::Union{Nothing, Real} = nothing,
     fcheck::AbstractVector{<:Real} = Float64[],
+    boundaries::Bool = true,
 )::Nothing
     # validate
     _check_var(dir, [:twopass, :onepass, :reverse], "dir")
@@ -815,20 +844,49 @@ function filter_apply!(
     progbar =
         Progress(ep_n * ch_n; dt = 1, barlen = 20, color = :white, enabled = progress_bar)
 
+    # segments between boundary markers are filtered separately
+    segs = _boundary_segments(obj)
+    if boundaries && any(>(1) ∘ length, segs)
+        n_b = sum(length, segs) - ep_n
+        _info("Filtering $(n_b + ep_n) segments separated by $n_b boundary marker(s)")
+    end
+    n_short = Threads.Atomic{Int}(0)
+
     # calculate over channel and epochs
     @inbounds Threads.@threads :static for idx in CartesianIndices((ch_n, ep_n))
         ch_idx, ep_idx = idx[1], idx[2]
-        obj.data[ch[ch_idx], :, ep_idx] = _filter_one(obj, ch[ch_idx], ep_idx, flt, dir)
+        if !boundaries || length(segs[ep_idx]) == 1
+            obj.data[ch[ch_idx], :, ep_idx] = _filter_one(obj, ch[ch_idx], ep_idx, flt, dir)
+        else
+            for sg in segs[ep_idx]
+                s = obj.data[ch[ch_idx], sg, ep_idx]
+                # too short for the filter (FIR: shorter than the kernel; two-pass
+                # filtering needs a longer signal): left unfiltered
+                if flt isa Vector{Float64} && length(s) <= 3 * (length(flt) - 1)
+                    Threads.atomic_add!(n_short, 1)
+                    continue
+                end
+                try
+                    obj.data[ch[ch_idx], sg, ep_idx] = _filter_seg(s, flt, dir)
+                catch e
+                    e isa Union{ArgumentError, DimensionMismatch, BoundsError} || rethrow()
+                    Threads.atomic_add!(n_short, 1)
+                end
+            end
+        end
         # update progress bar
         progress_bar && next!(progbar)
     end
     progress_bar && finish!(progbar)
+    n_short[] > 0 && _warn(
+        "$(n_short[] ÷ ch_n) segment(s) between boundary markers too short for the filter were left unfiltered.",
+    )
 
     # low-pass and high-pass frequencies of the filtered channels (known if ftype and cutoff
     # are given; band-stop and notch filters do not change them)
     _filters_update!(obj, ch, ftype, cutoff)
 
-    _history!(obj, "filter_apply", (; ch, dir, flt, report, ftype, cutoff, bw, fcheck), note = "$(r.summary)")
+    _history!(obj, "filter_apply", (; ch, dir, flt, report, ftype, cutoff, bw, fcheck, boundaries), note = "$(r.summary)")
 
     return nothing
 end
@@ -858,6 +916,7 @@ Combines `filter_create`, `filter_report` and `filter_apply`. When `preview=true
 - `dir:Symbol=:twopass`: filtering direction (`:twopass`, `:onepass`, `:reverse`)
 - `report::Bool=true`: print the filter parameters and measured frequency response
 - `fcheck::AbstractVector{<:Real}=Float64[]`: frequencies (Hz) at which to report the gain
+- `boundaries::Bool=true`: filter the segments between markers of type `"boundary"` (e.g. joints of `join_epoch()` or cuts of `trim()`) separately, so that the filter does not run across discontinuities of the signal; segments too short to be filtered are left unfiltered (with a warning)
 - `preview::Bool=false`: if `true`, plot the filter frequency response and return the figure without filtering the signal
 
 # Returns
@@ -880,6 +939,7 @@ function filter(
     dir::Symbol = :twopass,
     report::Bool = true,
     fcheck::AbstractVector{<:Real} = Float64[],
+    boundaries::Bool = true,
     preview::Bool = false,
 )::Union{NeuroAnalyzer.NEURO, GLMakie.Figure}
     # preview: the filter response only, the signal is not filtered (no copy needed)
@@ -898,6 +958,7 @@ function filter(
         dir = dir,
         report = report,
         fcheck = fcheck,
+        boundaries = boundaries,
         preview = true,
     )
 
@@ -917,6 +978,7 @@ function filter(
         dir = dir,
         report = report,
         fcheck = fcheck,
+        boundaries = boundaries,
     )
 
     return obj_new
@@ -949,11 +1011,12 @@ function filter!(
     dir::Symbol = :twopass,
     report::Bool = true,
     fcheck::AbstractVector{<:Real} = Float64[],
+    boundaries::Bool = true,
     preview::Bool = false,
 )::Union{Nothing, GLMakie.Figure}
     fs = sr(obj)
     # arguments as given (order may be resolved below)
-    hkw = (; ch, fprototype, ftype, cutoff, order, rp, rs, bw, w, window, dir, report, fcheck)
+    hkw = (; ch, fprototype, ftype, cutoff, order, rp, rs, bw, w, window, dir, report, fcheck, boundaries)
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
@@ -1029,6 +1092,7 @@ function filter!(
         cutoff = cutoff,
         bw = bw_eff,
         fcheck = fcheck,
+        boundaries = boundaries,
     )
     # history: the filter() call replaces the filter_apply() entry, its measured summary is kept
     h = obj.history[end]

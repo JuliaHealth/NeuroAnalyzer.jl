@@ -969,6 +969,8 @@ s = read(f, String)
 @test occursin("# (not repeatable: not a NeuroAnalyzer call of obj) pop_eegfiltnew", s)
 @test NeuroAnalyzer._hist_val(e, :ch, 1) == "\"FP1\""
 @test NeuroAnalyzer._hist_val(e, :x, zeros(1000)) == "<not stored: Array>"
+@test NeuroAnalyzer._hist_val(e, :x, zeros(300)) == "<not stored: Array>"
+@test NeuroAnalyzer._hist_val(e, :order, fill("a", 300)) == repr(fill("a", 300))
 
 @info "Test: export_fiff()"
 # MEG (+ EEG, EOG, stim) round trip: data, geometry, SSP, markers

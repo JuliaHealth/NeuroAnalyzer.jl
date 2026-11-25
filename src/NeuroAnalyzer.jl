@@ -184,7 +184,7 @@ end
 # (names exported by two packages extend one of them: plot → Makie, not Plots;
 # entropy → StatsBase, not ImageQualityIndexes; transform → DataFrames, not MultivariateStats;
 # trim! → StatsBase, not GridLayoutBase)
-import Base: chop, cis, filter, filter!, join, summary
+import Base: chop, cis, filter, filter!, summary
 import DataFrames: describe, transform
 import DSP: coherence, resample, rms, spectrogram
 import GLMakie: plot
@@ -451,12 +451,13 @@ include("locs/swap.jl")
 include("edit/channel.jl")
 include("edit/create.jl")
 include("edit/delete_channel.jl")
+include("edit/reorder_channel.jl")
 include("edit/delete_epoch.jl")
 include("edit/delete_optode.jl")
 include("edit/reject.jl")
 include("edit/epoch.jl")
 include("edit/extract.jl")
-include("edit/join.jl")
+include("edit/join_epoch.jl")
 include("edit/lrinterpolate.jl")
 include("edit/marker.jl")
 include("edit/mlinterpolate.jl")

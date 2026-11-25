@@ -81,11 +81,6 @@ function _delete_channel!(
 
     # channels that remain, in original order
     keep = setdiff(_c(ch_n), ch_idx)
-    keep_mask = falses(ch_n)
-    keep_mask[keep] .= true
-
-    rec = obj.header.recording
-    dt = rec[:data_type]
     # history entry: labels before the header is modified
     del_lbl = labels(obj)[sort(ch_idx)]
 
@@ -94,72 +89,7 @@ function _delete_channel!(
     del_labels = setdiff(labels(obj)[ch_idx], labels(obj)[keep])
     obj.locs = obj.locs[.!in(del_labels).(obj.locs[!, :label]), :]
 
-    # universal per-channel header vectors
-    _rec_filters!(rec)
-    for field in (:label, :channel_type, :bad_channel, :unit, :lowpass, :highpass, :notch)
-        rec[field] = rec[field][keep]
-    end
-
-    # type-specific per-channel header vectors
-    if dt in _EEG_LIKE_DATA
-        for field in (:transducers, :gain)
-            rec[field] = rec[field][keep]
-        end
-
-    elseif dt == "mep"
-        for field in (:stimulation_intensity, :coil_type)
-            rec[field] = rec[field][keep]
-        end
-
-    elseif dt in _MEG_LIKE_DATA
-        for field in (:coil_type,)
-            rec[field] = rec[field][keep]
-        end
-
-        # sensor index lists: drop deleted channels, renumber the rest
-        new_idx = cumsum(keep_mask)
-        for field in (:gradiometers, :magnetometers)
-            rec[field] = Int64[new_idx[i] for i in rec[field] if keep_mask[i]]
-        end
-
-        # sensor geometry (absent in objects created before it was introduced)
-        if haskey(rec, :coil_loc) && !isempty(rec[:coil_loc])
-            rec[:coil_loc] = rec[:coil_loc][keep, :]
-        end
-        if haskey(rec, :coil_id) && !isempty(rec[:coil_id])
-            rec[:coil_id] = rec[:coil_id][keep]
-        end
-
-        # SSP: columns of ssp_data correspond to channels marked in ssp_channels
-        if haskey(rec, :ssp_channels) && any(rec[:ssp_channels])
-            ssp_mask = rec[:ssp_channels]
-            ssp_cols_keep = keep_mask[ssp_mask]
-            if !all(ssp_cols_keep)
-                _warn(
-                    "$(count(.!ssp_cols_keep)) deleted channel(s) are part of SSP projectors; their weights are removed from the projection vectors.",
-                )
-            end
-            rec[:ssp_channels] = ssp_mask[keep]
-            !isempty(rec[:ssp_data]) &&
-                (rec[:ssp_data] = rec[:ssp_data][:, ssp_cols_keep])
-        end
-
-    elseif dt == "nirs"
-        # only the first entries of wavelength_index / optode_pairs correspond
-        # to channels; delete from the highest index down so lower indices stay valid
-        for idx in sort(ch_idx; rev = true)
-            if idx in eachindex(rec[:wavelength_index])
-                deleteat!(rec[:wavelength_index], idx)
-            end
-            if idx in axes(rec[:optode_pairs], 1)
-                rec[:optode_pairs] =
-                    rec[:optode_pairs][setdiff(axes(rec[:optode_pairs], 1), idx), :]
-            end
-        end
-    end
-
-    rec[:channel_order] = _sort_channels(rec[:channel_type])
-    obj.data = obj.data[keep, :, :]
+    _select_channels!(obj, keep)
 
     # markers refer to channels by label (empty = all channels): deleted channels are
     # removed from them, markers of deleted channels only are removed
@@ -167,6 +97,88 @@ function _delete_channel!(
     n_del > 0 && _info("$n_del marker(s) of deleted channels removed")
 
     _history!(obj, "delete_channel", (; ch = del_lbl))
+
+    return nothing
+end
+
+# keep the channels `idx` (indices, in the new order: a subset and/or a permutation of the
+# channels): data and all per-channel header fields; locations and markers refer to the
+# channels by label and are not changed
+function _select_channels!(obj::NeuroAnalyzer.NEURO, idx::Vector{Int64})::Nothing
+    ch_n = nchannels(obj)
+    allunique(idx) && all(i -> 1 <= i <= ch_n, idx) ||
+        throw(ArgumentError("Channel indices must be unique and in [1, $ch_n]."))
+    # new position of each old channel (0: removed)
+    new_pos = zeros(Int64, ch_n)
+    new_pos[idx] = 1:length(idx)
+
+    rec = obj.header.recording
+    dt = rec[:data_type]
+
+    # universal per-channel header vectors
+    _rec_filters!(rec)
+    for field in (:label, :channel_type, :bad_channel, :unit, :lowpass, :highpass, :notch)
+        rec[field] = rec[field][idx]
+    end
+
+    # type-specific per-channel header vectors
+    if dt in _EEG_LIKE_DATA
+        for field in (:transducers, :gain)
+            rec[field] = rec[field][idx]
+        end
+
+    elseif dt == "mep"
+        for field in (:stimulation_intensity, :coil_type)
+            rec[field] = rec[field][idx]
+        end
+
+    elseif dt in _MEG_LIKE_DATA
+        rec[:coil_type] = rec[:coil_type][idx]
+
+        # sensor index lists: removed channels dropped, the others renumbered
+        for field in (:gradiometers, :magnetometers)
+            rec[field] = sort(Int64[new_pos[i] for i in rec[field] if new_pos[i] > 0])
+        end
+
+        # sensor geometry (absent in objects created before it was introduced)
+        if haskey(rec, :coil_loc) && !isempty(rec[:coil_loc])
+            rec[:coil_loc] = rec[:coil_loc][idx, :]
+        end
+        if haskey(rec, :coil_id) && !isempty(rec[:coil_id])
+            rec[:coil_id] = rec[:coil_id][idx]
+        end
+
+        # SSP: the columns of ssp_data are the channels marked in ssp_channels (in the
+        # channel order)
+        if haskey(rec, :ssp_channels) && any(rec[:ssp_channels])
+            ssp_mask = rec[:ssp_channels]
+            ssp_col = cumsum(ssp_mask)
+            cols = Int64[ssp_col[i] for i in idx if ssp_mask[i]]
+            if length(cols) < count(ssp_mask)
+                _warn(
+                    "$(count(ssp_mask) - length(cols)) deleted channel(s) are part of SSP projectors; their weights are removed from the projection vectors.",
+                )
+            end
+            rec[:ssp_channels] = ssp_mask[idx]
+            !isempty(rec[:ssp_data]) && (rec[:ssp_data] = rec[:ssp_data][:, cols])
+        end
+
+    elseif dt == "nirs"
+        # the first entries of wavelength_index / optode_pairs describe the first channels
+        # (intensity or OD); they must stay the first channels
+        n_opt = length(rec[:wavelength_index])
+        opt = Base.filter(<=(n_opt), idx)
+        idx[1:length(opt)] == opt || throw(
+            ArgumentError(
+                "The NIRS channels described by optode pairs (channels 1:$n_opt) must stay the first channels.",
+            ),
+        )
+        rec[:wavelength_index] = rec[:wavelength_index][opt]
+        rec[:optode_pairs] = rec[:optode_pairs][opt, :]
+    end
+
+    rec[:channel_order] = _sort_channels(rec[:channel_type])
+    obj.data = obj.data[idx, :, :]
 
     return nothing
 end
