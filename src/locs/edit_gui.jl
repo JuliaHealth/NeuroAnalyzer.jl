@@ -583,6 +583,6 @@ function _edit_locs_gui(obj::NeuroAnalyzer.NEURO)::Union{Nothing, NeuroAnalyzer.
     GLMakie.GLFW.MaximizeWindow(screen.glscreen)
     wait(screen)
     ed.applied[] || return nothing
-    push!(ed.obj.history, "edit_locs(obj)")
+    _history!(ed.obj, "edit_locs", NamedTuple(); note = "<not stored: interactive edits of the locations>")
     return ed.obj
 end

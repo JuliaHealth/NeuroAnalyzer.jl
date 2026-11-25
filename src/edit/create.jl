@@ -167,7 +167,7 @@ function create_time!(obj::NeuroAnalyzer.NEURO; fs::Int64)::Nothing
 
     obj.header.recording[:sampling_rate] = fs
     obj.time_pts, obj.epoch_time = _get_t(obj)
-    push!(obj.history, "create_time(obj, fs=$fs)")
+    _history!(obj, "create_time", (; fs))
 
     return nothing
 end
@@ -269,7 +269,7 @@ function create_data!(
 
     obj.time_pts, obj.epoch_time = _get_t(obj)
     obj.epochs = _epochs_default(nepochs(obj), epoch_duration(obj))
-    push!(obj.history, "create_data(obj; data, fs=$fs, type=$type)")
+    _history!(obj, "create_data", (; fs, type, data))
 
     return nothing
 end

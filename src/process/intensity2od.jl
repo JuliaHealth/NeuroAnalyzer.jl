@@ -145,7 +145,7 @@ function intensity2od!(
         vcat(rec[:bad_channel][opt], rec[:bad_channel][ch], rec[:bad_channel][rest])
     r[:channel_order] = _sort_channels(r[:channel_type])
 
-    push!(obj.history, "intensity2od(obj; ch=$ch)")
+    _history!(obj, "intensity2od", (; ch))
 
     return nothing
 end

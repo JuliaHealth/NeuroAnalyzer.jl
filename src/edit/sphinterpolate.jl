@@ -166,10 +166,7 @@ function sphinterpolate_channel!(
 
     reset_bads && (obj.header.recording[:bad_channel][ch_int] .= false)
 
-    push!(
-        obj.history,
-        "sphinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, m=$m, n=$n, lambda=$lambda, reset_bads=$reset_bads)",
-    )
+    _history!(obj, "sphinterpolate_channel", (; ch, ep, seg, m, n, lambda, reset_bads))
 
     return nothing
 end

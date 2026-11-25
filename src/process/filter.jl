@@ -828,7 +828,7 @@ function filter_apply!(
     # are given; band-stop and notch filters do not change them)
     _filters_update!(obj, ch, ftype, cutoff)
 
-    push!(obj.history, "filter_apply(obj; ch=$ch, dir=:$dir) [$(r.summary)]")
+    _history!(obj, "filter_apply", (; ch, dir, flt, report, ftype, cutoff, bw, fcheck), note = "$(r.summary)")
 
     return nothing
 end
@@ -952,6 +952,8 @@ function filter!(
     preview::Bool = false,
 )::Union{Nothing, GLMakie.Figure}
     fs = sr(obj)
+    # arguments as given (order may be resolved below)
+    hkw = (; ch, fprototype, ftype, cutoff, order, rp, rs, bw, w, window, dir, report, fcheck)
 
     if preview
         _info("Previewing filter response, signal will not be filtered")
@@ -1009,20 +1011,14 @@ function filter!(
         nothing
     end
 
+    # resolved design (stored in the history note)
     desc =
-        "filter(obj; ch=$ch, fprototype=:$fprototype" *
-        (isnothing(ftype) ? "" : ", ftype=:$ftype") *
-        ", cutoff=$cutoff, fs=$fs" *
-        (isnothing(order) ? "" : ", order=$order ($order_src)") *
-        (isnothing(bw) ? "" : ", bw=$bw") *
-        (isnothing(bw_eff) ? "" : ", bw_effective=$bw_eff") *
-        (fprototype === :fir ? ", window=$(isnothing(w) ? ":$window" : "custom")" : "") *
-        (isnothing(rp) ? "" : ", rp=$rp") *
-        (isnothing(rs) ? "" : ", rs=$rs") *
-        ", dir=:$dir)"
+        (isnothing(order) || order_src == "manual" ? "" : "order=$order ($order_src), ") *
+        (isnothing(bw_eff) ? "" : "bw_effective=$bw_eff, ")
 
     # design parameters, then measured response (printed by filter_apply)
     # report && _info(desc)
+    n0 = length(obj.history)
     filter_apply!(
         obj;
         ch = ch,
@@ -1034,8 +1030,10 @@ function filter!(
         bw = bw_eff,
         fcheck = fcheck,
     )
-    # history: design line followed by the filter_apply line with the measured summary
-    insert!(obj.history, length(obj.history), desc)
+    # history: the filter() call replaces the filter_apply() entry, its measured summary is kept
+    h = obj.history[end]
+    summary = occursin(" # ", h) ? split(h, " # "; limit = 2)[2] : ""
+    _history!(obj, "filter", hkw; from = n0, note = desc * summary)
     # notch filter: its frequency is added to the notch frequencies of the channels
     fprototype === :iirnotch && cutoff isa Real &&
         _notch_add!(obj, get_channel(obj; ch = ch), Float64(cutoff))

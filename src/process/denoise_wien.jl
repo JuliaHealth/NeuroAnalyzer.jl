@@ -174,7 +174,7 @@ function denoise_wien!(
     obj.data[ch, :, :] = _denoise_wien(
         @view(obj.data[ch, :, :]); fs = sr(obj), ref = ref, fsmooth = fsmooth,
     )
-    push!(obj.history, "denoise_wien(obj; ch=$ch, ref=$ref, fsmooth=$fsmooth)")
+    _history!(obj, "denoise_wien", (; ch, ref, fsmooth))
 
     return nothing
 end

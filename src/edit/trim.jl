@@ -185,7 +185,7 @@ function trim!(
         obj.markers = sort(unique(obj.markers), :start)
     end
 
-    push!(obj.history, "trim(obj, seg=$seg, keep=$keep)")
+    _history!(obj, "trim", (; seg, keep))
 
     return nothing
 end

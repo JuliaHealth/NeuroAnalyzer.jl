@@ -109,7 +109,7 @@ function nirs_ssr!(
         end
     end
     isempty(pairs_used) || _info("Short-separation regression: $(join(pairs_used, ", "))")
-    push!(obj.history, "nirs_ssr(obj; ch=$(labels(obj)[ch]), short_t=$short_t)")
+    _history!(obj, "nirs_ssr", (; ch = labels(obj)[ch], short_t))
 
     return nothing
 end

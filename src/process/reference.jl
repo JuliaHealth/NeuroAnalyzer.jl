@@ -233,7 +233,7 @@ function reference_ce!(
     else
         "common ($(Base.join(ref_lbl, ", ")) $(med ? "median" : "averaged"))"
     end
-    push!(obj.history, "reference_ce(obj; ch=$ch, med=$med)")
+    _history!(obj, "reference_ce", (; ch, med))
 
     return nothing
 end
@@ -398,10 +398,7 @@ function reference_avg!(
     else
         weighted ? "sum (weighted)" : "sum"
     end
-    push!(
-        obj.history,
-        "reference_avg(obj, exclude_fpo=$exclude_fpo, exclude_current=$exclude_current, average=$average, med=$med, weighted=$weighted)",
-    )
+    _history!(obj, "reference_avg", (; exclude_fpo, exclude_current, average, med, weighted))
 
     return nothing
 end
@@ -548,7 +545,7 @@ function reference_a!(
     med::Bool = false,
 )::Nothing
     _reference_paired!(obj, "A1", "A2", type, "auricular")
-    push!(obj.history, "reference_a(obj, type=$type, med=$med)")
+    _history!(obj, "reference_a", (; type, med))
 
     return nothing
 end
@@ -614,7 +611,7 @@ function reference_m!(
     med::Bool = false,
 )::Nothing
     _reference_paired!(obj, "M1", "M2", type, "mastoid")
-    push!(obj.history, "reference_m(obj, type=$type, med=$med)")
+    _history!(obj, "reference_m", (; type, med))
 
     return nothing
 end
@@ -754,7 +751,7 @@ function reference_plap!(
     obj.data[ch, :, :] = s_ref
     _append_label_suffix!(obj, obj, ch, _lap_suffix("plap", weighted, med))
     obj.header.recording[:reference] = _lap_name("planar", nn, weighted, med)
-    push!(obj.history, "reference_plap(obj, nn=$nn, weighted=$weighted, med=$med)")
+    _history!(obj, "reference_plap", (; nn, weighted, med))
 
     return nothing
 end
@@ -815,7 +812,7 @@ function reference_slap!(
     obj.data[ch, :, :] = s_ref
     _append_label_suffix!(obj, obj, ch, _lap_suffix("slap", weighted, med))
     obj.header.recording[:reference] = _lap_name("spherical", nn, weighted, med)
-    push!(obj.history, "reference_slap(obj, nn=$nn, weighted=$weighted, med=$med)")
+    _history!(obj, "reference_slap", (; nn, weighted, med))
 
     return nothing
 end
@@ -956,7 +953,7 @@ function reference_rest!(
     _append_label_suffix!(obj, obj, ch, "-rest")
     obj.header.recording[:reference] =
         "REST ($(model === :shell3 ? "3-shell" : "homogeneous") sphere, $ndip dipoles)"
-    push!(obj.history, "reference_rest(obj, ndip=$ndip, rdip=$rdip, model=:$model)")
+    _history!(obj, "reference_rest", (; ndip, rdip, model))
 
     return nothing
 end
@@ -1194,10 +1191,7 @@ function reference_custom!(
         cols = :setequal,
     )
 
-    push!(
-        obj.history,
-        "reference_custom(obj, ref_list=$ref_list, ref_name=$ref_name, loc=:$loc)",
-    )
+    _history!(obj, "reference_custom", (; ref_list, ref_name, loc))
 
     return nothing
 end

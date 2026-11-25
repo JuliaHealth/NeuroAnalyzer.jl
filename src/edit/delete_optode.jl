@@ -99,7 +99,7 @@ function delete_optode!(
         rec[:optode_pairs][:, col] = chp
     end
 
-    push!(obj.history, "delete_optode(obj; opt=$opt)")
+    _history!(obj, "delete_optode", (; opt))
     chs_to_delete = sort(unique(chs_to_delete))
     if !isempty(chs_to_delete)
         _info("Deleting NIRS channels: $(labels(obj)[chs_to_delete])")
@@ -179,8 +179,9 @@ function delete_pair!(
         append!(ch_idx, idx)
     end
 
+    n0 = length(obj.history)
     _delete_channel!(obj, ch_idx)
-    obj.history[end] = "delete_pair(obj; pair=$pairs)"
+    _history!(obj, "delete_pair", (; pair); from = n0)
 
     return nothing
 end

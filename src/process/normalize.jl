@@ -305,7 +305,7 @@ function normalize!(
         )
     end
 
-    push!(obj.history, "normalize(obj; ch=$ch, method=$method, n=$n)")
+    _history!(obj, "normalize", (; ch, method, n, bych))
 
     return nothing
 end

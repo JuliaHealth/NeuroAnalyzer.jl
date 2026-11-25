@@ -138,6 +138,9 @@ function edit_locs!(
     loc_idx isa Int64 ||
         throw(ArgumentError("$(labels(obj)[ch]) not found in obj.locs labels."))
 
+    # label before renaming (history); the history entry replaces those of rename/set type
+    ch_lbl = labels(obj)[ch]
+    n0 = length(obj.history)
     # type first: after renaming the old label no longer exists
     type != "" && set_channel_type!(obj; ch = labels(obj)[ch], type = type)
     name != "" && rename_channel!(obj; ch = labels(obj)[ch], name = name)
@@ -151,10 +154,7 @@ function edit_locs!(
     radius_sph !== nothing && (obj.locs[loc_idx, :loc_radius_sph] = radius_sph)
     phi_sph !== nothing && (obj.locs[loc_idx, :loc_phi_sph] = phi_sph)
 
-    push!(
-        obj.history,
-        "edit_locs(obj; ch=$ch, x=$x, y=$y, z=$z, theta=$theta, radius=$radius, theta_sph=$theta_sph, radius_sph=$radius_sph, phi_sph=$phi_sph, name=$name, type=$type)",
-    )
+    _history!(obj, "edit_locs", (; ch = ch_lbl, x, y, z, theta, radius, theta_sph, radius_sph, phi_sph, name, type); from = n0)
 
     return nothing
 end

@@ -337,10 +337,7 @@ function remove_pops!(
     end
 
     repair || return pops
-    push!(
-        obj.history,
-        "remove_pops(obj; ch=$ch, repair=true, window=$window, r=$r, z=$z, a_min=$a_min, r2_min=$r2_min)",
-    )
+    _history!(obj, "remove_pops", (; ch, repair = true, window, r, z, a_min, r2_min))
 
     return pops
 end

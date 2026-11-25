@@ -174,7 +174,7 @@ function filter_mavg!(
     obj.data[ch, :, :] = _filter_mavg(
         @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
     )
-    push!(obj.history, "filter_mavg(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
+    _history!(obj, "filter_mavg", (; ch, k, t, ww))
 
     return nothing
 end

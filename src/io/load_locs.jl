@@ -286,7 +286,7 @@ function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
     locs_idx = indexin(obj.locs[:, :label], labels(obj))
     obj.locs = obj.locs[sortperm(locs_idx), :]
 
-    push!(obj.history, "load_locs(obj, file_name=$file_name)")
+    _history!(obj, "load_locs", (; file_name))
 
     return nothing
 end

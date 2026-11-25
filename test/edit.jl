@@ -195,6 +195,39 @@ add_marker!(e_bs2; type = "BAD", start = 39.0, len = 2.0, value = "y")
 @test_throws ArgumentError epoch(e_bs2; marker_value = "A", offset = 0.5, ep_len = 2,
                                  exclude_bad_segments = true)
 
+@info "Test: epoch() with reject and flat (peak-to-peak thresholds)"
+e_rf = deepcopy(eeg)
+e_rf.markers = e_rf.markers[1:0, :]
+ep0 = epoch(e_rf; ep_len = 10)
+eeg_ch = get_channel(ep0; ch = "eeg")
+p2p0 = dropdims(maximum(ep0.data[eeg_ch, :, :]; dims = 2) .- minimum(ep0.data[eeg_ch, :, :]; dims = 2); dims = 2)
+thr_r = maximum(p2p0) + 1
+thr_f = minimum(p2p0) / 2
+fs_rf = sr(e_rf)
+fp1_rf = get_channel(e_rf; ch = "Fp1")[1]
+o1_rf = get_channel(e_rf; ch = "O1")[1]
+# artifact in epoch 2 (Fp1), flat signal in epoch 4 (O1)
+e_rf.data[fp1_rf, (10 * fs_rf + 100):(10 * fs_rf + 110), 1] .+= 2 * thr_r
+e_rf.data[o1_rf, (30 * fs_rf + 1):(40 * fs_rf), 1] .= 0.0
+@test nepochs(epoch(e_rf; ep_len = 10)) == nepochs(ep0)
+ep_r = epoch(e_rf; ep_len = 10, reject = thr_r)
+@test nepochs(ep_r) == nepochs(ep0) - 1 && !(10.0 in ep_r.epochs.onset)
+ep_f = epoch(e_rf; ep_len = 10, flat = Dict("eeg" => thr_f))
+@test nepochs(ep_f) == nepochs(ep0) - 1 && !(30.0 in ep_f.epochs.onset)
+ep_rf = epoch(e_rf; ep_len = 10, reject = Dict("eeg" => thr_r), flat = thr_f)
+@test nepochs(ep_rf) == nepochs(ep0) - 2
+# marker-based epochs
+add_marker!(e_rf; type = "stim", start = 12.0, value = "A")
+add_marker!(e_rf; type = "stim", start = 52.0, value = "A")
+@test nepochs(epoch(e_rf; marker_value = "A", offset = 2, ep_len = 4, reject = thr_r)) == 1
+# bad channels are not checked
+e_rf2 = deepcopy(e_rf)
+e_rf2.header.recording[:bad_channel][fp1_rf] = true
+@test nepochs(epoch(e_rf2; ep_len = 10, reject = thr_r)) == nepochs(ep0)
+@test_throws ArgumentError epoch(e_rf; ep_len = 10, reject = Dict("mag" => 1))
+@test_throws ArgumentError epoch(e_rf; ep_len = 10, flat = -1)
+@test_throws ArgumentError epoch(e_rf; ep_len = 10, reject = 1e-9)
+
 @info "Test: bad segments (interactive plot: b, u)"
 e_bad = deepcopy(eeg)
 e_bad.markers = e_bad.markers[1:0, :]

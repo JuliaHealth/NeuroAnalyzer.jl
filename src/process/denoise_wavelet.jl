@@ -201,7 +201,7 @@ function denoise_cwd!(
         w = w,
         type = type,
     )
-    push!(obj.history, "denoise_cwd(obj; ch=$ch, wt=$wt, nf=$nf, w=$w, type=$type)")
+    _history!(obj, "denoise_cwd", (; ch, wt, nf, w, type))
 
     return nothing
 end
@@ -373,10 +373,7 @@ function denoise_dwd!(
 
     obj.data[ch, :, :] =
         @views _denoise_dwd(obj.data[ch, :, :], wt = wt, l = l, dnt = dnt, smooth = smooth)
-    push!(
-        obj.history,
-        "denoise_dwd(obj; ch=$ch, wt=$wt, l=$l, dnt=$dnt, smooth=$smooth)",
-    )
+    _history!(obj, "denoise_dwd", (; ch, wt, l, dnt, smooth))
 
     return nothing
 end

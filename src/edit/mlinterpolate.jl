@@ -136,10 +136,7 @@ function mlinterpolate_channel!(
 
     reset_bads && (obj.header.recording[:bad_channel][ch_idx] = false)
 
-    push!(
-        obj.history,
-        "mlinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, model=$(typeof(model)), reset_bads=$reset_bads)",
-    )
+    _history!(obj, "mlinterpolate_channel", (; ch, ep, ep_ref, model, reset_bads))
 
     return nothing
 end

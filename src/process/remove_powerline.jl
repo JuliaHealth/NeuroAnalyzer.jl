@@ -193,10 +193,7 @@ function remove_powerline!(
     isempty(no_peak) || _warn(
         "No power line peak at $pl_frq Hz in channel(s) $(join(no_peak, ", ")); power line frequency not filtered (check pl_frq or whether the signal is already filtered).",
     )
-    push!(
-        obj.history,
-        "remove_powerline(OBJ, ch=$ch, pl_frq=$pl_frq, method=:$method, pr=$pr, d=$d, q=$q)",
-    )
+    _history!(obj, "remove_powerline", (; ch, pl_frq, method, pr, d, q))
 
     return df
 end
@@ -311,6 +308,7 @@ function detect_powerline!(obj::NeuroAnalyzer.NEURO; pr::Real = 3)::Nothing
         _info("Power line noise detected at $noise_frq Hz")
         obj.header.recording[:line_frequency] = noise_frq
     end
+    _history!(obj, "detect_powerline!", (; pr))
 
     return nothing
 end

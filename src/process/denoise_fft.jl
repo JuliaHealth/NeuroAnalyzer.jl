@@ -144,7 +144,7 @@ function denoise_fft!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] = _denoise_fft(@view(obj.data[ch, :, :]); pad = pad, t = t)
-    push!(obj.history, "denoise_fft(obj; ch=$ch, pad=$pad, t=$t)")
+    _history!(obj, "denoise_fft", (; ch, pad, t))
 
     return nothing
 end

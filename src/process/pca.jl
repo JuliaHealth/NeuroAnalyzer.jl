@@ -200,7 +200,7 @@ function pca_reconstruct!(
 
     obj.data[ch, :, :] =
         _pca_reconstruct(@view(obj.data[ch, :, :]); pc = pc, pc_model = pc_model)
-    push!(obj.history, "pca_reconstruct(obj; ch=$ch)")
+    _history!(obj, "pca_reconstruct", (; ch, pc, pc_model, exclude_bad_channels))
 
     return nothing
 end

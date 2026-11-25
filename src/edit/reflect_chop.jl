@@ -67,7 +67,7 @@ function reflect!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
         obj.markers, sr(obj), s -> ((s - 1) ÷ el) * (el + 2 * n) + n + (s - 1) % el + 1,
     )
 
-    push!(obj.history, "reflect(obj, n=$n)")
+    _history!(obj, "reflect", (; n))
 
     return nothing
 end
@@ -139,7 +139,7 @@ function chop!(obj::NeuroAnalyzer.NEURO; n::Int64 = sr(obj))::Nothing
         end,
     )
 
-    push!(obj.history, "chop(obj, n=$n)")
+    _history!(obj, "chop", (; n))
 
     return nothing
 end

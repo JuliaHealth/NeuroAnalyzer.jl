@@ -51,6 +51,7 @@ function locs_origin!(
     z::Real = 0,
 )::Nothing
     obj.locs = locs_origin(obj.locs; x = x, y = y, z = z)
+    _history!(obj, "locs_origin!", (; x, y, z))
 
     return nothing
 end

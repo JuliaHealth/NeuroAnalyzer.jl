@@ -133,10 +133,7 @@ function lrinterpolate_channel!(
 
     reset_bads && (obj.header.recording[:bad_channel][ch_idx] = false)
 
-    push!(
-        obj.history,
-        "lrinterpolate_channel(obj; ch=$ch, ep=$ep, ep_ref=$ep_ref, seg=$seg, reset_bads=$reset_bads)",
-    )
+    _history!(obj, "lrinterpolate_channel", (; ch, ep, ep_ref, seg, reset_bads))
 
     return nothing
 end

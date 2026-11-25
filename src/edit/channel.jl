@@ -127,7 +127,7 @@ function set_channel_type!(
     rec[:channel_order] = _sort_channels(rec[:channel_type])
     datatype(obj) in _MEG_LIKE_DATA && _update_meg_sensor_lists!(rec, ch_idx, type)
 
-    push!(obj.history, "set_channel_type(obj; ch=$(labels(obj)[ch_idx]), type=$type)")
+    _history!(obj, "set_channel_type", (; ch = labels(obj)[ch_idx], type))
 
     return nothing
 end
@@ -187,7 +187,7 @@ function rename_channel!(
     _rename_locs!(obj.locs, old, name)
     _markers_relabel!(obj.markers, [old], [name])
 
-    push!(obj.history, "rename_channel(obj; ch=$old, name=$name)")
+    _history!(obj, "rename_channel", (; ch = old, name))
 
     return nothing
 end
@@ -249,6 +249,7 @@ function edit_channel!(
 
     # label before renaming (history)
     lbl = labels(obj)[ch_idx]
+    n0 = length(obj.history)
     if field == :label
         rename_channel!(obj; ch = ch, name = value)
     else
@@ -256,7 +257,7 @@ function edit_channel!(
     end
 
     # record the user's call instead of the delegated one
-    obj.history[end] = "edit_channel(obj; ch=$lbl, field=$field, value=$value)"
+    _history!(obj, "edit_channel", (; ch = lbl, field, value); from = n0)
 
     return nothing
 end
@@ -321,7 +322,7 @@ function replace_channel!(
 
     obj.data[ch_idx, :, :] = s
 
-    push!(obj.history, "replace_channel(obj; ch=$(labels(obj)[ch_idx]), s)")
+    _history!(obj, "replace_channel", (; ch = labels(obj)[ch_idx], s))
 
     return nothing
 end
@@ -379,7 +380,7 @@ function add_label!(obj::NeuroAnalyzer.NEURO; clabels::Vector{String})::Nothing
     # markers refer to channels by label (renamed in one pass, like the locations)
     _markers_relabel!(obj.markers, old, clabels)
 
-    push!(obj.history, "add_label(obj, clabels=$clabels)")
+    _history!(obj, "add_label", (; clabels))
 
     return nothing
 end
@@ -548,10 +549,7 @@ function add_channel!(
         obj.epoch_time = _time_axis(n_s, fs)
     end
 
-    push!(
-        obj.history,
-        "add_channel(obj; data, label=$label_v, type=$type_v, unit=$unit_v)",
-    )
+    _history!(obj, "add_channel", (; label = label_v, type = type_v, unit = unit_v, data))
 
     return nothing
 end

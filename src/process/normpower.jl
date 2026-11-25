@@ -101,7 +101,7 @@ function normpower!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] = _normpower(obj.data[ch, :, :])
-    push!(obj.history, "normpower(obj; ch=$ch)")
+    _history!(obj, "normpower", (; ch))
 
     return nothing
 end

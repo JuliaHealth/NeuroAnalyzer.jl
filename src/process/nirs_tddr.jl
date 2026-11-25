@@ -98,7 +98,7 @@ function tddr!(
         c, ep = ch[idx[1]], idx[2]
         obj.data[c, :, ep] = _tddr(@view(obj.data[c, :, ep]), fs)
     end
-    push!(obj.history, "tddr(obj; ch=$(labels(obj)[ch]))")
+    _history!(obj, "tddr", (; ch = labels(obj)[ch]))
 
     return nothing
 end

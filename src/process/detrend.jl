@@ -212,10 +212,7 @@ function detrend!(
         order = order,
         f = f,
     )
-    push!(
-        obj.history,
-        "detrend(obj; ch=$ch, type=$type, offset=$offset, order=$order, f=$f)",
-    )
+    _history!(obj, "detrend", (; ch, type, offset, order, f))
 
     return nothing
 end

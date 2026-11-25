@@ -42,7 +42,7 @@ function npl!(obj::NeuroAnalyzer.NEURO)::Nothing
         obj.data[:, :, ep_idx] =
             @view(obj.data[:, :, ep_idx]) - @view(obj.data[:, :, 1])
     end
-    push!(obj.history, "npl(obj)")
+    _history!(obj, "npl", NamedTuple())
 
     return nothing
 end

@@ -236,7 +236,7 @@ end
 """
     history(obj)
 
-Return the processing history log.
+Return the processing history log: one entry per processing call, written as Julia code with all its arguments (channels as labels; values that are not stored, e.g. data arrays, as `<not stored: …>`). The history can be exported as a script with `export_history()`.
 
 # Arguments
 
@@ -1021,9 +1021,7 @@ Remove subject's data from the header.
 function anonymize(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     # create new dataset
     obj_tmp = deepcopy(obj)
-    obj_tmp.header.subject[:first_name] = ""
-    obj_tmp.header.subject[:middle_name] = ""
-    obj_tmp.header.subject[:last_name] = ""
+    anonymize!(obj_tmp)
 
     return obj_tmp
 end
@@ -1045,6 +1043,7 @@ function anonymize!(obj::NeuroAnalyzer.NEURO)::Nothing
     obj.header.subject[:first_name] = ""
     obj.header.subject[:middle_name] = ""
     obj.header.subject[:last_name] = ""
+    _history!(obj, "anonymize", NamedTuple())
 
     return nothing
 end

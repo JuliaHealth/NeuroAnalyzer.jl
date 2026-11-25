@@ -83,7 +83,7 @@ function standardize!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :], scaler = _standardize(obj.data[ch, :, :])
-    push!(obj.history, "standardize(obj)")
+    _history!(obj, "standardize", (; ch))
 
     return scaler
 end

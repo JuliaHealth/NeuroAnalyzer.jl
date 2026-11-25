@@ -120,7 +120,7 @@ function derivative!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] = _derivative(obj.data[ch, :, :])
-    push!(obj.history, "derivative(obj; ch=$ch)")
+    _history!(obj, "derivative", (; ch))
 
     return nothing
 end

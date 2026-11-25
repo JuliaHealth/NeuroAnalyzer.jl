@@ -113,7 +113,7 @@ function cbp!(
         )
     end
 
-    push!(obj.history, "cbp(obj; ch=$ch, pad=$pad, frq=$frq)")
+    _history!(obj, "cbp", (; ch, pad, frq))
 
     return nothing
 end

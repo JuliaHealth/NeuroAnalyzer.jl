@@ -109,7 +109,7 @@ function taper!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] = _taper(obj.data[ch, :, :]; t = t)
-    push!(obj.history, "taper(obj; ch=$ch, t=$t)")
+    _history!(obj, "taper", (; ch, t))
 
     return nothing
 end

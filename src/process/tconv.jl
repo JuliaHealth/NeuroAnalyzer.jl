@@ -124,7 +124,7 @@ function tconv!(
     eltype(kernel) == ComplexF64 && return _tconv(obj.data[ch, :, :]; kernel = kernel)
 
     obj.data[ch, :, :] = _tconv(obj.data[ch, :, :]; kernel = kernel)
-    push!(obj.history, "tconv(obj; ch=$ch, kernel=kernel)")
+    _history!(obj, "tconv", (; ch, kernel))
 
     return nothing
 end

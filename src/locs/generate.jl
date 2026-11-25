@@ -502,7 +502,7 @@ Generate spherical coordinates according to the 10/10 system, modifying `locs` i
 """
 function locs_generate!(obj::NeuroAnalyzer.NEURO)::Nothing
     obj.locs = locs_generate(obj.locs)
-    push!(obj.history, "locs_generate(obj)")
+    _history!(obj, "locs_generate", NamedTuple())
 
     return nothing
 end

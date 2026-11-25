@@ -166,7 +166,7 @@ function _delete_channel!(
     n_del = _markers_delete_channels!(obj.markers, del_labels)
     n_del > 0 && _info("$n_del marker(s) of deleted channels removed")
 
-    push!(obj.history, "delete_channel(obj; ch=$del_lbl)")
+    _history!(obj, "delete_channel", (; ch = del_lbl))
 
     return nothing
 end
@@ -267,9 +267,10 @@ function keep_channel!(
     keep_lbl = labels(obj)[sort(ch_idx)]
     # delete by index: re-resolving by label would select wrong channels
     # when labels are duplicated
+    n0 = length(obj.history)
     _delete_channel!(obj, setdiff(_c(ch_n), ch_idx))
     # record the user's call rather than the internal deletion
-    obj.history[end] = "keep_channel(obj; ch=$keep_lbl)"
+    _history!(obj, "keep_channel", (; ch = keep_lbl); from = n0)
 
     return nothing
 end

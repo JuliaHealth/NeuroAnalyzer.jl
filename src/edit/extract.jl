@@ -78,7 +78,7 @@ function extract_epoch!(obj::NeuroAnalyzer.NEURO; ep::Int64)::Nothing
         obj.markers, sr(obj), s -> (s - 1) ÷ el + 1 == ep ? (s - 1) % el + 1 : nothing,
     )
 
-    push!(obj.history, "extract_epoch(obj; ep=$ep)")
+    _history!(obj, "extract_epoch", (; ep))
 
     return nothing
 end

@@ -75,7 +75,7 @@ function delete_epoch!(
     end
 
     obj.time_pts, obj.epoch_time = _get_t(obj)
-    push!(obj.history, "delete_epoch(obj; ep=$ep)")
+    _history!(obj, "delete_epoch", (; ep))
 
     return nothing
 end
@@ -130,8 +130,9 @@ function keep_epoch!(
     ep_to_remove = setdiff(1:nepochs(obj), ep)
     isempty(ep_to_remove) && return nothing # nothing to remove
 
+    n0 = length(obj.history)
     delete_epoch!(obj; ep = ep_to_remove)
-    push!(obj.history, "keep_epoch(obj; ep=$ep)")
+    _history!(obj, "keep_epoch", (; ep); from = n0)
 
     return nothing
 end

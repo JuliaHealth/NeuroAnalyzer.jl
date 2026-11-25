@@ -168,7 +168,7 @@ function _resample_obj!(
     # the new sampling rate must be set before the time axes are rebuilt
     rec[:sampling_rate] = new_sr
     obj.time_pts, obj.epoch_time = _get_t(obj)
-    push!(obj.history, "$fname(obj, new_sr=$new_sr)")
+    _history!(obj, fname, (; new_sr))
 
     return nothing
 end

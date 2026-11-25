@@ -932,6 +932,44 @@ m = NeuroAnalyzer.CSV.read(f, DataFrame; stringtype = String)
 @test m[!, :start] == eeg.markers[!, :start]
 @test m[!, :value] == eeg.markers[!, :value]
 
+@info "Test: export_history()"
+src = joinpath(testfiles_path, "eeg", "eeg-test-edf.edf")
+e = import_edf(src)
+filter!(e; ch = "eeg", fprototype = :butterworth, ftype = :hp, cutoff = 1, order = 4,
+        report = false)
+reference_avg!(e)
+edit_channel!(e; ch = "Fp1-avg", field = :label, value = "FP1")
+keep_channel!(e; ch = r"^(FP1|F|C)")
+add_note!(e; note = "test")
+epoch!(e; ep_len = 2, reject = 1e6)
+average_epochs!(e)
+# one entry per call, nested calls are not recorded
+@test length(e.history) == 7
+@test startswith(e.history[1], "filter(obj; ch=\"eeg\", fprototype=:butterworth")
+@test occursin(" # ", e.history[1])
+@test e.history[3] == "edit_channel(obj; ch=\"Fp1-avg\", field=:label, value=\"FP1\")"
+@test startswith(e.history[4], "keep_channel(obj; ch=[\"FP1\", \"Fp2-avg\"")
+f = joinpath(tmp, "history.jl")
+@test isnothing(export_history(e; file_name = f, source = src))
+@test_throws ArgumentError export_history(e; file_name = f, source = src)
+@test_throws ArgumentError export_history(e; file_name = joinpath(tmp, "h.txt"))
+s = read(f, String)
+@test occursin("obj = import_recording(\"$(escape_string(src))\")", s)
+@test occursin("\nfilter!(obj; ch=\"eeg\"", s)
+e2 = include(f)
+@test e2.data == e.data
+@test labels(e2) == labels(e)
+@test e2.history == e.history
+# entries that cannot be repeated are comments
+add_signal!(e; ch = "FP1", s = zeros(epoch_len(e)))
+push!(e.history, "pop_eegfiltnew(EEG, 1, 40)")
+export_history(e; file_name = f, source = src, overwrite = true)
+s = read(f, String)
+@test occursin("# (not repeatable: values not stored in the history) add_signal(", s)
+@test occursin("# (not repeatable: not a NeuroAnalyzer call of obj) pop_eegfiltnew", s)
+@test NeuroAnalyzer._hist_val(e, :ch, 1) == "\"FP1\""
+@test NeuroAnalyzer._hist_val(e, :x, zeros(1000)) == "<not stored: Array>"
+
 @info "Test: export_fiff()"
 # MEG (+ EEG, EOG, stim) round trip: data, geometry, SSP, markers
 meg = import_fiff(joinpath(testfiles_path, "meg", "test_raw.fif"))

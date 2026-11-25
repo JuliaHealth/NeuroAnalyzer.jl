@@ -20,6 +20,8 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 - `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, epochs that overlap a bad segment (marker of type `"BAD"`, also one that begins before the epoch) of all channels are skipped, epochs that overlap a bad segment of some channels are marked as rejected (`obj.epochs.reject`) (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `reject::Union{Nothing, Real, AbstractDict}=nothing`: epochs with a peak-to-peak amplitude above this threshold in at least one channel are skipped (as `reject` of MNE-Python); a number (for the channels of the data type of the object, e.g. EEG channels of an EEG object) or a dictionary of channel types and thresholds (e.g. `Dict("eeg" => 150, "eog" => 250)`), in the units of the channels (e.g. μV); channels marked as bad are not checked
+- `flat::Union{Nothing, Real, AbstractDict}=nothing`: epochs with a peak-to-peak amplitude below this threshold in at least one channel are skipped (flat signal, as `flat` of MNE-Python); as `reject`
 - `condition::Union{String, AbstractDict}="value"`: condition label of each marker-based epoch (`obj.epochs.condition`): the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("s70" => "face", "s71" => "face", "s130" => "house")`; values not in the dictionary are their own labels)
 - `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
@@ -36,6 +38,8 @@ function epoch(
     overlap::Real = 0,
     condition::Union{String, AbstractDict} = "value",
     exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
+    reject::Union{Nothing, Real, AbstractDict} = nothing,
+    flat::Union{Nothing, Real, AbstractDict} = nothing,
 )::NeuroAnalyzer.NEURO
     obj_new = deepcopy(obj)
     epoch!(
@@ -47,6 +51,8 @@ function epoch(
         overlap = overlap,
         condition = condition,
         exclude_bad_segments = exclude_bad_segments,
+        reject = reject,
+        flat = flat,
     )
 
     return obj_new
@@ -67,6 +73,8 @@ Epochs are created either by splitting at marker positions (when `marker_value` 
 - `offset::Real=0`: time offset in seconds for marker-based epoching (each epoch begins at `marker_time - offset`)
 - `ep_len::Union{Real, Nothing}=nothing`: epoch length in seconds
 - `exclude_bad_segments::Bool=NeuroAnalyzer.exclude_bad_segments`: if `true`, epochs that overlap a bad segment (marker of type `"BAD"`, also one that begins before the epoch) of all channels are skipped, epochs that overlap a bad segment of some channels are marked as rejected (`obj.epochs.reject`) (default: the `exclude_bad_segments` preference, see `set_exclude_bad_segments()`)
+- `reject::Union{Nothing, Real, AbstractDict}=nothing`: epochs with a peak-to-peak amplitude above this threshold in at least one channel are skipped (as `reject` of MNE-Python); a number (for the channels of the data type of the object, e.g. EEG channels of an EEG object) or a dictionary of channel types and thresholds (e.g. `Dict("eeg" => 150, "eog" => 250)`), in the units of the channels (e.g. μV); channels marked as bad are not checked
+- `flat::Union{Nothing, Real, AbstractDict}=nothing`: epochs with a peak-to-peak amplitude below this threshold in at least one channel are skipped (flat signal, as `flat` of MNE-Python); as `reject`
 - `condition::Union{String, AbstractDict}="value"`: condition label of each marker-based epoch (`obj.epochs.condition`): the name of a marker column (`"value"`, `"type"` or an extra column, e.g. `"trial_type"` of BIDS events) or a dictionary of marker values and condition labels (e.g. `Dict("s70" => "face", "s71" => "face", "s130" => "house")`; values not in the dictionary are their own labels)
 - `overlap::Real=0`: overlap of consecutive fixed-length epochs in seconds (0 ≤ `overlap` < `ep_len`); markers inside the overlapping parts appear in each epoch; not used for marker-based epoching
 
@@ -83,6 +91,8 @@ function epoch!(
     overlap::Real = 0,
     condition::Union{String, AbstractDict} = "value",
     exclude_bad_segments::Bool = NeuroAnalyzer.exclude_bad_segments,
+    reject::Union{Nothing, Real, AbstractDict} = nothing,
+    flat::Union{Nothing, Real, AbstractDict} = nothing,
 )::Nothing
     # validate
     nepochs(obj) == 1 ||
@@ -97,6 +107,10 @@ function epoch!(
     )
     overlap == 0 || overlap < ep_len ||
         throw(ArgumentError("overlap must be < ep_len."))
+
+    # thresholds are checked before the signal is epoched
+    _ptp_thresholds(obj, reject, "reject")
+    _ptp_thresholds(obj, flat, "flat")
 
     # epoch metadata of the continuous signal: onset of its first sample in the original
     # recording and its source
@@ -213,10 +227,9 @@ function epoch!(
     obj.time_pts, obj.epoch_time = _get_t(obj)
     obj.epoch_time .-= offset
 
-    push!(
-        obj.history,
-        "epoch(obj; marker_value=$(repr(marker_value)), marker_type=$marker_type, offset=$offset, ep_len=$ep_len, overlap=$overlap, condition=$(repr(condition)), exclude_bad_segments=$exclude_bad_segments)",
-    )
+    _history!(obj, "epoch", (; marker_value, marker_type, offset, ep_len, overlap, condition, exclude_bad_segments, reject, flat))
+    # epochs skipped below are part of this call (not recorded as delete_epoch())
+    n0 = length(obj.history)
 
     # bad segments of the continuous signal (markers of type "BAD"; also those that begin
     # before an epoch, whose markers are not kept in the epochs): epochs overlapping a bad
@@ -247,6 +260,21 @@ function epoch!(
             _info("$(length(drop)) epoch(s) overlapping bad segments skipped")
         end
     end
+
+    # peak-to-peak amplitude thresholds (as reject/flat of MNE-Python)
+    if !isnothing(reject) || !isnothing(flat)
+        r = _ptp_bad_epochs(obj, reject, flat)
+        if !isempty(r.ep)
+            length(r.ep) < nepochs(obj) || throw(
+                ArgumentError("All epochs exceed the reject or flat thresholds."),
+            )
+            delete_epoch!(obj; ep = r.ep)
+        end
+        _info(
+            "$(length(r.ep)) epoch(s) skipped: $(r.n_reject) above reject, $(r.n_flat) below flat (peak-to-peak)",
+        )
+    end
+    length(obj.history) > n0 && deleteat!(obj.history, (n0 + 1):length(obj.history))
 
     return nothing
 end
@@ -289,7 +317,7 @@ Shift the epoch time axis by `ts` seconds in-place.
 function epoch_ts!(obj::NeuroAnalyzer.NEURO; ts::Real)::Nothing
 
     obj.epoch_time .+= ts
-    push!(obj.history, "epoch_ts(obj, ts=$ts)")
+    _history!(obj, "epoch_ts", (; ts))
 
     return nothing
 end
@@ -370,7 +398,7 @@ function subepoch!(
         end,
     )
 
-    push!(obj.history, "subepoch(obj; ep_start=$ep_start, ep_end=$ep_end)")
+    _history!(obj, "subepoch", (; ep_start, ep_end))
 
     return nothing
 end

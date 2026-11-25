@@ -201,3 +201,75 @@ function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
 
     return mrk_epoch
 end
+
+# thresholds per channel type: a number applies to the channels of the data type of the object
+function _ptp_thresholds(
+    obj::NeuroAnalyzer.NEURO,
+    t::Union{Nothing, Real, AbstractDict},
+    name::String,
+)::Dict{String, Float64}
+    isnothing(t) && return Dict{String, Float64}()
+    d = t isa Real ? Dict(datatype(obj) => Float64(t)) :
+        Dict{String, Float64}(String(k) => Float64(v) for (k, v) in t)
+    ct = obj.header.recording[:channel_type]
+    for (k, v) in d
+        k in ct || throw(
+            ArgumentError(
+                "$name: no channels of type $k" *
+                (t isa Real ? " (give the thresholds per channel type, e.g. Dict(\"mag\" => …, \"grad\" => …))." : "."),
+            ),
+        )
+        v > 0 || throw(ArgumentError("$name thresholds must be > 0."))
+    end
+    return d
+end
+
+"""
+    _ptp_bad_epochs(obj, reject, flat)
+
+Epochs with a peak-to-peak amplitude above `reject` or below `flat` in at least one channel of the given type(s) (as `reject` and `flat` of MNE-Python); channels marked as bad are not checked.
+
+# Arguments
+
+- `obj::NeuroAnalyzer.NEURO`: epoched object
+- `reject::Union{Nothing, Real, AbstractDict}`: maximum peak-to-peak amplitude, a number (channels of the data type of the object) or a dictionary of channel types and thresholds (in the units of the channels)
+- `flat::Union{Nothing, Real, AbstractDict}`: minimum peak-to-peak amplitude (as `reject`)
+
+# Returns
+
+Named tuple:
+
+- `ep::Vector{Int64}`: epochs to drop
+- `n_reject::Int64`: number of epochs above `reject`
+- `n_flat::Int64`: number of epochs below `flat` (and not above `reject`)
+"""
+function _ptp_bad_epochs(
+    obj::NeuroAnalyzer.NEURO,
+    reject::Union{Nothing, Real, AbstractDict},
+    flat::Union{Nothing, Real, AbstractDict},
+)::@NamedTuple{ep::Vector{Int64}, n_reject::Int64, n_flat::Int64}
+    rj = _ptp_thresholds(obj, reject, "reject")
+    fl = _ptp_thresholds(obj, flat, "flat")
+    ct = obj.header.recording[:channel_type]
+    bad = obj.header.recording[:bad_channel]
+    # peak-to-peak amplitude of the good channels of type k, shape (channels, epochs)
+    function p2p(k)
+        ch = findall(i -> ct[i] == k && !bad[i], eachindex(ct))
+        isempty(ch) && return zeros(0, nepochs(obj))
+        d = @view obj.data[ch, :, :]
+        return dropdims(maximum(d; dims = 2) .- minimum(d; dims = 2); dims = 2)
+    end
+    is_rj = falses(nepochs(obj))
+    for (k, t) in rj
+        is_rj .|= vec(any(p2p(k) .> t; dims = 1))
+    end
+    is_fl = falses(nepochs(obj))
+    for (k, t) in fl
+        is_fl .|= vec(any(p2p(k) .< t; dims = 1))
+    end
+    return (
+        ep = findall(is_rj .| is_fl),
+        n_reject = count(is_rj),
+        n_flat = count(is_fl .& .!is_rj),
+    )
+end

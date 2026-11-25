@@ -129,7 +129,7 @@ function filter_sg!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] = _filter_sg(obj.data[ch, :, :]; order = order, window = window)
-    push!(obj.history, "filter_sg(obj; ch=$ch, order=$order, window=$window)")
+    _history!(obj, "filter_sg", (; ch, order, window))
 
     return nothing
 end

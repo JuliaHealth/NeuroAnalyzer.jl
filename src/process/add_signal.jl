@@ -89,7 +89,7 @@ function add_signal!(
             _add_signal(@view(obj.data[ch[ch_idx], :, ep_idx]), s)
     end
 
-    push!(obj.history, "add_signal(obj; ch=$ch)")
+    _history!(obj, "add_signal", (; ch, s))
 
     return nothing
 end

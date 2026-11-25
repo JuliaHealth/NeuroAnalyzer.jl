@@ -64,6 +64,7 @@ function average_epochs!(
 
     # epochs to average: condition(s), without the rejected ones (the others are removed)
     ep_sel = get_epochs(obj; condition = condition, rejected = rejected)
+    n0 = length(obj.history)
     isempty(ep_sel) && throw(
         ArgumentError(
             "No epochs to average" *
@@ -136,10 +137,7 @@ function average_epochs!(
     # markers (in seconds) follow their epochs, which are shifted by the prepended average epoch
     obj.markers[!, :start] .+= n2t(size(obj.data, 2), sr(obj))
 
-    push!(
-        obj.history,
-        "average_epochs(obj, bl=$bl, blfirst=$blfirst, condition=$(repr(condition)), rejected=$rejected)",
-    )
+    _history!(obj, "average_epochs", (; bl, blfirst, condition, rejected); from = n0)
 
     return nothing
 end
@@ -211,7 +209,7 @@ function sort_epochs!(obj::NeuroAnalyzer.NEURO; s::Vector{Int64})::Nothing
             e == 1 ? q : (new_pos[e] - 1) * ep_len + (q - 1) % ep_len + 1
         end,
     )
-    push!(obj.history, "sort_epochs(obj, s=$s)")
+    _history!(obj, "sort_epochs", (; s))
 
     return nothing
 end

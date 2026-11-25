@@ -1802,7 +1802,7 @@ y = NeuroAnalyzer._resample(x; old_sr = 256, new_sr = 512)
 @test_throws ArgumentError NeuroAnalyzer._resample(x; old_sr = 0, new_sr = 256)
 r = NeuroAnalyzer._resample_obj(eb, 128, "resample")
 @test sr(r) == 128 && size(r.data, 2) == 1280
-@test r.history[end] == "resample(obj, new_sr=128)"
+@test r.history[end] == "resample(obj; new_sr=128)"
 
 @info "Test: detect_powerline()"
 x =

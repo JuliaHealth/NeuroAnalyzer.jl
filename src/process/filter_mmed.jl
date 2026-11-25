@@ -171,7 +171,7 @@ function filter_mmed!(
     obj.data[ch, :, :] = _filter_mmed(
         @view(obj.data[ch, :, :]); k = k, t = t, ww = ww,
     )
-    push!(obj.history, "filter_mmed(obj; ch=$ch, k=$k, t=$t, ww=$ww)")
+    _history!(obj, "filter_mmed", (; ch, k, t, ww))
 
     return nothing
 end

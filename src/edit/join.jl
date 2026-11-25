@@ -72,7 +72,7 @@ function join!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
     obj1.time_pts, obj1.epoch_time = _get_t(obj1)
     # extra marker columns of one object only get missing in the markers of the other
     obj1.markers = sort(vcat(m1, m2; cols = :union), :start)
-    push!(obj1.history, "join(obj1, obj2)")
+    _history!(obj1, "join", NamedTuple())
 
     return nothing
 end

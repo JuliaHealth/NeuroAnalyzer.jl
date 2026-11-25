@@ -163,10 +163,7 @@ function plinterpolate_channel!(
 
     reset_bads && (obj.header.recording[:bad_channel][ch_idx] = false)
 
-    push!(
-        obj.history,
-        "plinterpolate_channel(obj; ch=$ch, ep=$ep, seg=$seg, imethod=$imethod, reset_bads=$reset_bads)",
-    )
+    _history!(obj, "plinterpolate_channel", (; ch, ep, seg, imethod, reset_bads))
 
     return nothing
 end

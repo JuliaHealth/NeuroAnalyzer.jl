@@ -149,7 +149,7 @@ function remove_dc!(
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
     obj.data[ch, :, :] = _remove_dc(@view(obj.data[ch, :, :]), n)
-    push!(obj.history, "remove_dc(obj; ch=$ch, n=$n)")
+    _history!(obj, "remove_dc", (; ch, n))
 
     return nothing
 end

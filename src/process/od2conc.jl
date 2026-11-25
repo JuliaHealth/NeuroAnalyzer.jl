@@ -252,10 +252,7 @@ function od2conc!(
     r[:optode_pairs] = vcat(rec[:optode_pairs], hb_pairs)
     r[:channel_order] = _sort_channels(r[:channel_type])
 
-    push!(
-        obj.history,
-        "od2conc(obj; ch=$ch, ppf=$(isnothing(ppf) ? "nothing" : ppf), age=$(isnothing(age) ? "nothing" : age))",
-    )
+    _history!(obj, "od2conc", (; ch, ppf, age))
 
     return nothing
 end

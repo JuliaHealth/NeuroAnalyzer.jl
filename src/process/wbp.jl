@@ -152,7 +152,7 @@ function wbp!(
 
     obj.data[ch, :, :] =
         _wbp(@view(obj.data[ch, :, :]); pad = pad, frq = frq, fs = sr(obj), ncyc = ncyc)
-    push!(obj.history, "wbp(obj; ch=$ch, pad=$pad, frq=$frq, ncyc=$ncyc)")
+    _history!(obj, "wbp", (; ch, pad, frq, ncyc))
 
     return nothing
 end

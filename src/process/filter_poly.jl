@@ -175,7 +175,7 @@ function filter_poly!(
         order = order,
         window = window,
     )
-    push!(obj.history, "filter_poly(obj; ch=$ch, order=$order, window=$window)")
+    _history!(obj, "filter_poly", (; ch, order, window))
 
     return nothing
 end

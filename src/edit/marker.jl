@@ -141,7 +141,7 @@ function delete_marker!(obj::NeuroAnalyzer.NEURO; n::Int64)::Nothing
 
     deleteat!(obj.markers, n)
 
-    push!(obj.history, "delete_marker(obj; n=$n)")
+    _history!(obj, "delete_marker", (; n))
 
     return nothing
 end
@@ -221,10 +221,7 @@ function add_marker!(
     )
     sort!(obj.markers, :start)
 
-    push!(
-        obj.history,
-        "add_marker(obj; type=$type, start=$start, len=$len, value=$value, ch=$(repr(ch)))",
-    )
+    _history!(obj, "add_marker", (; type, start, len, value, ch))
 
     return nothing
 end
@@ -311,10 +308,7 @@ function edit_marker!(
     obj.markers[n, :value] = value
     obj.markers[n, :channel] = mch
     sort!(obj.markers, :start)
-    push!(
-        obj.history,
-        "edit_marker(obj; n=$n, type=$type, start=$start, len=$len, value=$value, ch=$(repr(ch)))",
-    )
+    _history!(obj, "edit_marker", (; n, type, start, len, value, ch))
 
     return nothing
 end
@@ -435,7 +429,7 @@ function channel2marker!(
     )
     sort!(obj.markers, :start)
 
-    push!(obj.history, "channel2marker(obj; ch=$ch, v=$v, type=$type, value=$value)")
+    _history!(obj, "channel2marker", (; ch, v, type, value))
 
     return nothing
 end
@@ -464,7 +458,7 @@ function add_markers(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::NeuroAnalyze
     obj_tmp         = deepcopy(obj)
     obj_tmp.markers = _marker_channels(markers, labels(obj))
 
-    push!(obj_tmp.history, "add_markers(obj; markers)")
+    _history!(obj_tmp, "add_markers", (; markers))
 
     return obj_tmp
 end
@@ -488,7 +482,7 @@ The provided DataFrame must start with the columns `type`, `start`, `length`, `v
 function add_markers!(obj::NeuroAnalyzer.NEURO; markers::DataFrame)::Nothing
     _check_marker_cols(markers)
     obj.markers = _marker_channels(markers, labels(obj))
-    push!(obj.history, "add_markers!(obj; markers)")
+    _history!(obj, "add_markers", (; markers))
 
     return nothing
 end

@@ -311,7 +311,7 @@ function ica_remove!(
     # subtract the back-projection of the removed components
     obj.data[ch, :, 1] = obj.data[ch, :, 1] .- ic_mw[:, rm_idx] * ic[rm_idx, :]
 
-    push!(obj.history, "ica_remove(obj; ch=$ch, ic_idx=$ic_idx, keep=$keep)")
+    _history!(obj, "ica_remove", (; ch, ic_idx, keep, ic, ic_mw, exclude_bad_channels))
 
     return nothing
 end

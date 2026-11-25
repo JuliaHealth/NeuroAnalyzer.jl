@@ -423,7 +423,7 @@ function channel_reject!(
         amp_t = amp_t,
     )
     obj.header.recording[:bad_channel][get_channel(obj; ch = ch)] = bc
-    push!(obj.history, "channel_reject!(obj; ch=$ch, method=$method)")
+    _history!(obj, "channel_reject!", (; ch, method, w, flat_tol, flat_fr, p, tc, tkeo_method, z, ransac_r, ransac_tr, ransac_t, amp_t))
 
     return nothing
 end
@@ -587,10 +587,7 @@ function epoch_reject!(
     obj.epochs = copy(_epochs_table(obj))
     obj.epochs[be, :reject] .= true
     _info("$(length(be)) epoch(s) marked as rejected ($(count(obj.epochs.reject)) in total)")
-    push!(
-        obj.history,
-        "epoch_reject!(obj; ch=$ch, method=$method, nbad=$nbad, bad_markers=$bad_markers)",
-    )
+    _history!(obj, "epoch_reject!", (; ch, method, nbad, bad_markers, w, flat_tol, flat_fr, p, tc, tkeo_method, z, ransac_r, ransac_tr, ransac_t, amp_t))
 
     return nothing
 end

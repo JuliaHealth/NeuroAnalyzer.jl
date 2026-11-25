@@ -146,10 +146,7 @@ function artrem_cwd!(
         fseg = fseg,
         type = type,
     )
-    push!(
-        obj.history,
-        "artrem_cwd(obj; ch=$ch, ep=$ep, wt=$wt, tseg=$tseg, fseg=$fseg, type=$type)",
-    )
+    _history!(obj, "artrem_cwd", (; ch, ep, wt, tseg, fseg, type))
 
     return nothing
 end

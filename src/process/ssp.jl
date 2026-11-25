@@ -183,7 +183,7 @@ function apply_ssp_projectors!(
     x = reshape(obj.data[ssp_idx, :, :], length(ssp_idx), n_s * n_e)
     obj.data[ssp_idx, :, :] = reshape(ssp_projectors * x, length(ssp_idx), n_s, n_e)
 
-    push!(obj.history, "apply_ssp_projectors(obj, pidx=$pidx)")
+    _history!(obj, "apply_ssp_projectors", (; pidx))
 
     return nothing
 end

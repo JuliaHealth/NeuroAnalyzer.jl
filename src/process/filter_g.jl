@@ -192,7 +192,7 @@ function filter_g!(
         f = f,
         gw = gw,
     )
-    push!(obj.history, "filter_g(obj; ch=$ch, pad=$pad, f=$f)")
+    _history!(obj, "filter_g", (; ch, pad, f, gw))
 
     return nothing
 end

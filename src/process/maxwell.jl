@@ -1021,10 +1021,7 @@ function maxwell_filter!(
         :mc_interp => mc_interp,
     )
 
-    push!(
-        obj.history,
-        "maxwell_filter(obj; int_order=$int_order, ext_order=$ext_order, origin=$org, coord_frame=$coord_frame, regularize=$regularize, mag_scale=$mag_scale, calibration=$calibration, cross_talk=$cross_talk, st_duration=$st_duration, st_correlation=$st_correlation, st_overlap=$st_overlap, head_pos=$(isnothing(head_pos) ? nothing : "[…]"), mc_interp=$mc_interp, destination=$(isnothing(destination) ? nothing : "[…]"))",
-    )
+    _history!(obj, "maxwell_filter", (; int_order, ext_order, origin = org, coord_frame, regularize, mag_scale, calibration, cross_talk, st_duration, st_correlation, st_overlap, head_pos, mc_interp, destination))
 
     return nothing
 end
