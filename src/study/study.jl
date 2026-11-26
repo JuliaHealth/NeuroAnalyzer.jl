@@ -2,6 +2,7 @@ export study_create
 export study_check
 export study_files
 export study_overview
+export study_bids
 
 # required columns of the design table
 const _STUDY_COLS = [:subject, :session, :group, :file, :include]
@@ -121,6 +122,132 @@ function study_create(
 
     push!(study.history, "study_create(design; root = $(repr(study.root)), name = $(repr(name)))")
 
+    return study
+end
+
+"""
+    study_bids(root; <keyword arguments>)
+
+Create a study from a BIDS dataset: the selected recordings (see `bids_files()`) are imported with their sidecars (`import_bids()`) and saved as NeuroAnalyzer `.hdf` files in `out_dir` (keeping the BIDS folders and file names), and a study of these files is created. Subjects and sessions are the BIDS entities `sub` and `ses`; the group and the covariates are taken from `participants.tsv`.
+
+A study has one recording per subject and session, so the recordings must be selected (e.g. by `task` or `run`) so that each subject and session has one recording.
+
+# Arguments
+
+- `root::String`: dataset folder (with `dataset_description.json`)
+- `out_dir::String=joinpath(root, "derivatives", "neuroanalyzer")`: folder of the `.hdf` files (the root of the study)
+- `subject::Union{Nothing, String, Vector{String}}=nothing`: subject(s); `nothing`: all
+- `session::Union{Nothing, String, Vector{String}}=nothing`: session(s); `nothing`: all
+- `task::Union{Nothing, String, Vector{String}}=nothing`: task(s); `nothing`: all
+- `run::Union{Nothing, String, Vector{String}}=nothing`: run(s); `nothing`: all
+- `modality::Union{Nothing, String, Vector{String}}=nothing`: modality(ies) (`"eeg"`, `"ieeg"`, `"meg"`, `"nirs"`); `nothing`: all
+- `group::Union{Nothing, Symbol}=nothing`: column of `participants.tsv` with the group of each subject (e.g. `:group`); `nothing`: all subjects in group `"all"`
+- `covariates::Union{Nothing, Vector{Symbol}}=nothing`: columns of `participants.tsv` added to the design table; `nothing`: all columns
+- `overwrite::Bool=false`: if `true`, import again recordings whose `.hdf` file exists; otherwise the existing files are used
+- `name::String=""`: study name; `""`: the `Name` of `dataset_description.json`
+- `kwargs`: keyword arguments of `import_bids()` (e.g. `events`, `clean_labels`)
+
+# Returns
+
+- `NeuroAnalyzer.STUDY`
+
+# Examples
+
+```julia
+study = study_bids("ds002718"; task = "FaceRecognition", covariates = [:age, :sex])
+```
+"""
+function study_bids(
+    root::String;
+    out_dir::String = joinpath(root, "derivatives", "neuroanalyzer"),
+    subject::Union{Nothing, String, Vector{String}} = nothing,
+    session::Union{Nothing, String, Vector{String}} = nothing,
+    task::Union{Nothing, String, Vector{String}} = nothing,
+    run::Union{Nothing, String, Vector{String}} = nothing,
+    modality::Union{Nothing, String, Vector{String}} = nothing,
+    group::Union{Nothing, Symbol} = nothing,
+    covariates::Union{Nothing, Vector{Symbol}} = nothing,
+    overwrite::Bool = false,
+    name::String = "",
+    kwargs...,
+)::NeuroAnalyzer.STUDY
+    bf = bids_files(root; subject, session, task, run, modality)
+    DataFrames.nrow(bf) > 0 || throw(ArgumentError("No recordings selected in $root."))
+    bf.session = [isempty(s) ? "1" : s for s in bf.session]
+
+    # one recording per subject and session
+    dup = nonunique(bf, [:subject, :session])
+    if any(dup)
+        k = unique(bf[dup, [:subject, :session]])
+        r = bf[[(x.subject, x.session) in zip(k.subject, k.session) for x in eachrow(bf)], :]
+        throw(
+            ArgumentError(
+                "Several recordings of one subject and session; select them by task, run or modality: " *
+                join(r.file, ", ") * ".",
+            ),
+        )
+    end
+
+    # participants.tsv columns
+    std_cols = ["subject", "session", "task", "acq", "run", "modality", "file"]
+    pcols = setdiff(names(bf), std_cols)
+    if !isnothing(group)
+        string(group) in pcols ||
+            throw(ArgumentError("participants.tsv has no column $group."))
+    end
+    cov = isnothing(covariates) ? setdiff(pcols, isnothing(group) ? String[] : [string(group)]) :
+          string.(covariates)
+    miss = setdiff(cov, pcols)
+    isempty(miss) || throw(
+        ArgumentError(
+            "participants.tsv has no column$(_pl(miss)) $(join(miss, ", ")) (columns: $(join(pcols, ", "))).",
+        ),
+    )
+    clash = intersect(cov, string.(_STUDY_COLS))
+    isempty(clash) || throw(
+        ArgumentError("Covariates must not be named $(join(clash, ", ")) (see group)."),
+    )
+
+    # import and save the recordings
+    mkpath(out_dir)
+    hdf = String[]
+    ok = trues(DataFrames.nrow(bf))
+    for (k, x) in enumerate(eachrow(bf))
+        f = joinpath(splitext(x.file)[1] * ".hdf")
+        out = joinpath(out_dir, f)
+        push!(hdf, f)
+        isfile(out) && !overwrite && continue
+        try
+            obj = _silent(() -> import_bids(joinpath(root, x.file); kwargs...))
+            mkpath(dirname(out))
+            _silent(() -> save_neuro(obj; file_name = out, overwrite = true))
+            _info("Imported $(x.file)")
+        catch e
+            ok[k] = false
+            _warn("$(x.file) cannot be imported: $(sprint(showerror, e))")
+        end
+    end
+    any(ok) || throw(ArgumentError("No recording could be imported."))
+
+    design = DataFrame(
+        :subject => bf.subject[ok],
+        :session => bf.session[ok],
+        :group   => isnothing(group) ? fill("all", count(ok)) :
+                    [ismissing(g) ? "n/a" : string(g) for g in bf[ok, string(group)]],
+        :file    => hdf[ok],
+    )
+    for c in cov
+        design[!, c] = bf[ok, c]
+    end
+    if isempty(name)
+        dd = joinpath(root, "dataset_description.json")
+        isfile(dd) && (name = string(get(JSON.parsefile(dd), "Name", "")))
+    end
+    study = study_create(design; root = out_dir, name = name)
+    study.history[end] = "study_bids($(repr(root)); out_dir = $(repr(out_dir))" *
+        join([", $k = $(repr(v))" for (k, v) in
+              pairs((; subject, session, task, run, modality, group, covariates))
+              if !isnothing(v)]) * ")"
     return study
 end
 

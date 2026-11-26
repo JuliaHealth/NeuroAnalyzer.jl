@@ -126,7 +126,7 @@ function import_bv(
     r_notes = ""
     ref = ""
     if isfile(js_file)
-        js = JSON.parsefile(js_file; dicttype = Dict, inttype = Int64, use_mmap = true)
+        js = JSON.parsefile(js_file; dicttype = Dict{String, Any})
         "TaskName" in keys(js) && (e_name = js["TaskName"])
         "TaskDescription" in keys(js) && (e_notes = js["TaskDescription"])
         "ManufacturersModelName" in keys(js) && (r_notes = js["ManufacturersModelName"])
