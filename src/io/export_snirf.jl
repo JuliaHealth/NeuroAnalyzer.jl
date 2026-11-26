@@ -46,7 +46,7 @@ function export_snirf(
     overwrite::Bool = false,
 )::Nothing
     # validate
-    _check_datatype(obj, "nirs")
+    _check_export_datatype(obj, :snirf)
     nepochs(obj) == 1 || throw(ArgumentError("OBJ must be continuous (one epoch)."))
     lowercase(splitext(file_name)[2]) == ".snirf" ||
         throw(ArgumentError("File name extension must be .snirf"))

@@ -1,13 +1,40 @@
 export export_recording
 
 # all formats export_recording() can dispatch to
-const _EXPORT_FORMATS = (:fiff, :bv, :snirf, :csv, :neuro)
+const _EXPORT_FORMATS = (:fiff, :bv, :edf, :bdf, :snirf, :csv, :neuro)
+
+# data types that can be exported to each signal format (CSV and HDF: all data types)
+# - ERP and ERF objects are exported as EEG and MEG signals
+# - EDF/BDF: also other physiological signals (sensors, EDA, MEP/EMG); MEG: FIFF only
+# - TPT (tapping test): CSV and HDF only
+const _EXPORT_DATATYPES = Dict{Symbol, Vector{String}}(
+    :fiff  => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp", "meg", "erf"],
+    :bv    => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp"],
+    :edf   => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp", "sensors", "eda", "mep"],
+    :bdf   => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp", "sensors", "eda", "mep"],
+    :snirf => ["nirs"],
+)
+
+# check the data type of OBJ for an export format
+function _check_export_datatype(obj::NeuroAnalyzer.NEURO, fmt::Symbol)::Nothing
+    dt = datatype(obj)
+    dt in _EXPORT_DATATYPES[fmt] || throw(
+        ArgumentError(
+            "$(uppercase(dt)) objects cannot be exported to $(uppercase(string(fmt))) " *
+            "(data types: $(join(uppercase.(_EXPORT_DATATYPES[fmt]), ", "))); " *
+            "all data types can be exported to CSV (export_csv()) and HDF (save_neuro()).",
+        ),
+    )
+    return nothing
+end
 
 # extension → export format
 const _EXPORT_EXT_FORMAT = Dict{String, Symbol}(
     ".fif" => :fiff,
     ".fiff" => :fiff,
     ".vhdr" => :bv,
+    ".edf" => :edf,
+    ".bdf" => :bdf,
     ".snirf" => :snirf,
     ".csv" => :csv,
     ".hdf" => :neuro,
@@ -31,8 +58,10 @@ This is a meta-function: the format is selected by the file name extension (or b
 
 |              Format              | Extension(s)    |   `format`  |   Function    |      Data types        |
 | -------------------------------- | --------------- | ----------- | ------------- | ---------------------- |
-| Neuromag FIFF                    | `.fif`, `.fiff` | `:fiff`     | `export_fiff` | EEG, MEG, ECoG, sEEG   |
-| BrainVision                      | `.vhdr`         | `:bv`       | `export_bv`   | EEG, ECoG, sEEG, iEEG, ERP |
+| Neuromag FIFF                    | `.fif`, `.fiff` | `:fiff`     | `export_fiff` | EEG, ECoG, sEEG, iEEG, CSD, ERP (as EEG), MEG, ERF (as MEG) |
+| BrainVision                      | `.vhdr`         | `:bv`       | `export_bv`   | EEG, ECoG, sEEG, iEEG, CSD, ERP |
+| EDF+                             | `.edf`          | `:edf`      | `export_edf`  | EEG, ECoG, sEEG, iEEG, CSD, ERP, sensors, EDA, MEP |
+| BDF+                             | `.bdf`          | `:bdf`      | `export_bdf`  | EEG, ECoG, sEEG, iEEG, CSD, ERP, sensors, EDA, MEP |
 | SNIRF                            | `.snirf`        | `:snirf`    | `export_snirf`| NIRS                   |
 | CSV                              | `.csv`          | `:csv`      | `export_csv`  | all                    |
 | NeuroAnalyzer (JLD2/HDF5)        | `.hdf`          | `:neuro`    | `save_neuro`  | all                    |
@@ -77,6 +106,12 @@ function export_recording(
         return export_fiff(obj; file_name = file_name, overwrite = overwrite, kwargs...)
     elseif fmt === :bv
         return export_bv(obj; file_name = file_name, overwrite = overwrite, kwargs...)
+    elseif fmt === :edf
+        export_edf(obj; file_name = file_name, overwrite = overwrite, kwargs...)
+        return [file_name]
+    elseif fmt === :bdf
+        export_bdf(obj; file_name = file_name, overwrite = overwrite, kwargs...)
+        return [file_name]
     elseif fmt === :snirf
         export_snirf(obj; file_name = file_name, overwrite = overwrite, kwargs...)
         return [file_name]

@@ -177,6 +177,10 @@ const _NA_REQUIRED_PACKAGES = [
 for pkg in _NA_REQUIRED_PACKAGES
     @eval using $(Symbol(pkg))
 end
+# HDF5 files (NWB, SNIRF) are read and written with HDF5.jl, imported (not used) so that its
+# exported names (e.g. attributes) do not clash with NeuroAnalyzer and other dependencies;
+# NeuroAnalyzer objects are saved with JLD2
+import HDF5
 
 # functions of Base and of dependencies that NeuroAnalyzer extends with methods
 # (for NEURO objects, etc.) instead of defining functions of the same name, so
@@ -408,6 +412,7 @@ include("utils/mri_coordinates.jl")
 # io
 include("io/export.jl")
 include("io/export_bv.jl")
+include("io/export_edf.jl")
 include("io/export_csv.jl")
 include("io/export_fiff.jl")
 include("io/export_history.jl")

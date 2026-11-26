@@ -74,7 +74,7 @@ end
 """
     export_fiff(obj; <keyword arguments>)
 
-Export an EEG, MEG, ECoG or sEEG object to a FIFF raw file (Elekta/MEGIN Neuromag Functional Image File Format), readable by MNE-Python (`mne.io.read_raw_fif()`), Brainstorm, FieldTrip and `import_fiff()`.
+Export an EEG, ECoG, sEEG, iEEG, CSD, MEG, ERP (as EEG) or ERF (as MEG) object (continuous: one epoch; the average of an ERP/ERF: `keep_epoch(obj; ep = 1)`) to a FIFF raw file (Elekta/MEGIN Neuromag Functional Image File Format), readable by MNE-Python (`mne.io.read_raw_fif()`), Brainstorm, FieldTrip and `import_fiff()`.
 
 Written:
 
@@ -119,8 +119,15 @@ function export_fiff(
     # ------------------------------------------------------------------ #
     # validate                                                           #
     # ------------------------------------------------------------------ #
-    _check_datatype(obj, ["eeg", "meg", "ecog", "seeg"])
-    nepochs(obj) == 1 || throw(ArgumentError("OBJ must be continuous (one epoch)."))
+    _check_export_datatype(obj, :fiff)
+    if nepochs(obj) > 1
+        datatype(obj) in ("erp", "erf") && throw(
+            ArgumentError(
+                "OBJ must be continuous (one epoch); the average of an $(uppercase(datatype(obj))) object (epoch 1) is exported with export_fiff(keep_epoch(obj; ep = 1); file_name).",
+            ),
+        )
+        throw(ArgumentError("OBJ must be continuous (one epoch)."))
+    end
     lowercase(splitext(file_name)[2]) in (".fif", ".fiff") ||
         throw(ArgumentError("File name extension must be .fif or .fiff"))
     locs_unit in (:auto, :m, :cm, :mm) ||

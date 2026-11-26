@@ -33,7 +33,7 @@ Export a recording to the BrainVision Core Data Format (BrainVision Recorder/Ana
 
 # Arguments
 
-- `obj::NeuroAnalyzer.NEURO`: EEG, ECoG, sEEG, iEEG or ERP object
+- `obj::NeuroAnalyzer.NEURO`: EEG, ECoG, sEEG, iEEG, CSD or ERP object
 - `file_name::String`: header file name (`.vhdr`); the signal and marker files get the same name with the extensions `.eeg` and `.vmrk`
 - `overwrite::Bool=false`: if `true`, overwrite existing files
 
@@ -47,7 +47,7 @@ function export_bv(
     overwrite::Bool = false,
 )::Vector{String}
     # validate
-    _check_datatype(obj, ["eeg", "ecog", "seeg", "ieeg", "erp"])
+    _check_export_datatype(obj, :bv)
     lowercase(splitext(file_name)[2]) == ".vhdr" ||
         throw(ArgumentError("File name extension must be .vhdr"))
     base = splitext(file_name)[1]

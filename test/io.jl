@@ -1110,6 +1110,82 @@ ft = NeuroAnalyzer._bv_filter_table(vh, 2)
 @test ft[2] == ""
 @test isnothing(NeuroAnalyzer._bv_filter_table(["[Comment]"], 2))
 
+@info "Test: export_edf(), export_bdf()"
+e_ed = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edfplus.edf"))
+NeuroAnalyzer.filter!(e_ed; ch = "all", fprototype = :butterworth, ftype = :hp, cutoff = 0.5, order = 4)
+e_ed.header.recording[:notch][2] = [50.0]
+add_marker!(e_ed; type = "BAD", start = 2.0, len = 1.0, value = "noise")
+e_ed.data[5, :, :] .= 3.0   # constant channel
+n_ed = signal_len(e_ed)
+for (ext, exp_f, imp_f, steps) in ((".edf", export_edf, import_edf, 65535),
+                                   (".bdf", export_bdf, import_bdf, 16777215))
+    f = joinpath(tmp, "edf_test" * ext)
+    exp_f(e_ed; file_name = f)
+    b = imp_f(f)
+    @test labels(b) == labels(e_ed) && sr(b) == sr(e_ed) && signal_len(b) == n_ed
+    # quantization: at most half a step of the range of each channel
+    rng = [max(maximum(e_ed.data[i, :, :]) - minimum(e_ed.data[i, :, :]), 2) for i = 1:nchannels(e_ed)]
+    err = vec(maximum(abs.(b.data .- e_ed.data); dims = (2, 3)))
+    @test all(err .<= 0.5 .* rng ./ steps .* 1.001 .+ 1e-12)
+    @test all(abs.(b.data[5, :, 1] .- 3.0) .< 1e-3)
+    @test b.header.recording[:unit] == e_ed.header.recording[:unit]
+    @test b.header.recording[:highpass] ≈ e_ed.header.recording[:highpass]
+    @test b.header.recording[:lowpass] ≈ e_ed.header.recording[:lowpass]
+    @test b.header.recording[:notch] == e_ed.header.recording[:notch]
+    @test (b.header.recording[:recording_date], b.header.recording[:recording_time]) ==
+          (e_ed.header.recording[:recording_date], e_ed.header.recording[:recording_time])
+    # markers: values (BAD markers: BAD_ prefix), starts, lengths; types annotation and BAD
+    mb = sort(b.markers, :start)
+    me = sort(e_ed.markers, :start)
+    @test nrow(mb) == nrow(me)
+    @test mb.value == [t == "BAD" ? "BAD_" * v : v for (t, v) in zip(me.type, me.value)]
+    @test mb.start ≈ me.start && mb.length ≈ me.length
+    @test mb.type[mb.value .== "BAD_noise"] == ["BAD"]
+end
+# plain EDF: no annotations; the last record is padded
+e_p = trim(e_ed; seg = (0, 10.003), keep = true)
+f = joinpath(tmp, "edf_plain.edf")
+export_edf(e_p; file_name = f, plus = false)
+b = import_edf(f)
+@test nrow(b.markers) == 0 && signal_len(b) == cld(signal_len(e_p), sr(e_p)) * sr(e_p)
+@test b.data[1, 1:signal_len(e_p), 1] ≈ e_p.data[1, :, 1] rtol = 1e-3
+# (padded samples: 0 within one quantization step)
+@test maximum(abs.(b.data[1, (signal_len(e_p) + 1):end, 1])) <=
+      (maximum(e_p.data[1, :, 1]) - minimum(e_p.data[1, :, 1])) / 65535
+# epochs: written one after another, boundary annotations
+e_ep = epoch(e_p; ep_len = 2)
+f = joinpath(tmp, "edf_ep.edf")
+export_edf(e_ep; file_name = f, record_duration = 0.5)
+b = import_edf(f)
+@test count(==("boundary"), b.markers.type) == nepochs(e_ep)
+@test signal_len(b) == epoch_len(e_ep) * nepochs(e_ep)
+# numbers of the header: at most 8 characters, rounded outwards
+@test NeuroAnalyzer._edf_num(-123.4567891; down = true) == "-123.457"
+@test NeuroAnalyzer._edf_num(123.4567891; down = false) == "123.4568"
+@test NeuroAnalyzer._edf_num(1.14) == "1.14"
+@test_throws ArgumentError NeuroAnalyzer._edf_num(1e12)
+# errors
+@test_throws ArgumentError export_edf(e_ed; file_name = joinpath(tmp, "edf_test.edf"))
+@test_throws ArgumentError export_edf(e_ed; file_name = joinpath(tmp, "x.bdf"))
+@test_throws ArgumentError export_edf(e_ed; file_name = joinpath(tmp, "x.edf"), record_duration = 0.003)
+@test_throws ArgumentError export_bdf(import_snirf(joinpath(testfiles_path, "nirs", "fnirs-test-snirf.snirf"));
+                                      file_name = joinpath(tmp, "n.bdf"))
+
+@info "Test: data types of the exporters"
+erp_o = average_epochs(epoch(e_p; ep_len = 2))
+@test datatype(erp_o) == "erp"
+@test length(export_bv(erp_o; file_name = joinpath(tmp, "erp.vhdr"))) == 3
+@test_throws ArgumentError export_fiff(erp_o; file_name = joinpath(tmp, "erp_raw.fif"))
+@test isfile(export_fiff(keep_epoch(erp_o; ep = 1); file_name = joinpath(tmp, "erp_raw.fif"))[1])
+mep_o = import_duomag(joinpath(testfiles_path, "mep", "mep-duomag.ascii"))
+export_edf(mep_o; file_name = joinpath(tmp, "mep.edf"))
+@test isfile(joinpath(tmp, "mep.edf"))
+@test_throws ArgumentError export_bv(mep_o; file_name = joinpath(tmp, "mep.vhdr"))
+@test_throws ArgumentError export_fiff(mep_o; file_name = joinpath(tmp, "mep_raw.fif"))
+@test_throws ArgumentError export_bv(meg; file_name = joinpath(tmp, "meg.vhdr"))
+@test_throws ArgumentError export_edf(meg; file_name = joinpath(tmp, "meg.edf"))
+@test_throws ArgumentError export_snirf(e_p; file_name = joinpath(tmp, "e.snirf"))
+
 @info "Test: export_recording()"
 f = joinpath(tmp, "rec_raw.fif")
 @test export_recording(meg; file_name = f) == [f]
@@ -1120,6 +1196,10 @@ f = joinpath(tmp, "rec_raw.fif")
 f = joinpath(tmp, "rec.csv")
 @test export_recording(eeg_tmp; file_name = f, markers = true, locs = true) ==
       [f, joinpath(tmp, "rec_locs.csv")]
+f = joinpath(tmp, "rec.edf")
+@test export_recording(eeg_tmp; file_name = f) == [f]
+f = joinpath(tmp, "rec.bdf")
+@test export_recording(eeg_tmp; file_name = f, plus = false) == [f]
 f = joinpath(tmp, "rec.vhdr")
 @test export_recording(eeg_tmp; file_name = f) ==
       [f, joinpath(tmp, "rec.eeg"), joinpath(tmp, "rec.vmrk")]
