@@ -165,15 +165,7 @@ _gc_var_fit(x::AbstractArray{<:Real, 3}, p::Int) =
 function _gc_fdr(pv::AbstractMatrix{<:Real})
     ch = size(pv, 1)
     idx = [CartesianIndex(i, j) for i = 1:ch for j = 1:ch if i != j]
-    p = [pv[k] for k in idx]
-    m = length(p)
-    o = sortperm(p)
-    adj = similar(p)
-    running = 1.0
-    for k = m:-1:1
-        running = min(running, p[o[k]] * m / k)
-        adj[o[k]] = running
-    end
+    adj = p_adjust([pv[k] for k in idx]; method = :fdr)
     out = ones(size(pv))
     for (k, c) in enumerate(idx)
         out[c] = adj[k]

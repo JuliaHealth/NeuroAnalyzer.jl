@@ -304,6 +304,16 @@ NEURO(
     locs, time_pts, epoch_time, data,
 )
 
+# group-level study: recordings (files) described by a design table, measures computed
+# for every recording and condition (see study_create())
+mutable struct STUDY
+    name::String
+    root::String                    # base folder; relative file names are relative to it
+    design::DataFrame               # one row per recording: subject, session, group, file, include, ...
+    measures::Dict{Symbol, Any}     # cached measures (:erp, :psd, :tf), see study_measure!()
+    history::Vector{String}
+end
+
 # equivalent current dipole, as fitted by dipole_fit()
 mutable struct DIPOLE
     pos::Matrix{Float64}            # positions: 1 × 3 (fixed dipole) or time points × 3 (moving dipole)
@@ -515,11 +525,13 @@ include("process/wbp.jl")
 # stats
 include("stats/bootstrap.jl")
 include("stats/ci.jl")
+include("stats/cluster.jl")
 include("stats/correlation.jl")
 include("stats/crit.jl")
 include("stats/descriptive.jl")
 include("stats/linreg.jl")
 include("stats/make_table.jl")
+include("stats/mass.jl")
 include("stats/misc.jl")
 include("stats/outliers.jl")
 include("stats/p.jl")
@@ -657,6 +669,14 @@ include("stim/tes.jl")
 include("model/dipole_fit.jl")
 include("model/efield.jl")
 include("model/tes_model.jl")
+
+# study (group-level analysis)
+include("study/study.jl")
+include("study/save_load.jl")
+include("study/apply.jl")
+include("study/measure.jl")
+include("study/average.jl")
+include("study/stats.jl")
 
 # ---------------------------------------------------------------------------
 

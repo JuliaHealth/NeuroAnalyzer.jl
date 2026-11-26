@@ -433,4 +433,86 @@ end
 @test p2z(z2p(1.3)) ≈ 1.3 || p2z(z2p(1.3); twotailed = false) ≈ 1.3
 @test distance((1, 2, 3), (1, 2, 3)) == 0.0
 
+
+@info "Test: p_adjust() / mass_ttest() / mass_anova() / mass_anova_rm() / cluster_perm()"
+using HypothesisTests
+using Random
+rng = Xoshiro(1)
+x = randn(rng, 12, 3, 5) .+ 0.5; y = randn(rng, 10, 3, 5)
+r = mass_ttest(x)
+@test r.p[2, 3] ≈ pvalue(OneSampleTTest(x[:, 2, 3]))
+r = mass_ttest(x, y)
+@test r.p[1, 4] ≈ pvalue(EqualVarianceTTest(x[:, 1, 4], y[:, 1, 4]))
+r = mass_ttest(x, y; equal_var = false)
+@test r.p[1, 4] ≈ pvalue(UnequalVarianceTTest(x[:, 1, 4], y[:, 1, 4]))
+r = mass_ttest(x[1:10, :, :], y; paired = true, tail = :right)
+@test r.p[3, 1] ≈ pvalue(OneSampleTTest(x[1:10, 3, 1] .- y[:, 3, 1]); tail = :right)
+z = randn(rng, 8, 3, 5)
+a = mass_anova(x, y, z)
+@test a.p[2, 2] ≈ pvalue(OneWayANOVATest(x[:, 2, 2], y[:, 2, 2], z[:, 2, 2]))
+# NaN dropped
+x2 = copy(x); x2[1, 1, 1] = NaN
+@test mass_ttest(x2).p[1, 1] ≈ pvalue(OneSampleTTest(x[2:end, 1, 1]))
+@test mass_ttest(x2).df[1, 1] == 10 && mass_ttest(x2).df[1, 2] == 11
+# RM ANOVA vs manual (k=2 equals paired t^2)
+X = cat(reshape(x[1:10, :, :], 10, 1, 3, 5), reshape(y, 10, 1, 3, 5); dims = 2)
+rm = mass_anova_rm(X)
+pt = mass_ttest(x[1:10, :, :], y; paired = true)
+@test rm.f ≈ pt.t .^ 2 && rm.p ≈ pt.p
+# p_adjust vs R: p.adjust(c(0.01,0.02,0.03,0.04,0.05), "BH"/"holm"/"bonferroni"/"BY")
+p = [0.01, 0.02, 0.03, 0.04, 0.05]
+@test p_adjust(p) ≈ fill(0.05, 5)
+@test p_adjust(p; method = :holm) ≈ [0.05, 0.08, 0.09, 0.09, 0.09]
+@test p_adjust(p; method = :bonferroni) ≈ [0.05, 0.1, 0.15, 0.2, 0.25]
+@test p_adjust(p; method = :by) ≈ fill(0.05 * sum(1 ./ (1:5)), 5)
+@test isnan(p_adjust([0.1, NaN])[2])
+# cluster_perm: effect in channel 2, time 20:30
+n, nch, nt = 15, 4, 50
+d = randn(rng, n, nch, nt); d[:, 2, 20:30] .+= 1.2
+c = cluster_perm(d; nperm = 500, rng = Xoshiro(2))
+@test c.clusters.p[1] < 0.01 && c.clusters.sign[1] == 1
+@test all(c.mask[2, 22:28]) && !any(c.mask[[1, 3, 4], :])
+# channel adjacency joins channels
+d[:, 3, 20:30] .+= 1.2
+adj = falses(4, 4); adj[2, 3] = adj[3, 2] = true
+c1 = cluster_perm(d; nperm = 200, rng = Xoshiro(2))
+c2 = cluster_perm(d; nperm = 200, rng = Xoshiro(2), ch_adj = adj)
+@test c2.clusters.size[1] > c1.clusters.size[1]
+# reproducible, independent of threads
+@test cluster_perm(d; nperm = 50, rng = Xoshiro(3)).null == cluster_perm(d; nperm = 50, rng = Xoshiro(3)).null
+# two-sample, anova, anova_rm
+e = randn(rng, 12, nch, nt); e[:, 1, 10:20] .-= 1.5
+f = randn(rng, 12, nch, nt)
+c = cluster_perm(e, f; nperm = 300, rng = Xoshiro(4))
+@test c.clusters.sign[1] == -1 && c.clusters.p[1] < 0.05
+c = cluster_perm(e, f; paired = true, nperm = 300, rng = Xoshiro(4)); @test c.clusters.p[1] < 0.05
+c = cluster_perm(e, f, randn(rng, 12, nch, nt); nperm = 300, rng = Xoshiro(4)); @test c.clusters.p[1] < 0.05
+R = cat(reshape(e, 12, 1, nch, nt), reshape(f, 12, 1, nch, nt), reshape(randn(rng, 12, nch, nt), 12, 1, nch, nt); dims = 2)
+c = cluster_perm(R; test = :anova_rm, nperm = 300, rng = Xoshiro(4)); @test c.clusters.p[1] < 0.05
+# 1-D points (time only)
+c = cluster_perm(d[:, 2, :]; nperm = 200, rng = Xoshiro(5)); @test c.clusters.p[1] < 0.05
+# family-wise error rate under the null hypothesis (nominal 0.05)
+fp = 0
+for s = 1:100
+    dn = randn(Xoshiro(100 + s), 12, 3, 40)
+    global fp += any(cluster_perm(dn; nperm = 100, rng = Xoshiro(s)).mask)
+end
+@test fp / 100 <= 0.1
+@test_throws ArgumentError cluster_perm(d; test = :anova)
+@test_throws ArgumentError cluster_perm(d, d; tail = :right, test = :anova)
+@test_throws ArgumentError cluster_perm(d; ch_adj = falses(3, 3))
+@test_throws ArgumentError mass_ttest(x, y; paired = true)
+@test_throws ArgumentError p_adjust([0.5, 2.0])
+@test_throws ArgumentError p_adjust(p; method = :xyz)
+
+@info "Test: channel_adjacency()"
+eeg = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
+load_locs!(eeg;
+           file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+adj = channel_adjacency(eeg; ch = ["Fp1", "Fp2", "F3", "O1", "O2"])
+@test size(adj) == (5, 5) && adj == adj' && all(adj[i, i] for i = 1:5)
+@test adj[1, 2] && adj[4, 5] && !adj[1, 4] && !adj[2, 5]
+@test channel_adjacency(eeg; ch = ["Fp1", "O1"], dist = 10) == trues(2, 2)
+@test_throws ArgumentError channel_adjacency(eeg; ch = ["Fp1", "xyz"])
+
 true
