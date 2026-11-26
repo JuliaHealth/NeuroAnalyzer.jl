@@ -1,6 +1,7 @@
 export study_create
 export study_check
 export study_files
+export study_overview
 
 # required columns of the design table
 const _STUDY_COLS = [:subject, :session, :group, :file, :include]
@@ -246,6 +247,85 @@ function study_check(
     end
 
     return out
+end
+
+"""
+    study_overview(study; <keyword arguments>)
+
+Overview of the study recordings: which subjects have data of which sessions and conditions, the number of epochs of each recording and condition, and the bad channels of each recording. Each recording is loaded (as in `study_check()`), so the overview does not require measures; plot: `plot_study_overview()`.
+
+# Arguments
+
+- `study::NeuroAnalyzer.STUDY`
+- `all::Bool=true`: if `true`, include the recordings excluded from the analyses (`include = false`)
+
+# Returns
+
+Named tuple:
+
+- `recordings::DataFrame`: one row per recording: `subject`, `session`, `group`, `include`, `file`, `epochs` (number of epochs, without the rejected ones), `rejected` (number of rejected epochs), `n_bad` (number of bad channels), `bad_channels` (labels joined by ", "), `ok` (the file could be loaded)
+- `epochs::DataFrame`: one row per recording and condition: `subject`, `session`, `group`, `include`, `condition`, `n_epochs` (without the rejected epochs; 0: no epochs of the condition), `n_rejected`
+- `conditions::Vector{String}`: conditions of all recordings (`""`: epochs without a condition)
+- `bad::BitMatrix`: bad channels, shape (recording, channel)
+- `labels::Vector{String}`: channel labels of `bad` (of all recordings, in order of appearance)
+"""
+function study_overview(study::NeuroAnalyzer.STUDY; all::Bool = true)::NamedTuple
+    rows = all ? collect(1:DataFrames.nrow(study.design)) : findall(study.design.include)
+    isempty(rows) && throw(ArgumentError("No recordings included."))
+    d = study.design[rows, :]
+    nr = length(rows)
+    ep = Vector{DataFrame}(undef, nr)
+    bad = Vector{Vector{String}}(undef, nr)
+    ok = falses(nr)
+    labels_all = String[]
+    for k = 1:nr
+        obj = try
+            _silent(() -> load_neuro(_study_path(study, d.file[k])))
+        catch e
+            _warn("$(d.file[k]) cannot be loaded: $(sprint(showerror, e))")
+            ep[k] = DataFrame(:condition => String[], :reject => Bool[])
+            bad[k] = String[]
+            continue
+        end
+        ok[k] = true
+        ep[k] = _epochs_table(obj)
+        l = labels(obj)
+        b = get(obj.header.recording, :bad_channel, falses(length(l)))
+        bad[k] = l[findall(b)]
+        for x in l
+            x in labels_all || push!(labels_all, x)
+        end
+    end
+    any(ok) || throw(ArgumentError("No recording could be loaded."))
+    conds = unique(reduce(vcat, [string.(e.condition) for e in ep]))
+
+    recs = DataFrame(
+        :subject      => d.subject,
+        :session      => d.session,
+        :group        => d.group,
+        :include      => d.include,
+        :file         => d.file,
+        :epochs       => [count(.!e.reject) for e in ep],
+        :rejected     => [count(e.reject) for e in ep],
+        :n_bad        => length.(bad),
+        :bad_channels => [join(b, ", ") for b in bad],
+        :ok           => ok,
+    )
+    epochs = DataFrame(
+        :subject    => repeat(d.subject; inner = length(conds)),
+        :session    => repeat(d.session; inner = length(conds)),
+        :group      => repeat(d.group; inner = length(conds)),
+        :include    => repeat(d.include; inner = length(conds)),
+        :condition  => repeat(conds, nr),
+        :n_epochs   => [count((ep[k].condition .== c) .& .!ep[k].reject) for k = 1:nr for c in conds],
+        :n_rejected => [count((ep[k].condition .== c) .& ep[k].reject) for k = 1:nr for c in conds],
+    )
+    B = falses(nr, length(labels_all))
+    for k = 1:nr, b in bad[k]
+        B[k, findfirst(==(b), labels_all)] = true
+    end
+
+    return (recordings = recs, epochs = epochs, conditions = conds, bad = B, labels = labels_all)
 end
 
 # properties of a recording that must match across the study

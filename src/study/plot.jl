@@ -4,6 +4,9 @@ export plot_study_stats
 export plot_study_topo
 export plot_study_tf
 export plot_study_clusters
+export plot_study_values
+export plot_study_covariate
+export plot_study_overview
 
 """
     plot_study_erp(study; <keyword arguments>)
@@ -20,9 +23,9 @@ The recordings of one subject are averaged first (unless `factor = :session`), s
 - `levels::Union{Nothing, Vector{String}}=nothing`: levels to plot, in this order; `nothing`: all levels
 - `condition::Union{Nothing, String}=nothing`: condition (between-subject factors and `:session`); may be omitted if the measure has one condition
 - `group::Union{Nothing, String}=nothing`: subjects of one group (within-subject factors); `nothing`: all subjects
-- `band::Symbol=:ci95`: band around the grand averages: `:ci95` (95% confidence interval across subjects, t distribution), `:se` (± standard error) or `:none`
+- `band::Symbol=:ci95`: band around the grand averages: `:ci95` (95% confidence interval across subjects, t distribution), `:se` (± standard error), `:sd` (± standard deviation, the spread of the subjects) or `:none`
 - `subjects::Bool=false`: if `true`, draw the ERPs of the subjects behind the grand averages (thin lines in the colors of their levels)
-- `diff::Bool=false`: if `true`, add the difference wave of the two plotted levels (first − second, dashed black line, with its band): for within-subject factors the mean of the differences of the subjects with data of both levels, for between-subject factors the difference of the grand averages (band: Welch standard error)
+- `diff::Bool=false`: if `true`, add the difference wave of the two plotted levels (first − second, dashed black line, with its band): for within-subject factors the mean of the differences of the subjects with data of both levels, for between-subject factors the difference of the grand averages (band: Welch standard error; no band for `band = :sd`)
 - `stats::Union{Nothing, NamedTuple}=nothing`: result of `study_stats()` for the `:erp` measure; its significant time points (`mask`) at the plotted channel(s) (with several channels: at any of them) are drawn as bars below the waveforms
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
@@ -56,7 +59,7 @@ function plot_study_erp(
     mono::Bool = false,
 )::GLMakie.Figure
     # validate
-    _check_var(band, [:ci95, :se, :none], "band")
+    _check_var(band, [:ci95, :se, :sd, :none], "band")
     m = _study_measure(study, :erp)
     d, idx = _study_measure_rows(study, m)
     chs = ch isa String ? [ch] : ch
@@ -119,7 +122,7 @@ function plot_study_erp(
         xlabel, ylabel, title,
         "Time [s]", "Amplitude [$unit]",
         "Grand average ERP, $ch_str, by $fl" *
-        (band === :none ? "" : band === :ci95 ? " (95% CI)" : " (± SE)"),
+        (band === :none ? "" : band === :ci95 ? " (95% CI)" : band === :sd ? " (± SD)" : " (± SE)"),
     )
     ax = GLMakie.Axis(
         fig[1, 1];
@@ -223,9 +226,9 @@ The recordings of one subject are averaged first (unless `factor = :session`), s
 - `condition::Union{Nothing, String}=nothing`: condition (between-subject factors and `:session`); may be omitted if the measure has one condition
 - `group::Union{Nothing, String}=nothing`: subjects of one group (within-subject factors); `nothing`: all subjects
 - `db::Bool=true`: average the power of the subjects in dB
-- `band::Symbol=:se`: band around the means: `:se` (± standard error), `:ci95` (95% confidence interval across subjects, t distribution) or `:none`
+- `band::Symbol=:se`: band around the means: `:se` (± standard error), `:ci95` (95% confidence interval across subjects, t distribution), `:sd` (± standard deviation, the spread of the subjects) or `:none`
 - `subjects::Bool=false`: if `true`, draw the spectra of the subjects behind the means (thin lines in the colors of their levels)
-- `diff::Bool=false`: if `true`, add the difference of the two plotted levels (first − second, dashed black line, with its band): for within-subject factors the mean of the differences of the subjects with data of both levels, for between-subject factors the difference of the means (band: Welch standard error)
+- `diff::Bool=false`: if `true`, add the difference of the two plotted levels (first − second, dashed black line, with its band): for within-subject factors the mean of the differences of the subjects with data of both levels, for between-subject factors the difference of the means (band: Welch standard error; no band for `band = :sd`)
 - `stats::Union{Nothing, NamedTuple}=nothing`: result of `study_stats()` for the `:psd` measure; its significant frequencies (`mask`) at the plotted channel(s) (with several channels: at any of them) are shaded
 - `flim::Union{Nothing, Tuple{Real, Real}}=nothing`: frequency limits; `nothing`: all frequencies
 - `frq::Symbol=:lin`: frequency scaling: `:lin` (linear) or `:log` (logarithmic; 0 Hz is left out)
@@ -260,7 +263,7 @@ function plot_study_psd(
     mono::Bool = false,
 )::GLMakie.Figure
     # validate
-    _check_var(band, [:ci95, :se, :none], "band")
+    _check_var(band, [:ci95, :se, :sd, :none], "band")
     _check_var(frq, [:lin, :log], "frq")
     m = _study_measure(study, :psd)
     d, idx = _study_measure_rows(study, m)
@@ -326,7 +329,7 @@ function plot_study_psd(
         xlabel, ylabel, title,
         "Frequency [Hz]", db ? "Power [dB $unit^2/Hz]" : "Power [$unit^2/Hz]",
         "Group PSD, $ch_str, by $fl" *
-        (band === :none ? "" : band === :ci95 ? " (95% CI)" : " (± SE)"),
+        (band === :none ? "" : band === :ci95 ? " (95% CI)" : band === :sd ? " (± SD)" : " (± SE)"),
     )
     ax = GLMakie.Axis(
         fig[1, 1];
@@ -490,12 +493,12 @@ function _study_level_data(
     return lv, A, subj
 end
 
-# grand average over the rows of `s` (subjects) with a band: 95% CI (t distribution) or SE
+# grand average over the rows of `s` (subjects) with a band: 95% CI (t distribution), SE or SD
 function _ga_band(s::AbstractMatrix, band::Symbol)
     mu, sd, n = _nanstats(s)
     se = sd ./ sqrt.(max.(n, 1))
     h = band === :ci95 ? se .* [nn > 1 ? quantile(TDist(nn - 1), 0.975) : NaN for nn in n] :
-        band === :se ? se : zero(se)
+        band === :se ? se : band === :sd ? sd : zero(sd)
     return (m = mu, ll = mu .- h, ul = mu .+ h, n = isempty(n) ? 0 : maximum(n))
 end
 
@@ -516,6 +519,8 @@ function _ga_band_welch(s1::AbstractMatrix, s2::AbstractMatrix, band::Symbol)
     elseif band === :se
         se
     else
+        # (the difference of the means of independent groups has no subject-level SD)
+        band === :sd && _info("band = :sd: the difference of independent groups is drawn without a band.")
         zero(se)
     end
     return (m = mu, ll = mu .- h, ul = mu .+ h, n = 0)
@@ -1311,6 +1316,478 @@ function plot_study_clusters(
     end
     GLMakie.ylims!(ax2, 0, 1.3 * ytop)
     GLMakie.axislegend(ax2; position = :rc, labelsize = 10, backgroundcolor = (:white, 0.85))
+
+    GLMakie.Label(fig[0, :], tt; fontsize = 16, font = :bold, tellwidth = false)
+
+    return fig
+end
+
+# shared arguments of plot_study_values() and plot_study_covariate()
+const _STUDY_VALUES_DOC = """
+- `ch::Union{Nothing, String, Vector{String}}=nothing`: channel(s) averaged; `nothing`: all channels
+- `tlim::Union{Nothing, Tuple{Real, Real}}=nothing`: time window in seconds (`:erp`, `:tf`); `nothing`: the whole epoch
+- `flim::Union{Nothing, Tuple{Real, Real}}=nothing`: frequency band in Hz (`:psd`, `:tf`); `nothing`: all frequencies
+- `stats::Union{Nothing, NamedTuple}=nothing`: result of `study_stats()` for the same measure: the mean over the points of a cluster (`correction = :cluster`, see `cluster`) or over the significant points, instead of `ch`, `tlim` and `flim`
+- `cluster::Union{Nothing, Int64}=nothing`: cluster ID (see `cluster_summary()`); `nothing`: the cluster with the smallest p-value
+- `db::Bool=true`: for `:psd` and `:tf`, average the power of each subject in dB"""
+
+# y-axis label of subject-level values
+function _study_values_label(kind::Symbol, unit::String, db::Bool)::String
+    kind === :erp && return "Mean amplitude [$unit]"
+    return db ? "Mean power [dB $unit^2/Hz]" : "Mean power [$unit^2/Hz]"
+end
+
+"""
+    plot_study_values(study, kind; <keyword arguments>)
+
+Plot subject-level values of a study measure (see `study_values()`): the mean of the measure over channels and a time window or frequency band, or over the points of a cluster of `study_stats()` (e.g. the mean amplitude of a cluster), one point per subject, by the levels of a factor (e.g. groups or conditions) as strip, box or violin plots. For within-subject factors the points of one subject are connected by lines.
+
+The recordings of one subject are averaged first (unless `factor = :session`), so each subject counts once.
+
+# Arguments
+
+- `study::NeuroAnalyzer.STUDY`
+- `kind::Symbol`: measure (`:erp`, `:psd` or `:tf`)
+$(_STUDY_VALUES_DOC)
+- `factor::Symbol=:condition`: factor: `:condition` or `:session` (within subjects), or a column of the design table, e.g. `:group` or a categorical covariate (between subjects)
+- `levels::Union{Nothing, Vector{String}}=nothing`: levels to plot, in this order; `nothing`: all levels
+- `condition::Union{Nothing, String}=nothing`: condition (between-subject factors and `:session`); may be omitted if the measure has one condition
+- `group::Union{Nothing, String}=nothing`: subjects of one group (within-subject factors); `nothing`: all subjects
+- `type::Symbol=:box`: `:strip` (points and the mean), `:box` (box plots and points) or `:violin` (violin plots and points)
+- `lines::Bool=true`: for within-subject factors, connect the points of one subject
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `mono::Bool=false`: if `true`, use a monochrome palette
+
+# Returns
+
+- `GLMakie.Figure`: the plotted figure
+"""
+function plot_study_values(
+    study::NeuroAnalyzer.STUDY,
+    kind::Symbol;
+    ch::Union{Nothing, String, Vector{String}} = nothing,
+    tlim::Union{Nothing, Tuple{Real, Real}} = nothing,
+    flim::Union{Nothing, Tuple{Real, Real}} = nothing,
+    stats::Union{Nothing, NamedTuple} = nothing,
+    cluster::Union{Nothing, Int64} = nothing,
+    db::Bool = true,
+    factor::Symbol = :condition,
+    levels::Union{Nothing, Vector{String}} = nothing,
+    condition::Union{Nothing, String} = nothing,
+    group::Union{Nothing, String} = nothing,
+    type::Symbol = :box,
+    lines::Bool = true,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    mono::Bool = false,
+)::GLMakie.Figure
+    # validate
+    _check_var(type, [:strip, :box, :violin], "type")
+    m = _study_measure(study, kind)
+    within = factor in (:condition, :session)
+    factor === :subject && throw(ArgumentError("factor must not be :subject."))
+    !within && !isnothing(group) && throw(
+        ArgumentError("group selects subjects of within-subject factors; use levels for $factor."),
+    )
+    if factor === :condition
+        isnothing(condition) ||
+            throw(ArgumentError("condition is not used with factor = :condition (see levels)."))
+    elseif isnothing(condition)
+        length(m.conditions) == 1 || throw(
+            ArgumentError(
+                "condition must be given (conditions: $(join(repr.(m.conditions), ", "))).",
+            ),
+        )
+        condition = m.conditions[1]
+    end
+    v = _study_values(study, kind; ch, tlim, flim, stats, cluster, condition,
+                      db, sessions = factor === :session)
+    df = v.df
+    factor in propertynames(df) ||
+        throw(ArgumentError("Design table has no column $factor."))
+    if !isnothing(group)
+        df = df[df.group .== group, :]
+        DataFrames.nrow(df) > 0 || throw(ArgumentError("No subjects of group $(repr(group))."))
+    end
+    df = df[.!ismissing.(df[!, factor]), :]
+    col = string.(df[!, factor])
+    all_lv = factor === :condition ? Base.filter(in(col), m.conditions) : unique(col)
+    lv = isnothing(levels) ? all_lv : levels
+    miss = setdiff(lv, all_lv)
+    isempty(miss) || throw(
+        ArgumentError(
+            "Levels not found: $(join(repr.(miss), ", ")) (levels: $(join(repr.(all_lv), ", "))).",
+        ),
+    )
+    isempty(lv) && throw(ArgumentError("No levels to plot."))
+    if !within
+        # a subject must belong to one level
+        for s in unique(df.subject)
+            length(unique(col[df.subject .== s])) == 1 || throw(
+                ArgumentError("Subject $s has several levels of $factor (a within-subject factor?)."),
+            )
+        end
+    end
+
+    # points: x offsets of the subjects (the same in all levels, so that lines are parallel)
+    subj = sort(unique(df.subject))
+    ns = length(subj)
+    off = Dict(s => ns > 1 ? -0.15 + 0.3 * (k - 1) / (ns - 1) : 0.0 for (k, s) in enumerate(subj))
+    vals = [df.value[col .== l] for l in lv]
+    ids = [df.subject[col .== l] for l in lv]
+
+    # prepare plot
+    GLMakie.activate!(; title = "plot_study_values()")
+    fig = GLMakie.Figure(; size = (max(700, 300 + 120 * length(lv)), 500))
+    fl = factor === :condition ? "condition" : string(factor)
+    kn = kind === :erp ? "ERP" : kind === :psd ? "PSD" : "TF power"
+    xl, yl, tt = _set_defaults(
+        xlabel, ylabel, title,
+        factor === :condition ? "Condition" : uppercasefirst(string(factor)),
+        _study_values_label(kind, v.unit, v.db),
+        "$kn, $(v.desc), by $fl" * (factor === :condition ? "" : ", condition $condition"),
+    )
+    ax = GLMakie.Axis(
+        fig[1, 1];
+        xlabel = xl,
+        ylabel = yl,
+        title = tt,
+        xticks = (collect(eachindex(lv)), ["$(l)\n(n = $(length(vals[i])))" for (i, l) in enumerate(lv)]),
+        _AXIS_LOCK_KWARGS...,
+    )
+    _style_axis!(ax)
+    kind === :erp && GLMakie.hlines!(ax, 0; color = :gray, linewidth = 0.5)
+    colors = mono ? _trace_colors(length(lv); mono = true) :
+             GLMakie.Makie.wong_colors()[mod1.(1:length(lv), 7)]
+
+    # distributions
+    for (l, y) in enumerate(vals)
+        isempty(y) && continue
+        if type === :box
+            GLMakie.boxplot!(ax, fill(l, length(y)), y; width = 0.5, show_outliers = false,
+                             color = (colors[l], 0.3), strokecolor = colors[l],
+                             strokewidth = 1, mediancolor = colors[l], whiskercolor = colors[l])
+        elseif type === :violin && length(y) >= 2
+            GLMakie.violin!(ax, fill(l, length(y)), y; width = 0.7, color = (colors[l], 0.3),
+                            strokecolor = colors[l], strokewidth = 1)
+        end
+    end
+
+    # lines connecting the levels of a subject
+    if within && lines && length(lv) >= 2
+        for s in subj
+            xs = Float64[]
+            ys = Float64[]
+            for l in eachindex(lv)
+                k = findfirst(==(s), ids[l])
+                isnothing(k) && continue
+                push!(xs, l + off[s])
+                push!(ys, vals[l][k])
+            end
+            length(xs) >= 2 && GLMakie.lines!(ax, xs, ys; color = (:gray, 0.6), linewidth = 1)
+        end
+    end
+
+    # points and (strip) the means
+    for (l, y) in enumerate(vals)
+        isempty(y) && continue
+        GLMakie.scatter!(ax, [l + off[s] for s in ids[l]], y; color = colors[l],
+                         markersize = 9, strokecolor = :black, strokewidth = 0.5)
+        type === :strip && GLMakie.lines!(ax, [l - 0.25, l + 0.25], fill(mean(y), 2);
+                                          color = :black, linewidth = 2.5)
+    end
+    GLMakie.xlims!(ax, 0.4, length(lv) + 0.6)
+
+    return fig
+end
+
+"""
+    plot_study_covariate(study, kind; <keyword arguments>)
+
+Plot subject-level values of a study measure (see `study_values()`) against a numeric covariate of the design table (e.g. age): one point per subject, colored by the levels of a design column (e.g. group), with the least-squares regression line of all plotted subjects and its Pearson correlation.
+
+The recordings of one subject are averaged first; a covariate that differs between the sessions of a subject is averaged.
+
+# Arguments
+
+- `study::NeuroAnalyzer.STUDY`
+- `kind::Symbol`: measure (`:erp`, `:psd` or `:tf`)
+- `covariate::Symbol`: numeric column of the design table
+$(_STUDY_VALUES_DOC)
+- `condition::Union{Nothing, String}=nothing`: condition; may be omitted if the measure has one condition
+- `group::Union{Nothing, String}=nothing`: subjects of one group; `nothing`: all subjects
+- `by::Union{Nothing, Symbol}=:group`: design column whose levels color the points; `nothing`: one color
+- `fit::Bool=true`: if `true`, draw the regression line (with its 95% confidence band) and the Pearson correlation (r, p) in the legend
+- `xlabel::String="default"`: x-axis label
+- `ylabel::String="default"`: y-axis label
+- `title::String="default"`: plot title
+- `leg::Bool=true`: if `true`, draw a legend (outside the plot, on the right)
+- `mono::Bool=false`: if `true`, use a monochrome palette
+
+# Returns
+
+- `GLMakie.Figure`: the plotted figure
+"""
+function plot_study_covariate(
+    study::NeuroAnalyzer.STUDY,
+    kind::Symbol;
+    covariate::Symbol,
+    ch::Union{Nothing, String, Vector{String}} = nothing,
+    tlim::Union{Nothing, Tuple{Real, Real}} = nothing,
+    flim::Union{Nothing, Tuple{Real, Real}} = nothing,
+    stats::Union{Nothing, NamedTuple} = nothing,
+    cluster::Union{Nothing, Int64} = nothing,
+    db::Bool = true,
+    condition::Union{Nothing, String} = nothing,
+    group::Union{Nothing, String} = nothing,
+    by::Union{Nothing, Symbol} = :group,
+    fit::Bool = true,
+    xlabel::String = "default",
+    ylabel::String = "default",
+    title::String = "default",
+    leg::Bool = true,
+    mono::Bool = false,
+)::GLMakie.Figure
+    # validate
+    m = _study_measure(study, kind)
+    if isnothing(condition)
+        length(m.conditions) == 1 || throw(
+            ArgumentError(
+                "condition must be given (conditions: $(join(repr.(m.conditions), ", "))).",
+            ),
+        )
+        condition = m.conditions[1]
+    end
+    covariate in (:subject, :session, :group, :file, :include) &&
+        throw(ArgumentError("covariate must be a covariate of the design table."))
+    covariate in propertynames(study.design) ||
+        throw(ArgumentError("Design table has no column $covariate."))
+    eltype(study.design[!, covariate]) <: Union{Missing, Real} ||
+        throw(ArgumentError("Covariate $covariate must be numeric."))
+    isnothing(by) || by in propertynames(study.design) ||
+        throw(ArgumentError("Design table has no column $by."))
+    v = _study_values(study, kind; ch, tlim, flim, stats, cluster, condition, db,
+                      sessions = false)
+    df = v.df
+    isnothing(group) || (df = df[df.group .== group, :])
+    df = df[.!ismissing.(df[!, covariate]), :]
+    isnothing(by) || (df = df[.!ismissing.(df[!, by]), :])
+    df = df[isfinite.(Float64.(df[!, covariate])), :]
+    DataFrames.nrow(df) > 0 || throw(ArgumentError("No subjects with values of $covariate."))
+    x = Float64.(df[!, covariate])
+    y = df.value
+    lv = isnothing(by) ? ["all"] : unique(string.(df[!, by]))
+    col = isnothing(by) ? fill("all", length(y)) : string.(df[!, by])
+
+    # prepare plot
+    GLMakie.activate!(; title = "plot_study_covariate()")
+    fig = GLMakie.Figure(; size = (800, 500))
+    kn = kind === :erp ? "ERP" : kind === :psd ? "PSD" : "TF power"
+    xl, yl, tt = _set_defaults(
+        xlabel, ylabel, title,
+        string(covariate), _study_values_label(kind, v.unit, v.db),
+        "$kn, $(v.desc), condition $condition, vs $covariate",
+    )
+    ax = GLMakie.Axis(fig[1, 1]; xlabel = xl, ylabel = yl, title = tt, _AXIS_LOCK_KWARGS...)
+    _style_axis!(ax)
+    colors = isnothing(by) ? [mono ? :black : GLMakie.Makie.wong_colors()[1]] :
+             mono ? _trace_colors(length(lv); mono = true) :
+             GLMakie.Makie.wong_colors()[mod1.(1:length(lv), 7)]
+
+    # regression line and its 95% confidence band
+    n = length(x)
+    labelled = !isnothing(by)
+    if fit
+        if n >= 3 && std(x) > 0
+            b = cov(x, y) / var(x)
+            a = mean(y) - b * mean(x)
+            r = cor(x, y)
+            res = y .- (a .+ b .* x)
+            s = sqrt(sum(abs2, res) / (n - 2))
+            xs = collect(range(extrema(x)...; length = 100))
+            h = quantile(TDist(n - 2), 0.975) .* s .*
+                sqrt.(1 / n .+ (xs .- mean(x)) .^ 2 ./ sum(abs2, x .- mean(x)))
+            yf = a .+ b .* xs
+            tv = abs(r) < 1 ? r * sqrt((n - 2) / (1 - r^2)) : sign(r) * Inf
+            p = 2 * ccdf(TDist(n - 2), abs(tv))
+            pstr = p < 0.001 ? "p < 0.001" : "p = $(round(p; digits = 3))"
+            GLMakie.band!(ax, xs, yf .- h, yf .+ h; color = (:gray, 0.2))
+            GLMakie.lines!(ax, xs, yf; color = :black, linewidth = 2,
+                           label = "r = $(round(r; digits = 2)), $pstr (n = $n)")
+            labelled = true
+        else
+            _info("Fewer than 3 subjects or a constant covariate: regression line is not drawn.")
+        end
+    end
+    for (l, name) in enumerate(lv)
+        sel = col .== name
+        GLMakie.scatter!(ax, x[sel], y[sel]; color = colors[l], markersize = 10,
+                         strokecolor = :black, strokewidth = 0.5,
+                         label = isnothing(by) ? nothing : "$name (n = $(count(sel)))")
+    end
+
+    leg && labelled && _side_legend!(fig, ax)
+
+    return fig
+end
+
+"""
+    plot_study_overview(study; <keyword arguments>)
+    plot_study_overview(ov; <keyword arguments>)
+
+Plot an overview of the study recordings (see `study_overview()`):
+
+- left: data availability and the number of epochs (without the rejected ones) of each subject (rows) in each session and condition (columns); `–`: no recording, red numbers: no epochs of the condition, gray cells: recordings excluded from the analyses
+- right: bad channels of each recording (rows) (`all_channels = false`: only the channels bad in at least one recording)
+
+# Arguments
+
+- `study::NeuroAnalyzer.STUDY`
+- `ov::NamedTuple`: result of `study_overview()`
+- `all::Bool=true`: if `true`, include the recordings excluded from the analyses (`study` only)
+- `all_channels::Bool=false`: if `true`, plot all channels in the bad channels panel
+- `title::String="default"`: plot title
+- `mono::Bool=false`: if `true`, use a monochrome palette
+
+# Returns
+
+- `GLMakie.Figure`: the plotted figure
+"""
+function plot_study_overview(
+    study::NeuroAnalyzer.STUDY;
+    all::Bool = true,
+    all_channels::Bool = false,
+    title::String = "default",
+    mono::Bool = false,
+)::GLMakie.Figure
+    tt = title == "default" ? (isempty(study.name) ? "Study overview" : "Study $(study.name)") :
+         title
+    return plot_study_overview(study_overview(study; all); all_channels, title = tt, mono)
+end
+
+function plot_study_overview(
+    ov::NamedTuple;
+    all_channels::Bool = false,
+    title::String = "default",
+    mono::Bool = false,
+)::GLMakie.Figure
+    Base.all(k -> haskey(ov, k), (:recordings, :epochs, :conditions, :bad, :labels)) ||
+        throw(ArgumentError("ov must be a result of study_overview()."))
+    r = ov.recordings
+    e = ov.epochs
+    subj = unique(r.subject)
+    ses = unique(r.session)
+    cs = ov.conditions
+    multi_ses = length(ses) > 1
+    cname(c) = isempty(c) ? "(none)" : c
+
+    # epochs: subject × (session, condition); NaN: no recording
+    cols = [(s, c) for s in ses for c in cs]
+    N = fill(NaN, length(subj), length(cols))
+    X = falses(length(subj), length(cols))
+    for x in eachrow(e)
+        i = findfirst(==(x.subject), subj)
+        j = findfirst(==((x.session, x.condition)), cols)
+        N[i, j] = x.n_epochs
+        X[i, j] = !x.include
+    end
+    # recordings that could not be loaded: no data
+    for x in eachrow(r)
+        x.ok && continue
+        i = findfirst(==(x.subject), subj)
+        for (j, (s, _)) in enumerate(cols)
+            s == x.session && (N[i, j] = NaN)
+        end
+    end
+    col_lbl = [multi_ses ? (length(cs) == 1 ? "ses $s" : "ses $s\n$(cname(c))") : cname(c)
+               for (s, c) in cols]
+
+    # bad channels: recording × channel
+    rec_lbl = multi_ses ? r.subject .* "/" .* r.session : copy(r.subject)
+    bi = all_channels ? collect(eachindex(ov.labels)) : findall(vec(any(ov.bad; dims = 1)))
+    B = Float64.(ov.bad[:, bi])
+
+    GLMakie.activate!(; title = "plot_study_overview()")
+    nr = max(length(subj), length(rec_lbl))
+    w = clamp(450 + 70 * length(cols) + 22 * max(length(bi), 8), 900, 1800)
+    h = clamp(170 + 22 * nr, 400, 1400)
+    fig = GLMakie.Figure(; size = (w, h))
+    tt = title == "default" ? "Study overview" : title
+    fs = nr > 40 ? 7 : 10
+
+    # availability and epochs
+    ax1 = GLMakie.Axis(
+        fig[1, 1];
+        title = "Epochs (subject × " * (multi_ses ? "session × condition)" : "condition)"),
+        xticks = (collect(eachindex(cols)), col_lbl),
+        yticks = (collect(eachindex(subj)), subj),
+        yreversed = true,
+        xticklabelsize = fs,
+        yticklabelsize = fs,
+        _AXIS_LOCK_KWARGS...,
+    )
+    _style_axis!(ax1)
+    ax1.xgridvisible = false
+    ax1.ygridvisible = false
+    mx = Base.all(isnan, N) ? 1.0 : max(1.0, maximum(Base.filter(!isnan, N)))
+    hm = GLMakie.heatmap!(
+        ax1, 1:length(cols), 1:length(subj), permutedims(N);
+        colormap = mono ? GLMakie.Reverse(:grays) : :Blues,
+        colorrange = (0, mx),
+        nan_color = :white,
+    )
+    any(X) && GLMakie.heatmap!(
+        ax1, 1:length(cols), 1:length(subj), permutedims(ifelse.(X, 1.0, NaN));
+        colormap = [(:gray, 0.6), (:gray, 0.6)], nan_color = :transparent,
+    )
+    if length(N) <= 2000
+        for i in axes(N, 1), j in axes(N, 2)
+            v = N[i, j]
+            txt = isnan(v) ? "–" : string(Int64(v))
+            c = isnan(v) ? :gray40 : v == 0 ? (mono ? :black : :red) :
+                v > 0.6 * mx ? :white : :black
+            GLMakie.text!(ax1, j, i; text = txt, align = (:center, :center), fontsize = fs,
+                          color = c, font = v == 0 ? :bold : :regular)
+        end
+    end
+    GLMakie.Colorbar(fig[1, 2], hm; label = "Epochs", width = 12)
+
+    # bad channels
+    ax2 = GLMakie.Axis(
+        fig[1, 3];
+        title = "Bad channels" * (all_channels ? "" : " ($(length(bi))/$(length(ov.labels)))"),
+        xticks = (collect(eachindex(bi)), ov.labels[bi]),
+        yticks = (collect(eachindex(rec_lbl)), rec_lbl .* " (" .* string.(r.n_bad) .* ")"),
+        yreversed = true,
+        xticklabelrotation = pi / 2,
+        xticklabelsize = fs,
+        yticklabelsize = fs,
+        _AXIS_LOCK_KWARGS...,
+    )
+    _style_axis!(ax2)
+    ax2.xgridvisible = false
+    ax2.ygridvisible = false
+    if isempty(bi)
+        GLMakie.text!(ax2, 0.5, 0.5; text = "no bad channels", space = :relative,
+                      align = (:center, :center))
+        GLMakie.hidexdecorations!(ax2)
+    else
+        GLMakie.heatmap!(
+            ax2, 1:length(bi), 1:length(rec_lbl), permutedims(B);
+            colormap = [:white, mono ? :black : :red], colorrange = (0, 1),
+        )
+        ex = .!r.include
+        any(ex) && GLMakie.heatmap!(
+            ax2, 1:length(bi), 1:length(rec_lbl),
+            permutedims(repeat(ifelse.(ex, 1.0, NaN), 1, length(bi)));
+            colormap = [(:gray, 0.4), (:gray, 0.4)], nan_color = :transparent,
+        )
+    end
+    GLMakie.colsize!(fig.layout, 1, GLMakie.Auto(max(length(cols), 2)))
+    GLMakie.colsize!(fig.layout, 3, GLMakie.Auto(max(length(bi), 8) / 3))
 
     GLMakie.Label(fig[0, :], tt; fontsize = 16, font = :bold, tellwidth = false)
 

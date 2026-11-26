@@ -326,6 +326,8 @@ g = NeuroAnalyzer._ga_band(S[1], :ci95)
 @test g.ul .- g.m ≈ vec(std(S[1]; dims = 1)) ./ sqrt(2) .* 12.706204736174698 rtol = 1e-6
 g = NeuroAnalyzer._ga_band(S[1], :se)
 @test g.ul .- g.m ≈ vec(std(S[1]; dims = 1)) ./ sqrt(2)
+g = NeuroAnalyzer._ga_band(S[1], :sd)
+@test g.ul .- g.m ≈ vec(std(S[1]; dims = 1))
 @test NeuroAnalyzer._true_runs([false, true, true, false, true]) == [(2, 3), (5, 5)]
 # plots
 @test plot_study_erp(st; ch = "Fp1") isa GLMakie.Figure
@@ -335,6 +337,9 @@ r = study_stats(st, :erp; factor = :condition, correction = :none)
 @test plot_study_erp(st; ch = "Cz", diff = true, stats = r, yrev = true, mono = true) isa
       GLMakie.Figure
 @test plot_study_erp(st; ch = "Cz", factor = :session, condition = "a") isa GLMakie.Figure
+@test plot_study_erp(st; ch = "Cz", factor = :group, condition = "a", band = :sd,
+                     diff = true) isa GLMakie.Figure
+@test plot_study_psd(st; ch = "Cz", band = :sd, diff = true) isa GLMakie.Figure
 @test_throws ArgumentError plot_study_erp(st; ch = "X")
 @test_throws ArgumentError plot_study_erp(st; ch = "Cz", factor = :group)
 @test_throws ArgumentError plot_study_erp(st; ch = "Cz", levels = ["a", "z"])
@@ -448,5 +453,93 @@ rp = study_stats(st, :psd; factor = :condition, correction = :none)
 @test_throws ArgumentError plot_study_topo(st; windows = [(5, 6)])
 @test_throws ArgumentError plot_study_topo(st; windows = [(0, 0.2)], width = 0.1)
 @test_throws ArgumentError plot_study_topo(st; condition = "a")
+
+
+@info "Test: study_values()"
+tw = (0.2, 0.4)
+ti = (m_erp.t .>= 0.2) .& (m_erp.t .<= 0.4)
+v = study_values(st, :erp; ch = ["Fp1", "Fp2"], tlim = tw)
+@test propertynames(v) == [:subject, :group, :condition, :value, :n_points, :age]
+@test nrow(v) == 8 && v.condition == repeat(["a", "b"]; inner = 4)
+@test v.subject == repeat(["01", "02", "03", "04"], 2) && v.age == repeat([30, 40, 50, 60], 2)
+# subject 01: mean of its 2 sessions; subject 03: Fp2 is bad
+@test v.value[1] ≈ mean((x[1, 1, 1:2, ti] .+ x[2, 1, 1:2, ti]) ./ 2)
+@test v.n_points[1] == 2 * count(ti)
+@test v.value[3] ≈ mean(x[4, 1, 1, ti]) && v.n_points[3] == count(ti)
+vs = study_values(st, :erp; ch = "Cz", condition = "b", sessions = true)
+@test nrow(vs) == 5 && vs.session == st.design.session
+@test vs.value[2] ≈ mean(x[2, 2, findfirst(==("Cz"), m_erp.labels), :])
+fi = (m_psd.f .>= 8) .& (m_psd.f .<= 13)
+cz = findfirst(==("Cz"), m_psd.labels)
+vp = study_values(st, :psd; ch = "Cz", flim = (8, 13), condition = "a")
+@test vp.value[2] ≈ mean(10 .* log10.(m_psd.data[3, 1, cz, fi]))
+@test study_values(st, :psd; ch = "Cz", flim = (8, 13), condition = "a", db = false).value[2] ≈
+      mean(m_psd.data[3, 1, cz, fi])
+vt = study_values(st, :tf; ch = "Cz", flim = (5, 20), tlim = (0.5, 1.5))
+@test nrow(vt) == 8 && all(isfinite, vt.value)
+# points of a cluster (default: the smallest p-value)
+id = rc.clusters.id[argmin(rc.clusters.p)]
+vc = study_values(st, :erp; stats = rc)
+@test vc.value[4] ≈ mean(x[5, 1, :, :][rc.cluster_id .== id])
+@test study_values(st, :erp; stats = rc, cluster = rc.clusters.id[end]).value[4] ≈
+      mean(x[5, 1, :, :][rc.cluster_id .== rc.clusters.id[end]])
+@test_throws ArgumentError study_values(st, :erp; stats = rc, cluster = 999)
+@test_throws ArgumentError study_values(st, :erp; stats = rc, ch = "Cz")
+@test_throws ArgumentError study_values(st, :psd; stats = rc)
+@test_throws ArgumentError study_values(st, :erp; cluster = 1)
+@test_throws ArgumentError study_values(st, :erp; stats = rcn, cluster = 1)
+@test_throws ArgumentError study_values(st, :psd; tlim = (0, 1))
+@test_throws ArgumentError study_values(st, :erp; flim = (1, 2))
+@test_throws ArgumentError study_values(st, :erp; tlim = (5, 6))
+@test_throws ArgumentError study_values(st, :erp; tlim = (0.4, 0.2))
+@test_throws ArgumentError study_values(st, :erp; ch = "X")
+@test_throws ArgumentError study_values(st, :erp; condition = "z")
+
+@info "Test: plot_study_values(), plot_study_covariate()"
+@test plot_study_values(st, :erp; ch = "Cz", tlim = tw) isa GLMakie.Figure
+@test plot_study_values(st, :erp; stats = rc, factor = :group, condition = "a",
+                        type = :violin, mono = true) isa GLMakie.Figure
+@test plot_study_values(st, :psd; ch = "Cz", flim = (8, 13), factor = :session,
+                        condition = "a", type = :strip) isa GLMakie.Figure
+@test plot_study_values(st, :tf; ch = "Cz", group = "p", lines = false,
+                        levels = ["b", "a"]) isa GLMakie.Figure
+@test_throws ArgumentError plot_study_values(st, :erp; type = :x)
+@test_throws ArgumentError plot_study_values(st, :erp; factor = :group)
+@test_throws ArgumentError plot_study_values(st, :erp; factor = :group, condition = "a",
+                                             group = "p")
+@test_throws ArgumentError plot_study_values(st, :erp; condition = "a")
+@test_throws ArgumentError plot_study_values(st, :erp; levels = ["z"])
+@test_throws ArgumentError plot_study_values(st, :erp; factor = :x, condition = "a")
+@test plot_study_covariate(st, :erp; covariate = :age, ch = "Cz", condition = "a") isa
+      GLMakie.Figure
+@test plot_study_covariate(st, :psd; covariate = :age, flim = (8, 13), condition = "b",
+                           by = nothing, mono = true) isa GLMakie.Figure
+@test plot_study_covariate(st, :erp; covariate = :age, stats = rc, condition = "a",
+                           group = "p") isa GLMakie.Figure
+@test_throws ArgumentError plot_study_covariate(st, :erp; covariate = :age)
+@test_throws ArgumentError plot_study_covariate(st, :erp; covariate = :group, condition = "a")
+@test_throws ArgumentError plot_study_covariate(st, :erp; covariate = :x, condition = "a")
+@test_throws ArgumentError plot_study_covariate(st, :erp; covariate = :age, condition = "a",
+                                                by = :x)
+
+
+@info "Test: study_overview(), plot_study_overview()"
+ov = study_overview(st)
+@test ov.conditions == ["a", "b"] && ov.labels == ["Fp1", "Fp2", "O1", "Cz"]
+# subject 02: 1 rejected epoch of condition "a"; subject 03: Fp2 bad
+@test ov.recordings.epochs == [20, 20, 19, 20, 20] && ov.recordings.rejected == [0, 0, 1, 0, 0]
+@test ov.recordings.n_bad == [0, 0, 0, 1, 0] && ov.recordings.bad_channels[4] == "Fp2"
+@test all(ov.recordings.ok)
+@test ov.bad == ((1:5) .== 4) .& ([1 2 3 4] .== 2)
+@test nrow(ov.epochs) == 10 && ov.epochs.condition[1:2] == ["a", "b"]
+@test ov.epochs.n_epochs[5:6] == [9, 10] && ov.epochs.n_rejected[5:6] == [1, 0]
+s10 = deepcopy(st)
+s10.design.include[2] = false
+@test nrow(study_overview(s10; all = false).recordings) == 4
+@test study_overview(s10).recordings.include == [true, false, true, true, true]
+@test plot_study_overview(st) isa GLMakie.Figure
+@test plot_study_overview(s10; all_channels = true, mono = true) isa GLMakie.Figure
+@test plot_study_overview(study_overview(s10; all = false); title = "x") isa GLMakie.Figure
+@test_throws ArgumentError plot_study_overview((a = 1,))
 
 true

@@ -1,5 +1,6 @@
 export study_average
 export study_erp
+export study_values
 
 """
     study_average(study, kind; <keyword arguments>)
@@ -169,6 +170,176 @@ function study_erp(
     ]
 
     return obj
+end
+
+"""
+    study_values(study, kind; <keyword arguments>)
+
+Subject-level values of a study measure: the mean of the measure over a region of channels × time points and/or frequencies (a time window, a frequency band, or the points of a cluster of `study_stats()`), one value per subject and condition. For plots (`plot_study_values()`, `plot_study_covariate()`) and for statistics in other software (e.g. mixed models with covariates).
+
+The recordings of one subject are averaged first (unless `sessions = true`), as in `study_average()` and `study_stats()`; bad channels (`NaN`) are left out of the mean.
+
+# Arguments
+
+- `study::NeuroAnalyzer.STUDY`
+- `kind::Symbol`: measure (`:erp`, `:psd` or `:tf`)
+- `ch::Union{Nothing, String, Vector{String}}=nothing`: channel(s); `nothing`: all channels
+- `tlim::Union{Nothing, Tuple{Real, Real}}=nothing`: time window in seconds (`:erp`, `:tf`); `nothing`: the whole epoch
+- `flim::Union{Nothing, Tuple{Real, Real}}=nothing`: frequency band in Hz (`:psd`, `:tf`); `nothing`: all frequencies
+- `stats::Union{Nothing, NamedTuple}=nothing`: result of `study_stats()` for the same measure: the mean over the points of a cluster (`correction = :cluster`, see `cluster`) or over the significant points (`mask`, other corrections), instead of `ch`, `tlim` and `flim`
+- `cluster::Union{Nothing, Int64}=nothing`: cluster ID (see `cluster_summary()`); `nothing`: the cluster with the smallest p-value
+- `condition::Union{Nothing, String, Vector{String}}=nothing`: condition(s); `nothing`: all conditions of the measure
+- `db::Bool=true`: for `:psd` and `:tf`, convert the power of each subject to dB before averaging
+- `sessions::Bool=false`: if `true`, one row per recording (session) instead of per subject
+
+# Returns
+
+- `DataFrame`: one row per subject (or recording) and condition with data at the selected points:
+    - `subject`, `session` (`sessions = true`), `group`, `condition`
+    - `value`: mean of the measure (in dB for `db = true`)
+    - `n_points`: number of averaged points (bad channels are left out)
+    - covariates of the design table (`sessions = false`: the mean of a numeric covariate over the sessions of a subject; other covariates that differ between the sessions: `missing`)
+"""
+function study_values(
+    study::NeuroAnalyzer.STUDY,
+    kind::Symbol;
+    ch::Union{Nothing, String, Vector{String}} = nothing,
+    tlim::Union{Nothing, Tuple{Real, Real}} = nothing,
+    flim::Union{Nothing, Tuple{Real, Real}} = nothing,
+    stats::Union{Nothing, NamedTuple} = nothing,
+    cluster::Union{Nothing, Int64} = nothing,
+    condition::Union{Nothing, String, Vector{String}} = nothing,
+    db::Bool = true,
+    sessions::Bool = false,
+)::DataFrame
+    return _study_values(study, kind; ch, tlim, flim, stats, cluster, condition, db, sessions).df
+end
+
+# subject-level values (see study_values()), the unit of the values and a description of
+# the averaged points
+function _study_values(
+    study::NeuroAnalyzer.STUDY,
+    kind::Symbol;
+    ch::Union{Nothing, String, Vector{String}},
+    tlim::Union{Nothing, Tuple{Real, Real}},
+    flim::Union{Nothing, Tuple{Real, Real}},
+    stats::Union{Nothing, NamedTuple},
+    cluster::Union{Nothing, Int64},
+    condition::Union{Nothing, String, Vector{String}},
+    db::Bool,
+    sessions::Bool,
+)
+    _check_var(kind, [:erp, :psd, :tf], "kind")
+    m = _study_measure(study, kind)
+    d, idx = _study_measure_rows(study, m)
+    ci = _study_conditions(m, condition)
+    M, desc = _study_value_mask(m, kind; ch, tlim, flim, stats, cluster)
+    X = selectdim(m.data, 1, idx)
+    db = db && kind !== :erp
+    db && (X = map(x -> x > 0 ? 10 * log10(x) : NaN, X))
+
+    # rows of the design table of each subject (or recording)
+    subj = unique(d.subject)
+    groups = sessions ? [[r] for r = 1:DataFrames.nrow(d)] : [findall(==(s), d.subject) for s in subj]
+    cov = setdiff(propertynames(d), [:subject, :session, :group, :file, :include])
+    cols = sessions ? [:subject, :session, :group] : [:subject, :group]
+    # a value of the subject: the value if it is the same in all its recordings, the mean of
+    # numeric values, otherwise missing
+    function _subject_value(v)
+        u = unique(v)
+        length(u) == 1 && return u[1]
+        all(x -> x isa Real, v) && return mean(v)
+        return missing
+    end
+    df = DataFrame()
+    for c in ci
+        S = _study_subject_avg(selectdim(X, 2, c), d, trues(DataFrames.nrow(d)), sessions)
+        for (k, rr) in enumerate(groups)
+            v = Base.filter(!isnan, selectdim(S, 1, k)[M])
+            isempty(v) && continue
+            r = Dict{Symbol, Any}(col => _subject_value(d[rr, col]) for col in vcat(cols, cov))
+            r[:condition] = m.conditions[c]
+            r[:value] = mean(v)
+            r[:n_points] = length(v)
+            push!(df, r; cols = :union, promote = true)
+        end
+    end
+    DataFrames.nrow(df) == 0 && throw(ArgumentError("No data at the selected points."))
+    DataFrames.select!(df, vcat(cols, [:condition, :value, :n_points], cov))
+    unit = join(unique(m.unit[vec(any(M; dims = 2:ndims(M)))]), ", ")
+
+    return (df = df, unit = unit, desc = desc, db = db)
+end
+
+# points of the measure (channel × points) averaged by study_values() and their description
+function _study_value_mask(
+    m, kind::Symbol;
+    ch::Union{Nothing, String, Vector{String}},
+    tlim::Union{Nothing, Tuple{Real, Real}},
+    flim::Union{Nothing, Tuple{Real, Real}},
+    stats::Union{Nothing, NamedTuple},
+    cluster::Union{Nothing, Int64},
+)
+    sz = size(m.data)[3:end]
+    if !isnothing(stats)
+        (isnothing(ch) && isnothing(tlim) && isnothing(flim)) ||
+            throw(ArgumentError("ch, tlim and flim are not used with stats."))
+        (haskey(stats, :kind) && stats.kind === kind && haskey(stats, :mask)) ||
+            throw(ArgumentError("stats must be a result of study_stats() for :$kind."))
+        (size(stats.mask) == sz && stats.labels == m.labels) || throw(
+            ArgumentError("stats and the :$kind measure have different channels or points."),
+        )
+        if stats.correction === :cluster
+            ids = stats.clusters.id
+            isempty(ids) && throw(ArgumentError("stats has no clusters."))
+            id = isnothing(cluster) ? ids[argmin(stats.clusters.p)] : cluster
+            id in ids || throw(
+                ArgumentError("Cluster $id not found (clusters: $(join(ids, ", ")))."),
+            )
+            M = BitArray(stats.cluster_id .== id)
+            p = stats.clusters.p[findfirst(==(id), ids)]
+            desc = "cluster $id (p " * (p < 0.001 ? "< 0.001" : "= $(round(p; digits = 3))") * ")"
+        else
+            isnothing(cluster) ||
+                throw(ArgumentError("cluster requires stats with correction = :cluster."))
+            M = BitArray(stats.mask)
+            any(M) || throw(ArgumentError("stats has no significant points."))
+            desc = "significant points"
+        end
+        return M, desc
+    end
+    isnothing(cluster) || throw(ArgumentError("cluster requires stats."))
+    kind === :psd && !isnothing(tlim) && throw(ArgumentError("tlim is not used with :psd."))
+    kind === :erp && !isnothing(flim) && throw(ArgumentError("flim is not used with :erp."))
+    chs = isnothing(ch) ? m.labels : ch isa String ? [ch] : ch
+    isempty(chs) && throw(ArgumentError("No channels selected."))
+    chi = indexin(chs, m.labels)
+    any(isnothing, chi) && throw(
+        ArgumentError("Channels not in measure :$kind: $(join(chs[isnothing.(chi)], ", "))."),
+    )
+    function _sel(x, lim, name)
+        isnothing(lim) && return trues(length(x))
+        lim[1] <= lim[2] || throw(ArgumentError("$name[1] must be ≤ $name[2]."))
+        s = (x .>= lim[1]) .& (x .<= lim[2])
+        any(s) || throw(ArgumentError("$name contains no points of the measure."))
+        return s
+    end
+    chm = falses(sz[1])
+    chm[Int64.(chi)] .= true
+    if kind === :erp
+        M = chm .& reshape(_sel(m.t, tlim, "tlim"), 1, :)
+    elseif kind === :psd
+        M = chm .& reshape(_sel(m.f, flim, "flim"), 1, :)
+    else
+        M = chm .& reshape(_sel(m.f, flim, "flim"), 1, :, 1) .&
+            reshape(_sel(m.t, tlim, "tlim"), 1, 1, :)
+    end
+    _r(x) = round(x; digits = 3)
+    desc = isnothing(ch) ? "all channels" :
+           length(chs) == 1 ? chs[1] : "mean of $(length(chs)) channels"
+    isnothing(flim) || (desc *= ", $(_r(flim[1]))–$(_r(flim[2])) Hz")
+    isnothing(tlim) || (desc *= ", $(_r(tlim[1]))–$(_r(tlim[2])) s")
+    return BitArray(M), desc
 end
 
 # design rows of the included recordings and their rows in the measure
