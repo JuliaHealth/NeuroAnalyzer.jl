@@ -1053,6 +1053,63 @@ eeg2 = import_fiff(f; clean_labels = false)
       round(Int64, NeuroAnalyzer.datetime2unix(NeuroAnalyzer.DateTime(2002, 12, 3, 19, 1, 10)))
 @test isnothing(NeuroAnalyzer._fiff_meas_date("", ""))
 
+@info "Test: export_bv()"
+e_bv = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edfplus.edf"))
+NeuroAnalyzer.filter!(e_bv; ch = "all", fprototype = :butterworth, ftype = :hp, cutoff = 0.5, order = 4)
+add_marker!(e_bv; type = "response", start = 1.0, len = 0.5, value = "a, b", ch = labels(e_bv)[3])
+add_marker!(e_bv; type = "BAD", start = 2.0, len = 1.0, value = "noise")
+rename_channel!(e_bv; ch = labels(e_bv)[2], name = "x,y")
+e_bv.header.recording[:notch][1] = [50.0, 60.0]
+f = joinpath(tmp, "bv_test.vhdr")
+fs_bv = export_bv(e_bv; file_name = f)
+@test fs_bv == [f, joinpath(tmp, "bv_test.eeg"), joinpath(tmp, "bv_test.vmrk")] && all(isfile, fs_bv)
+@test filesize(fs_bv[2]) == 4 * nchannels(e_bv) * signal_len(e_bv)
+b = import_bv(f)
+@test labels(b) == labels(e_bv) && sr(b) == sr(e_bv)
+@test b.data ≈ e_bv.data rtol = 1e-6
+@test b.header.recording[:unit] == e_bv.header.recording[:unit]
+# filters (channel table of the [Comment] section)
+@test b.header.recording[:highpass] ≈ e_bv.header.recording[:highpass]
+@test b.header.recording[:lowpass] ≈ e_bv.header.recording[:lowpass]
+@test b.header.recording[:notch] == e_bv.header.recording[:notch]
+# every row of the channel table has a unit (readers such as MNE-Python split rows at spaces;
+# the test file has channels without a unit)
+rows = Base.filter(l -> occursin(r"^\d+\s", l), readlines(f))
+@test length(rows) == nchannels(e_bv) && length(unique(length.(split.(rows)))) == 1
+# markers
+mb = sort(b.markers, :start)
+me = sort(e_bv.markers, :start)
+@test nrow(mb) == nrow(me) && mb.type == me.type && mb.value == me.value
+# (rounded to samples)
+@test all(abs.(mb.start .- me.start) .<= 0.5 / sr(e_bv) + 1e-9)
+@test all(abs.(mb.length .- me.length) .<= 0.5 / sr(e_bv) + 1e-9)
+@test mb.channel == me.channel
+# epochs: written one after another, New Segment markers
+e_ep = epoch(e_bv; ep_len = 2)
+f2 = joinpath(tmp, "bv_test_ep.vhdr")
+export_bv(e_ep; file_name = f2)
+b2 = import_bv(f2)
+@test signal_len(b2) == epoch_len(e_ep) * nepochs(e_ep)
+@test vec(b2.data) ≈ vec(e_ep.data) rtol = 1e-6
+@test count(==("boundary"), b2.markers.type) == nepochs(e_ep)
+@test occursin("SegmentDataPoints=$(epoch_len(e_ep))", read(f2, String))
+# errors
+@test_throws ArgumentError export_bv(e_bv; file_name = f)
+@test length(export_bv(e_bv; file_name = f, overwrite = true)) == 3
+@test_throws ArgumentError export_bv(e_bv; file_name = joinpath(tmp, "bv.eeg"))
+@test_throws ArgumentError export_bv(import_snirf(joinpath(testfiles_path, "nirs", "fnirs-test-snirf.snirf"));
+                                     file_name = joinpath(tmp, "n.vhdr"))
+# filter table: columns found by position, time constants, other columns, µ before the columns
+vh = ["#     Name      Phys. Chn.    Resolution / Unit   Low Cutoff [s]   High Cutoff [Hz]   Notch [Hz]    Series Res. [kOhm]",
+      "1     Fp1       1                0.1 µV             10               1000               50            0",
+      "2     Fp2       2                0.1 µV             DC               Off                Off           0",
+      ""]
+ft = NeuroAnalyzer._bv_filter_table(vh, 2)
+@test NeuroAnalyzer._prefilter_freqs(ft[1], 5000) == (1000.0, 1 / (2π * 10))
+@test NeuroAnalyzer._prefilter_notch(ft[1], 5000) == [50.0]
+@test ft[2] == ""
+@test isnothing(NeuroAnalyzer._bv_filter_table(["[Comment]"], 2))
+
 @info "Test: export_recording()"
 f = joinpath(tmp, "rec_raw.fif")
 @test export_recording(meg; file_name = f) == [f]
@@ -1063,6 +1120,9 @@ f = joinpath(tmp, "rec_raw.fif")
 f = joinpath(tmp, "rec.csv")
 @test export_recording(eeg_tmp; file_name = f, markers = true, locs = true) ==
       [f, joinpath(tmp, "rec_locs.csv")]
+f = joinpath(tmp, "rec.vhdr")
+@test export_recording(eeg_tmp; file_name = f) ==
+      [f, joinpath(tmp, "rec.eeg"), joinpath(tmp, "rec.vmrk")]
 f = joinpath(tmp, "rec.hdf")
 @test export_recording(eeg_tmp; file_name = f) == [f]
 @test load_neuro(f).data == eeg_tmp.data

@@ -407,6 +407,7 @@ include("utils/mri_coordinates.jl")
 
 # io
 include("io/export.jl")
+include("io/export_bv.jl")
 include("io/export_csv.jl")
 include("io/export_fiff.jl")
 include("io/export_history.jl")

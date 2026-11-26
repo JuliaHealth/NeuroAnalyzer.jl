@@ -50,6 +50,8 @@ function import_bv(
     # remove comment lines (lines starting with ';')
     Base.filter!(l -> !startswith(l, ';'), vhdr)
 
+    # header lines with spaces (channel table of the [Comment] section)
+    vhdr_raw = copy(vhdr)
     # Remove all spaces so key=value parsing is whitespace-insensitive.
     vhdr = replace.(vhdr, " " => "")
 
@@ -144,12 +146,16 @@ function import_bv(
     units = repeat([""], ch_n)
     gain = ones(ch_n)
     prefiltering = repeat([""], ch_n)
+    # filters of the channel table in [Comment] (BrainVision Recorder, export_bv()); a BIDS
+    # channels.tsv (below) overrides them
+    bv_filt = _bv_filter_table(vhdr_raw, ch_n)
+    isnothing(bv_filt) || (prefiltering = bv_filt)
     clabels = repeat([""], ch_n)
     ref_chs = repeat([""], ch_n)
 
     for idx = 1:ch_n
         fields = split(split(vhdr[idx + channels_idx], '='; limit = 2)[2], ',')
-        clabels[idx] = replace(fields[1], "\1" => ",")
+        clabels[idx] = _bv_unescape(fields[1])
         ref_chs[idx] = length(fields) >= 2 ? fields[2] : ""
         if length(fields) >= 3 && fields[3] != ""
             gain[idx] = parse(Float64, fields[3])
@@ -291,8 +297,8 @@ function import_bv(
 
         for (idx, line) in enumerate(mk_lines)
             fields = split(split(line, '='; limit = 2)[2], ',')
-            m_id[idx] = replace(fields[1], "\1" => ",")
-            fields[2] != "" && (m_desc[idx] = replace(fields[2], "\1" => ","))
+            m_id[idx] = _bv_unescape(fields[1])
+            fields[2] != "" && (m_desc[idx] = _bv_unescape(fields[2]))
             m_pos[idx] = parse(Int64, fields[3])
             m_len[idx] = parse(Int64, fields[4])
             m_ch[idx] = parse(Int64, fields[5])
@@ -435,3 +441,70 @@ function import_bv(
 
     return obj
 end
+
+"""
+    _bv_filter_table(vhdr, ch_n)
+
+Filters of the channels from the channel table of the `[Comment]` section of a BrainVision header (written by BrainVision Recorder and `export_bv()`), e.g.
+
+```
+#     Name      Phys. Chn.    Resolution / Unit   Low Cutoff [s]   High Cutoff [Hz]   Notch [Hz]
+1     Fp1       1                0.1 µV             10               1000               50
+```
+
+The columns are found by their positions in the header line (other columns may follow). Low cutoff (high-pass): a time constant in s (`[s]`) or a frequency (`[Hz]`), `DC`: none; high cutoff (low-pass): `Off`: none; notch: frequencies separated by `/`, `Off`: none.
+
+# Returns
+
+- `Union{Nothing, Vector{String}}`: filter description of each channel (as `_prefilter_freqs()` reads it), `nothing` if there is no table
+"""
+function _bv_filter_table(vhdr::Vector{String}, ch_n::Int64)::Union{Nothing, Vector{String}}
+    h = findfirst(l -> startswith(strip(l), "#") && occursin("Low Cutoff", l) &&
+                       occursin("High Cutoff", l), vhdr)
+    isnothing(h) && return nothing
+    # positions in characters (the table may contain non-ASCII characters, e.g. µ)
+    hc = collect(vhdr[h])
+    hl = String(hc)
+    cpos(b) = length(hl, 1, b)
+    pos(c) = (r = findfirst(c, hl); isnothing(r) ? 0 : cpos(first(r)))
+    starts = [pos("Low Cutoff"), pos("High Cutoff"), pos("Notch")]
+    (starts[1] == 0 || starts[2] == 0) && return nothing
+    # column starts: a non-space character after at least 2 spaces
+    col_starts = [i for i = 3:length(hc) if hc[i] != ' ' && hc[i - 1] == ' ' && hc[i - 2] == ' ']
+    function col_end(s)
+        k = findfirst(>(s), col_starts)
+        return isnothing(k) ? typemax(Int64) : col_starts[k] - 1
+    end
+    low_s = occursin(r"Low Cutoff\s*\[s\]"i, hl)
+    num(x) = tryparse(Float64, replace(strip(x), "," => "."))
+    out = fill("", ch_n)
+    found = false
+    for l in vhdr[(h + 1):end]
+        m = match(r"^\s*(\d+)\s", l)
+        if isnothing(m)
+            isempty(strip(l)) ? continue : break
+        end
+        i = parse(Int64, m[1])
+        1 <= i <= ch_n || continue
+        lc = collect(l)
+        field(c) = (s = starts[c]; s == 0 || s > length(lc) ? "" :
+                    String(lc[s:min(length(lc), col_end(s))]))
+        lo, hi, nt = field(1), field(2), field(3)
+        parts = String[]
+        v = num(lo)
+        !isnothing(v) && v > 0 && push!(parts, "HP: $v " * (low_s ? "s" : "Hz"))
+        v = num(hi)
+        !isnothing(v) && v > 0 && push!(parts, "LP: $v Hz")
+        for n in split(nt, '/')
+            v = num(n)
+            !isnothing(v) && v > 0 && push!(parts, "N: $v Hz")
+        end
+        out[i] = join(parts, " ")
+        found = true
+    end
+    return found ? out : nothing
+end
+
+# BrainVision text: a comma in a label or description is written as "\\1" (backslash and 1);
+# some files contain the control character U+0001 instead
+_bv_unescape(s::AbstractString)::String = replace(string(s), "\\1" => ",", "\x01" => ",")

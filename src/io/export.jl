@@ -1,12 +1,13 @@
 export export_recording
 
 # all formats export_recording() can dispatch to
-const _EXPORT_FORMATS = (:fiff, :snirf, :csv, :neuro)
+const _EXPORT_FORMATS = (:fiff, :bv, :snirf, :csv, :neuro)
 
 # extension → export format
 const _EXPORT_EXT_FORMAT = Dict{String, Symbol}(
     ".fif" => :fiff,
     ".fiff" => :fiff,
+    ".vhdr" => :bv,
     ".snirf" => :snirf,
     ".csv" => :csv,
     ".hdf" => :neuro,
@@ -31,6 +32,7 @@ This is a meta-function: the format is selected by the file name extension (or b
 |              Format              | Extension(s)    |   `format`  |   Function    |      Data types        |
 | -------------------------------- | --------------- | ----------- | ------------- | ---------------------- |
 | Neuromag FIFF                    | `.fif`, `.fiff` | `:fiff`     | `export_fiff` | EEG, MEG, ECoG, sEEG   |
+| BrainVision                      | `.vhdr`         | `:bv`       | `export_bv`   | EEG, ECoG, sEEG, iEEG, ERP |
 | SNIRF                            | `.snirf`        | `:snirf`    | `export_snirf`| NIRS                   |
 | CSV                              | `.csv`          | `:csv`      | `export_csv`  | all                    |
 | NeuroAnalyzer (JLD2/HDF5)        | `.hdf`          | `:neuro`    | `save_neuro`  | all                    |
@@ -73,6 +75,8 @@ function export_recording(
 
     if fmt === :fiff
         return export_fiff(obj; file_name = file_name, overwrite = overwrite, kwargs...)
+    elseif fmt === :bv
+        return export_bv(obj; file_name = file_name, overwrite = overwrite, kwargs...)
     elseif fmt === :snirf
         export_snirf(obj; file_name = file_name, overwrite = overwrite, kwargs...)
         return [file_name]
