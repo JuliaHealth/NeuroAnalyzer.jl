@@ -198,6 +198,8 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
+    # unit of the optode positions (system unknown)
+    DataFrames.nrow(obj.locs) > 0 && _set_locs_coord!(obj, "", _locs_unit_name(string(obj.header.recording[:length_unit])))
 
     _info(
         "Imported: " *

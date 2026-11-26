@@ -63,6 +63,9 @@ function import_set(
     sampling_rate = round(Int64, dataset["srate"])
     gain = ones(ch_n)
 
+    # locations rotated from the EEGLAB axes (x towards the nose)
+    eeglab_axes = false
+
     # channels info
     # get channel labels
     if length(dataset["chanlocs"]) > 0 && length(dataset["chanlocs"]["labels"][:]) == ch_n
@@ -184,8 +187,11 @@ function import_set(
             "Locs for $(DataFrames.nrow(locs)) channel$(_pl(DataFrames.nrow(locs))) found",
         )
         if DataFrames.nrow(locs) > 0
-            haskey(dataset, "chaninfo") && dataset["chaninfo"] isa AbstractDict &&
-                get(dataset["chaninfo"], "nosedir", "") == "+X" && locs_swapxy!(locs)
+            if haskey(dataset, "chaninfo") && dataset["chaninfo"] isa AbstractDict &&
+               get(dataset["chaninfo"], "nosedir", "") == "+X"
+                locs_swapxy!(locs)
+                eeglab_axes = true
+            end
         end
     else
         locs = _initialize_locs()
@@ -277,6 +283,9 @@ function import_set(
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
+    # chanlocs in the EEGLAB coordinate system (x towards the nose, rotated on import); the
+    # unit is not stored in the file (guessed by locs_coord())
+    DataFrames.nrow(obj.locs) > 0 && _set_locs_coord!(obj, eeglab_axes ? "EEGLAB" : "", "")
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info(

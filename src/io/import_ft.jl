@@ -188,6 +188,8 @@ function import_ft(
     )
 
     locs = _initialize_locs()
+    # coordinate systems and units of the sensor structures (grad, elec, opto)
+    coords = Tuple{String, String}[]
 
     r = nothing # will be assigned in each branch below
 
@@ -211,6 +213,18 @@ function import_ft(
                 data[ch_idx, :, :] .*= 1.0e6
                 units[ch_idx] = "μV"
             end
+        end
+
+        # electrode positions (elec), matched by label
+        if "elec" in keys(dataset) && dataset["elec"] isa AbstractDict &&
+           "chanpos" in keys(dataset["elec"]) && "label" in keys(dataset["elec"])
+            el = dataset["elec"]
+            el_labels = string.(vec(el["label"]))
+            clean_labels && (el_labels = _clean_labels(el_labels))
+            el_locs = _ft_sens_locs(el["chanpos"], el_labels, el)
+            locs = el_locs[in(clabels).(el_locs.label), :]
+            locs = locs[sortperm(indexin(locs.label, clabels)), :]
+            DataFrames.nrow(locs) > 0 && push!(coords, _ft_coord(el))
         end
 
         r = _create_recording_eeg(;
@@ -287,21 +301,9 @@ function import_ft(
         if "chanpos" in keys(dataset["grad"])
             sig_mask = ch_type .∈ Ref(["meg", "mag", "grad"])
             meg_labels = clabels[sig_mask]
-            pos = dataset["grad"]["chanpos"]
-            meg_locs = DataFrame(
-                :label => meg_labels,
-                :loc_radius => zeros(length(meg_labels)),
-                :loc_theta => zeros(length(meg_labels)),
-                :loc_x => pos[:, 1],
-                :loc_y => pos[:, 2],
-                :loc_z => pos[:, 3],
-                :loc_radius_sph => zeros(length(meg_labels)),
-                :loc_theta_sph => zeros(length(meg_labels)),
-                :loc_phi_sph => zeros(length(meg_labels)),
-            )
-            locs_cart2sph!(meg_locs)
-            locs_sph2pol!(meg_locs)
+            meg_locs = _ft_sens_locs(dataset["grad"]["chanpos"], meg_labels, dataset["grad"])
             locs = meg_locs
+            push!(coords, _ft_coord(dataset["grad"]))
         else
             locs = import_locs_csv(joinpath(NeuroAnalyzer.res_path, "meg_306flattened.csv"))
             locs[!, :label] = _match_labels(locs[!, :label], clabels)
@@ -310,21 +312,9 @@ function import_ft(
         if "elec" in keys(dataset)
             eeg_mask = ch_type .== "eeg"
             eeg_labels = clabels[eeg_mask]
-            epos = dataset["elec"]["chanpos"]
-            eeg_locs = DataFrame(
-                :label => eeg_labels,
-                :loc_radius => zeros(length(eeg_labels)),
-                :loc_theta => zeros(length(eeg_labels)),
-                :loc_x => epos[:, 1],
-                :loc_y => epos[:, 2],
-                :loc_z => epos[:, 3],
-                :loc_radius_sph => zeros(length(eeg_labels)),
-                :loc_theta_sph => zeros(length(eeg_labels)),
-                :loc_phi_sph => zeros(length(eeg_labels)),
-            )
-            locs_cart2sph!(eeg_locs)
-            locs_sph2pol!(eeg_locs)
+            eeg_locs = _ft_sens_locs(dataset["elec"]["chanpos"], eeg_labels, dataset["elec"])
             locs = vcat(locs, eeg_locs)
+            push!(coords, _ft_coord(dataset["elec"]))
         end
 
         ref = if "reref" in keys(cfg) && cfg["reref"] != "no"
@@ -420,20 +410,8 @@ function import_ft(
             end
         end
 
-        pos = opto["optopos"]
-        locs = DataFrame(
-            :label => opt_labels,
-            :loc_radius => zeros(length(opt_labels)),
-            :loc_theta => zeros(length(opt_labels)),
-            :loc_x => pos[:, 1],
-            :loc_y => pos[:, 2],
-            :loc_z => pos[:, 3],
-            :loc_radius_sph => zeros(length(opt_labels)),
-            :loc_theta_sph => zeros(length(opt_labels)),
-            :loc_phi_sph => zeros(length(opt_labels)),
-        )
-        locs_cart2sph!(locs)
-        locs_cart2pol!(locs)
+        locs = _ft_sens_locs(opto["optopos"], opt_labels, opto; sph2pol = false)
+        push!(coords, _ft_coord(opto))
 
         r = _create_recording_nirs(;
             data_type = data_type,
@@ -471,7 +449,16 @@ function import_ft(
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
-    data_type in ("eeg", "ecog", "seeg", "ieeg") && _initialize_locs!(obj)
+    # EEG without electrode positions: standard positions of known labels
+    data_type in ("eeg", "ecog", "seeg", "ieeg") && DataFrames.nrow(obj.locs) == 0 &&
+        _initialize_locs!(obj)
+    # coordinate system and unit of the sensor positions (if all structures agree)
+    if !isempty(coords) && DataFrames.nrow(obj.locs) > 0
+        sys = length(unique(first.(coords))) == 1 ? coords[1][1] : ""
+        u = length(unique(last.(coords))) == 1 ? coords[1][2] : ""
+        _set_locs_coord!(obj, sys, u)
+        data_type == "nirs" && !isempty(u) && (obj.header.recording[:length_unit] = u)
+    end
 
     _info(
         "Imported: " *
@@ -481,4 +468,48 @@ function import_ft(
     )
 
     return obj
+end
+
+# FieldTrip coordinate systems (coordsys) → BIDS names
+const _FT_COORDSYS = Dict(
+    "ctf" => "CTF", "bti" => "4DBti", "4d" => "4DBti", "yokogawa" => "KitYokogawa",
+    "neuromag" => "ElektaNeuromag", "itab" => "ChietiItab", "acpc" => "ACPC",
+    "scanras" => "ScanRAS", "fsaverage" => "fsaverage", "tal" => "Talairach",
+    "eeglab" => "EEGLAB",
+)
+
+# coordinate system (BIDS name, "": unknown) and unit of a FieldTrip sensor structure
+function _ft_coord(sens::AbstractDict)::Tuple{String, String}
+    sys = get(_FT_COORDSYS, lowercase(string(get(sens, "coordsys", ""))), "")
+    u = _locs_unit_name(string(get(sens, "unit", "")))
+    return sys, u
+end
+
+# locations of a FieldTrip sensor structure (positions: n × 3); coordinates of the ALS
+# systems (CTF, 4D/BTi, Yokogawa, EEGLAB: x towards the nose) are rotated to the
+# NeuroAnalyzer orientation (y towards the nose)
+function _ft_sens_locs(
+    pos::AbstractMatrix, clabels::Vector{String}, sens::AbstractDict; sph2pol::Bool = true,
+)::DataFrame
+    n = length(clabels)
+    x = Float64.(pos[1:n, 1])
+    y = Float64.(pos[1:n, 2])
+    z = Float64.(pos[1:n, 3])
+    x, y = _bids_ras(x, y, _ft_coord(sens)[1])
+    locs = DataFrame(
+        :label => clabels,
+        :loc_radius => zeros(n),
+        :loc_theta => zeros(n),
+        :loc_x => x,
+        :loc_y => y,
+        :loc_z => z,
+        :loc_radius_sph => zeros(n),
+        :loc_theta_sph => zeros(n),
+        :loc_phi_sph => zeros(n),
+    )
+    locs_cart2sph!(locs)
+    # (polar coordinates of MEG and EEG sensors from the spherical ones, of NIRS optodes
+    # from the Cartesian ones)
+    sph2pol ? locs_sph2pol!(locs) : locs_cart2pol!(locs)
+    return locs
 end

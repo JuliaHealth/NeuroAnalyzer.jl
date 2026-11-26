@@ -247,6 +247,8 @@ eeg = import_gdf(joinpath(testfiles_path, "eeg", "eeg-test-gdf_2.20.gdf"))
 
 @info "Test: import_bv()"
 eeg = import_bv(joinpath(testfiles_path, "eeg", "eeg-test-bv.vhdr"))
+# [Coordinates] on the unit sphere: no unit
+@test nrow(eeg.locs) == 0 || locs_coord(eeg).unit == ""
 @test eeg.header.recording[:file_type] == "BrainVision"
 @test (sr(eeg), nchannels(eeg), signal_len(eeg)) == (1000, 2, 10000)
 @test labels(eeg) == ["chan1", "chan2"]
@@ -271,6 +273,7 @@ eeg = import_bv(joinpath(testfiles_path, "eeg", "eeg-test-bv.vhdr"))
 
 @info "Test: import_set()"
 eeg = import_set(joinpath(testfiles_path, "eeg", "eeg-test-eeglab.set"))
+@test nrow(eeg.locs) == 0 || locs_coord(eeg).system in ("EEGLAB", "")
 @test eeg.header.recording[:file_type] == "SET"
 @test (sr(eeg), nchannels(eeg), signal_len(eeg)) == (256, 24, 309760)
 @test eeg.data[1, pos(309760), 1] ≈ [
@@ -338,6 +341,7 @@ meg = import_fiff(joinpath(testfiles_path, "meg", "meg-test-fiff.fif"))
 @test labels(meg)[1] == "IASX+"
 @test meg.header.recording[:channel_type][[12, 13]] == ["mag", "grad"]
 @test meg.header.recording[:unit][[12, 13]] == ["fT", "fT/cm"]
+@test nrow(meg.locs) == 0 || locs_coord(meg) == (system = "", unit = "m", guessed = false)
 @test meg.data[12, pos(32000), 1] ≈ [
     37475.75757133061,
     47371.71169613672,
@@ -617,6 +621,8 @@ eeg = import_ft(joinpath(testfiles_path, "eeg", "eeg-test-fieldtrip.mat"); type 
 @test eeg.data[:, :, 1] == mat["trial"][1]
 @test labels(eeg)[1] == "Fp1"
 meg = import_ft(joinpath(testfiles_path, "meg", "meg-test-fieldtrip.mat"); type = :meg)
+# grad.coordsys (neuromag) and grad.unit (cm)
+@test locs_coord(meg) == (system = "ElektaNeuromag", unit = "cm", guessed = false)
 @test meg.header.recording[:data_type] == "meg"
 @test meg.header.recording[:file_type] == "FT"
 # the same recording as meg-test-fiff.fif: T → fT, T/m → fT/cm
@@ -636,6 +642,7 @@ meg = import_ft(joinpath(testfiles_path, "meg", "meg-test-fieldtrip.mat"); type 
 ] rtol = 1e-9
 # fNIRS: 25.04 Hz → resampled to 25 Hz (the same duration)
 nirs = import_ft(joinpath(testfiles_path, "nirs", "fnirs-test-fieldtrip.mat"); type = :nirs)
+@test locs_coord(nirs).unit == "mm" && nirs.header.recording[:length_unit] == "mm"
 @test nirs.header.recording[:data_type] == "nirs"
 @test nirs.header.recording[:file_type] == "FT"
 @test sr(nirs) == 25

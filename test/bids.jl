@@ -69,6 +69,8 @@ el = CSV.read(joinpath(d1, "sub-002", "eeg", "sub-002_task-FaceRecognition_elect
 i = findfirst(==("EEG 001"), o.locs.label)
 @test o.locs.loc_x[i] ≈ -el.y[1] && o.locs.loc_y[i] ≈ el.x[1] && o.locs.loc_z[i] ≈ el.z[1]
 @test o.locs.label == Base.filter(in(o.locs.label), labels(o))
+# coordinate system and unit of coordsystem.json
+@test locs_coord(o) == (system = "EEGLAB", unit = "cm", guessed = false)
 # without sidecars
 o0 = import_bids(f1; channels = false, events = false, electrodes = false)
 @test count(==("eog"), o0.header.recording[:channel_type]) == 0
@@ -123,6 +125,7 @@ write_coordsystem("CapTrak")
 n1 = import_bids(fn)
 @test n1.locs.label == ol && n1.locs.loc_x == x && n1.locs.loc_y == y && n1.locs.loc_z == z
 @test n1.header.recording[:length_unit] == "cm"
+@test locs_coord(n1) == (system = "CapTrak", unit = "cm", guessed = false)
 # ALS system (x: nose, y: left): rotated
 write_coordsystem("EEGLAB")
 n2 = import_bids(fn)
@@ -148,6 +151,7 @@ o3 = import_bids(f3)
 # optodes.tsv: CapTrak (RAS), meters
 ot3 = CSV.read(joinpath(d3, "sub-01", "nirs", "sub-01_optodes.tsv"), DataFrame)
 @test o3.header.recording[:length_unit] == "m"
+@test locs_coord(o3) == (system = "CapTrak", unit = "m", guessed = false)
 @test o3.locs.label == o3.header.recording[:optode_labels]
 i = indexin(o3.locs.label, ot3.name)
 @test o3.locs.loc_x ≈ ot3.x[i] && o3.locs.loc_y ≈ ot3.y[i] && o3.locs.loc_z ≈ ot3.z[i]

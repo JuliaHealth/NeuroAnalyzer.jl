@@ -205,6 +205,7 @@ function _create_recording_eeg_like(;
             :gain => gain,
         ),
     )
+    merge!(d, _locs_coord_fields())
     return d
 end
 
@@ -296,6 +297,7 @@ function _create_recording_meg(;
             :tsss => false,
         ),
     )
+    merge!(d, _locs_coord_fields())
     return d
 end
 
@@ -344,8 +346,18 @@ function _create_recording_nirs(;
             :optode_labels => opt_labels,
         ),
     )
+    # (:length_unit is set above)
+    merge!(d, _locs_coord_fields(; length_unit = length_unit))
     return d
 end
+
+# coordinate system and unit of the channel locations (see locs_coord()), empty: not known;
+# data types with channel locations (EEG-like, MEG, NIRS)
+_locs_coord_fields(; length_unit::String = "")::Dict{Symbol, Any} = Dict{Symbol, Any}(
+    :coord_system => "",
+    :length_unit => length_unit,
+    :coord_ref => Dict{String, NTuple{3, Float64}}(),
+)
 
 # ---------------------------------------------------------------------------
 # sensors / EDA / TPT  (identical schema; data_type distinguishes them)

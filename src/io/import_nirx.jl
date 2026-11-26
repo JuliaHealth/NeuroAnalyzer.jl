@@ -385,6 +385,8 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
     history = String[]
 
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
+    # unit of the optode positions (system unknown)
+    DataFrames.nrow(obj.locs) > 0 && _set_locs_coord!(obj, "", _locs_unit_name(string(obj.header.recording[:length_unit])))
 
     _info(
         "Imported: " *

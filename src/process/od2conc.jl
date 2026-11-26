@@ -62,7 +62,7 @@ The path length is set using one of:
 - `age`: the differential pathlength factor (DPF) of each wavelength is calculated for the given age (see `nirs_dpf()`), and the OD is divided by DPF × source-detector distance: concentrations in μM
 - `ppf`: partial path length factors given for each wavelength (e.g. ~6 for a uniform absorption change, as small as 0.1 for a small localized change); with `ppf ≠ 1` the OD is divided by `ppf` × source-detector distance: concentrations in μM
 
-The source-detector distances are calculated from the 3-D optode positions in `obj.locs` and converted to mm using the length unit of the recording (`obj.header.recording[:length_unit]`, read from SNIRF and Homer `.nirs` files); if the unit is unknown, mm are assumed (with a warning).
+The source-detector distances are calculated from the 3-D optode positions in `obj.locs` and converted to mm using the unit of the locations (`locs_coord()`: read from SNIRF, NIRx, Homer `.nirs` and BIDS files, or guessed from the head size if the positions were changed or the unit is unknown); if it cannot be determined, mm are assumed (with a warning).
 
 The new channels (types `nirs_hbo`, `nirs_hbr`, `nirs_hbt`) are inserted after the optical channels; they keep the optode pair of their OD channels (wavelength index 0).
 
@@ -168,7 +168,9 @@ function od2conc!(
     # source-detector distances in mm (3-D optode positions)
     rho = ones(length(lst))
     if use_rho
-        scale = _length_to_mm(string(get(rec, :length_unit, "")))
+        lc = locs_coord(obj)
+        # (a guessed unit is not used for distances)
+        scale = lc.guessed ? nothing : _length_to_mm(lc.unit)
         if isnothing(scale)
             _warn(
                 "Length unit of the optode positions is unknown; positions are assumed to be in mm.",

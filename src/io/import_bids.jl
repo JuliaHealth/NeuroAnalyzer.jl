@@ -224,7 +224,12 @@ function import_bids(
     if !isnothing(f)
         el = _bids_tsv(f)
         if all(c -> c in names(el), ("name", "x", "y", "z"))
-            obj.locs = _bids_locs(el, lbl(el.name), _bids_coordsystem(file_name), labels(obj))
+            cs = _bids_coordsystem(file_name)
+            obj.locs = _bids_locs(el, lbl(el.name), cs, labels(obj))
+            if DataFrames.nrow(obj.locs) > 0
+                sys, u = _bids_coord(cs, ("EEG", "iEEG"))
+                _set_locs_coord!(obj, sys, u)
+            end
         else
             _warn("$f has no name, x, y and z columns: channel locations are not imported.")
         end
@@ -252,6 +257,19 @@ function _bids_coordsystem(file_name::AbstractString)::Dict{String, Any}
         merge!(cs, JSON.parsefile(j; dicttype = Dict{String, Any}))
     end
     return cs
+end
+
+# coordinate system and unit ("m", "cm", "mm", "": n/a) of coordsystem.json, for the
+# modality prefixes `mods` (e.g. "EEG" → EEGCoordinateSystem, EEGCoordinateUnits)
+function _bids_coord(cs::Dict, mods::Tuple)::Tuple{String, String}
+    sys, u = "", ""
+    for m in mods
+        v = get(cs, m * "CoordinateSystem", nothing)
+        v isa AbstractString && (sys = string(v))
+        v = get(cs, m * "CoordinateUnits", nothing)
+        v isa AbstractString && (u = _locs_unit_name(v))
+    end
+    return sys, u
 end
 
 # coordinates in the NeuroAnalyzer orientation (x: right, y: nose) from a BIDS system
@@ -331,13 +349,11 @@ function _bids_optodes!(obj::NeuroAnalyzer.NEURO, ot::DataFrame, cs::Dict)::Noth
     locs_cart2sph!(locs)
     locs_cart2pol!(locs)
     obj.locs = locs
-    u = get(cs, "NIRSCoordinateUnits", "")
-    if u isa AbstractString && !isempty(u) && u != "n/a" && haskey(rec, :length_unit)
-        lu = string(rec[:length_unit])
-        count(ok) < length(ol) && !isempty(lu) && lu != u &&
-            _warn("Units of optodes.tsv ($u) and of the recording ($lu) differ.")
-        rec[:length_unit] = u
-    end
+    sys, u = _bids_coord(cs, ("NIRS",))
+    lu = string(get(rec, :length_unit, ""))
+    count(ok) < length(ol) && !isempty(lu) && !isempty(u) && lu != u &&
+        _warn("Units of optodes.tsv ($u) and of the recording ($lu) differ.")
+    _set_locs_coord!(obj, sys, isempty(u) ? lu : u)
     return nothing
 end
 

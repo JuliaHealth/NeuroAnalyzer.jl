@@ -286,6 +286,15 @@ function load_locs!(obj::NeuroAnalyzer.NEURO; file_name::String)::Nothing
     locs_idx = indexin(obj.locs[:, :label], labels(obj))
     obj.locs = obj.locs[sortperm(locs_idx), :]
 
+    # ELC files state the unit of the positions (e.g. "UnitPosition mm")
+    if ext == ".elc"
+        l = findfirst(x -> startswith(strip(x), "UnitPosition"), readlines(file_name))
+        if !isnothing(l)
+            u = _locs_unit_name(string(last(split(strip(readlines(file_name)[l])))))
+            isempty(u) || _set_locs_coord!(obj, "", u)
+        end
+    end
+
     _history!(obj, "load_locs", (; file_name))
 
     return nothing

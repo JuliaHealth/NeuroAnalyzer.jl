@@ -422,6 +422,8 @@ function import_bv(
     hdr = _create_header(; subject = s, recording = r, experiment = e)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
+    # [Coordinates]: spherical coordinates on the unit sphere (unit: none)
+    DataFrames.nrow(obj.locs) > 0 && locs_idx != 0 && _set_locs_coord!(obj, "", "")
     DataFrames.nrow(locs) == 0 && _initialize_locs!(obj)
 
     _info(

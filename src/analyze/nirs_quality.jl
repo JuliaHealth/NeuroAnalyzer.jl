@@ -37,7 +37,7 @@ end
 
 Calculate the source-detector distance of each NIRS optical channel (the channels described by the optode pairs, i.e. intensity, OD and concentration channels).
 
-The distances are calculated from the 3-D optode positions in `obj.locs` and converted to mm using the length unit of the recording (`obj.header.recording[:length_unit]`); if the unit is unknown, mm are assumed (with a warning).
+The distances are calculated from the 3-D optode positions in `obj.locs` and converted to mm using the unit of the locations (`locs_coord()`, or guessed from the head size if it is not known); if it cannot be determined, mm are assumed (with a warning).
 
 # Arguments
 
@@ -61,7 +61,9 @@ function nirs_distance(obj::NeuroAnalyzer.NEURO)::@NamedTuple{
     n_opt = size(chp, 1)
     n_opt > 0 || throw(ArgumentError("OBJ does not contain NIRS optical channels."))
 
-    scale = _length_to_mm(string(get(rec, :length_unit, "")))
+    lc = locs_coord(obj)
+    # (a guessed unit is not used for distances)
+    scale = lc.guessed ? nothing : _length_to_mm(lc.unit)
     if isnothing(scale)
         _warn("Length unit of the optode positions is unknown; positions are assumed to be in mm.")
         scale = 1.0

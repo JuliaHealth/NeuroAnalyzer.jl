@@ -459,4 +459,54 @@ out = mktemp() do path, io
 end
 @test occursin("Fp1", out)
 
+
+@info "Test: locs_coord(), set_locs_coord!()"
+# unit guessed from the head size (median distance from the origin)
+l1 = DataFrame(:label => ["a", "b", "c"], :loc_x => [0.08, 0.0, -0.08],
+               :loc_y => [0.0, 0.09, 0.0], :loc_z => [0.0, 0.0, 0.085])
+@test NeuroAnalyzer._locs_guess_unit(l1) == "m"
+l1.loc_x .*= 100; l1.loc_y .*= 100; l1.loc_z .*= 100
+@test NeuroAnalyzer._locs_guess_unit(l1) == "cm"
+l1.loc_x .*= 10; l1.loc_y .*= 10; l1.loc_z .*= 10
+@test NeuroAnalyzer._locs_guess_unit(l1) == "mm"
+l1.loc_x ./= 85; l1.loc_y ./= 85; l1.loc_z ./= 85
+@test NeuroAnalyzer._locs_guess_unit(l1) == ""
+@test NeuroAnalyzer._locs_unit_name("millimeter") == "mm" && NeuroAnalyzer._locs_unit_name("n/a") == ""
+# no stored values: guessed (the .ced locations are on the unit sphere)
+e2 = deepcopy(eeg)
+c = locs_coord(e2)
+@test c.system == "" && c.unit == "" && c.guessed
+set_locs_coord!(e2; system = "Other", unit = "mm")
+@test locs_coord(e2) == (system = "Other", unit = "mm", guessed = false)
+# copy
+e4 = set_locs_coord(eeg; system = "CapTrak", unit = "cm")
+@test locs_coord(e4) == (system = "CapTrak", unit = "cm", guessed = false)
+@test locs_coord(eeg).guessed
+@test occursin("set_locs_coord!", e2.history[end])
+# deleting channels keeps the stored values
+delete_channel!(e2; ch = "Fp1")
+@test locs_coord(e2).unit == "mm" && !locs_coord(e2).guessed
+# one channel moved: the stored values still apply
+e2.locs[1, :loc_x] += 0.1
+@test locs_coord(e2) == (system = "Other", unit = "mm", guessed = false)
+# rescaled: the unit and the system no longer apply
+locs_scale!(e2.locs; r = 10.0)
+@test locs_coord(e2).guessed && locs_coord(e2).system == ""
+# rotated: the system no longer applies, the unit does
+e7 = set_locs_coord(eeg; system = "CapTrak", unit = "mm")
+locs_rotz!(e7.locs; a = 30)
+@test locs_coord(e7) == (system = "", unit = "mm", guessed = false)
+# unknown stored unit: guessed, system kept
+e3 = deepcopy(eeg)
+set_locs_coord!(e3; system = "CapTrak", unit = "")
+@test locs_coord(e3).system == "CapTrak" && locs_coord(e3).guessed
+@test_throws ArgumentError set_locs_coord!(e3; unit = "inch")
+e5 = deepcopy(eeg)
+e5.locs = NeuroAnalyzer._initialize_locs()
+@test_throws ArgumentError set_locs_coord!(e5)
+# ELC files: UnitPosition
+e6 = deepcopy(eeg)
+load_locs!(e6; file_name = joinpath(testfiles_path, "locs", "locs.elc"))
+@test locs_coord(e6) == (system = "", unit = "mm", guessed = false)
+
 true

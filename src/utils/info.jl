@@ -419,7 +419,16 @@ function _print_header(obj::NeuroAnalyzer.NEURO)
 
     if !(datatype(obj) in ["mep", "sensors", "eda"])
         println("                Markers: $(_has_markers(obj) ? "yes" : "no")")
-        println("      Channel locations: $(DataFrames.nrow(obj.locs) > 0 ? "yes" : "no")")
+        if DataFrames.nrow(obj.locs) > 0
+            lc = locs_coord(obj)
+            c = join(Base.filter(!isempty, [
+                lc.system,
+                isempty(lc.unit) ? "unit unknown" : lc.guessed ? "$(lc.unit) (guessed)" : lc.unit,
+            ]), ", ")
+            println("      Channel locations: yes ($c)")
+        else
+            println("      Channel locations: no")
+        end
     end
 
     # channel-type counts, grouped by modality

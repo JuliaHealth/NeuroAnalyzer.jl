@@ -1200,6 +1200,8 @@ function import_fiff(
     l = channel_locs === :fiff ? _fiff_locs(mi, clabels) : nothing
     if !isnothing(l) && nrow(l) > 0
         add_locs!(obj; locs = l)
+        # head coordinates in meters (re-centered on the fitted head sphere)
+        _set_locs_coord!(obj, "", "m")
     elseif channel_locs !== :none && is_306
         # the bundled layout describes the 306-channel Vectorview/TRIUX helmet only
         channel_locs === :fiff &&
