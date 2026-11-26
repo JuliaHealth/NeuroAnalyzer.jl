@@ -1,4 +1,5 @@
 export study_stats
+export cluster_summary
 
 """
     study_stats(study, kind; <keyword arguments>)
@@ -41,6 +42,8 @@ Named tuple:
 - `mask::BitArray`: significant points (`p_adj < alpha`)
 - `clusters::DataFrame`: clusters (`:cluster`; see `cluster_perm()`), otherwise empty
 - `cluster_id::Array{Int64}`: cluster of every point (`:cluster`; 0: none)
+- `null::Vector{Float64}`: null distribution of the maximal cluster mass (`:cluster`, see `cluster_perm()`), otherwise empty
+- `threshold::Float64`: cluster-forming threshold of the statistic (`:cluster`), otherwise `NaN`
 - `labels::Vector{String}`, `t::Vector{Float64}`, `f::Vector{Float64}`: channels, time points, frequencies
 - `correction::Symbol`, `db::Bool`
 """
@@ -171,6 +174,7 @@ function study_stats(
         end
         stat, p, p_adj, mask = r.stat, r.p, r.p_cluster, r.mask
         clusters, cluster_id = r.clusters, r.cluster_id
+        null, threshold = r.null, r.threshold
     else
         r = if test === :ttest
             mass_ttest(G[1], G[2]; tail = tail)
@@ -188,6 +192,7 @@ function study_stats(
         clusters = DataFrame(:id => Int64[], :sign => Int64[], :mass => Float64[],
                              :size => Int64[], :p => Float64[])
         cluster_id = zeros(Int64, size(stat))
+        null, threshold = Float64[], NaN
     end
 
     return (
@@ -202,10 +207,77 @@ function study_stats(
         mask = mask,
         clusters = clusters,
         cluster_id = cluster_id,
+        null = null,
+        threshold = threshold,
         labels = m.labels,
         t = m.t,
         f = m.f,
         correction = correction,
         db = db,
     )
+end
+
+"""
+    cluster_summary(st)
+
+Table of the clusters of a cluster-based permutation test of a study measure (`study_stats()` with `correction = :cluster`): their mass, size, p-value, extent in time and/or frequency, channels and peak.
+
+# Arguments
+
+- `st::NamedTuple`: result of `study_stats()` with `correction = :cluster`
+
+# Returns
+
+- `DataFrame`: one row per cluster (in the order of `st.clusters`, sorted by p-value):
+    - `id`, `sign` (+1, -1), `mass`, `size` (number of points), `p`: as in `st.clusters`
+    - `significant`: the cluster is significant (its points are in `st.mask`)
+    - `t_start`, `t_end`: extent in seconds (`:erp`, `:tf`)
+    - `f_start`, `f_end`: extent in Hz (`:psd`, `:tf`)
+    - `n_channels`, `channels`: channels of the cluster (labels joined by ", ")
+    - `peak`: statistic of largest magnitude in the cluster, `peak_channel` and `peak_t` (`:erp`, `:tf`) and/or `peak_f` (`:psd`, `:tf`): its point
+"""
+function cluster_summary(st::NamedTuple)::DataFrame
+    all(k -> haskey(st, k), (:kind, :clusters, :cluster_id, :stat, :mask, :labels, :correction)) ||
+        throw(ArgumentError("st must be a result of study_stats()."))
+    st.correction === :cluster ||
+        throw(ArgumentError("st must be a result of study_stats() with correction = :cluster."))
+    has_t = st.kind in (:erp, :tf)
+    has_f = st.kind in (:psd, :tf)
+    df = DataFrame(
+        :id => Int64[], :sign => Int64[], :mass => Float64[], :size => Int64[],
+        :p => Float64[], :significant => Bool[],
+    )
+    has_t && (df.t_start = Float64[]; df.t_end = Float64[])
+    has_f && (df.f_start = Float64[]; df.f_end = Float64[])
+    df.n_channels = Int64[]
+    df.channels = String[]
+    df.peak = Float64[]
+    df.peak_channel = String[]
+    has_t && (df.peak_t = Float64[])
+    has_f && (df.peak_f = Float64[])
+    for c in eachrow(st.clusters)
+        pts = findall(==(c.id), st.cluster_id)
+        isempty(pts) && continue
+        chs = sort(unique(p[1] for p in pts))
+        pk = pts[argmax([abs(st.stat[p]) for p in pts])]
+        r = Dict{Symbol, Any}(
+            :id => c.id, :sign => c.sign, :mass => c.mass, :size => c.size, :p => c.p,
+            :significant => any(st.mask[p] for p in pts),
+            :n_channels => length(chs), :channels => join(st.labels[chs], ", "),
+            :peak => st.stat[pk], :peak_channel => st.labels[pk[1]],
+        )
+        # time: last dimension; frequency: second dimension
+        if has_t
+            ti = [p[ndims(st.stat)] for p in pts]
+            r[:t_start], r[:t_end] = st.t[minimum(ti)], st.t[maximum(ti)]
+            r[:peak_t] = st.t[pk[ndims(st.stat)]]
+        end
+        if has_f
+            fi = [p[2] for p in pts]
+            r[:f_start], r[:f_end] = st.f[minimum(fi)], st.f[maximum(fi)]
+            r[:peak_f] = st.f[pk[2]]
+        end
+        push!(df, r)
+    end
+    return df
 end

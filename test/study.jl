@@ -342,6 +342,67 @@ r = study_stats(st, :erp; factor = :condition, correction = :none)
                                           levels = ["p"], diff = true)
 @test_throws ArgumentError plot_study_erp(st; ch = "Cz", stats = (kind = :psd,))
 
+@info "Test: plot_study_psd()"
+m_psd = st.measures[:psd]
+d_psd, i_psd = NeuroAnalyzer._study_measure_rows(st, m_psd)
+lv, S, subj = NeuroAnalyzer._study_level_erps(
+    m_psd, d_psd, i_psd, [3]; factor = :condition, levels = ["b"], condition = nothing,
+    group = nothing, db = true,
+)
+@test S[1][3, :] ≈ 10 .* log10.(m_psd.data[4, 2, 3, :])
+@test plot_study_psd(st; ch = "Cz") isa GLMakie.Figure
+rp = study_stats(st, :psd; factor = :condition, correction = :none)
+@test plot_study_psd(st; ch = ["Fp1", "Cz"], diff = true, stats = rp, band = :ci95,
+                     subjects = true, flim = (1, 30), frq = :log, mono = true) isa
+      GLMakie.Figure
+@test plot_study_psd(st; ch = "Cz", factor = :group, condition = "a", diff = true,
+                     db = false) isa GLMakie.Figure
+@test_throws ArgumentError plot_study_psd(st; ch = "X")
+@test_throws ArgumentError plot_study_psd(st; ch = "Cz", frq = :x)
+@test_throws ArgumentError plot_study_psd(st; ch = "Cz", flim = (30, 1))
+@test_throws ArgumentError plot_study_psd(st; ch = "Cz", stats = r)
+@test_throws ArgumentError plot_study_psd(st; ch = "Cz", diff = true, levels = ["a"])
+
+@info "Test: plot_study_tf()"
+@test plot_study_tf(st; ch = "Cz") isa GLMakie.Figure
+rt = study_stats(st, :tf; factor = :condition, correction = :none)
+@test plot_study_tf(st; ch = ["Fp1", "Cz"], diff = true, stats = rt, bl = (0, 0.5),
+                    flim = (2, 30), tlim = (0.25, 1.75), mono = true) isa GLMakie.Figure
+@test plot_study_tf(st; ch = "Cz", factor = :group, condition = "a", diff = true,
+                    db = false) isa GLMakie.Figure
+@test_throws ArgumentError plot_study_tf(st; ch = "O1")
+@test_throws ArgumentError plot_study_tf(st; ch = "Cz", flim = (30, 2))
+@test_throws ArgumentError plot_study_tf(st; ch = "Cz", bl = (5, 6))
+@test_throws ArgumentError plot_study_tf(st; ch = "Cz", stats = rp)
+@test_throws ArgumentError plot_study_tf(st; ch = "Cz", diff = true, levels = ["a"])
+
+@info "Test: cluster_summary(), plot_study_clusters()"
+rc = study_stats(st, :erp; factor = :condition, nperm = 100, rng = Random.Xoshiro(1),
+                 ch_adj = trues(4, 4))
+@test length(rc.null) == 100 && isfinite(rc.threshold)
+cs = cluster_summary(rc)
+@test cs.id == rc.clusters.id && cs.mass ≈ rc.clusters.mass
+for c in eachrow(cs)
+    pts = findall(==(c.id), rc.cluster_id)
+    @test c.t_start == rc.t[minimum(p[2] for p in pts)]
+    @test c.n_channels == length(unique(p[1] for p in pts))
+    @test abs(c.peak) == maximum(abs(rc.stat[p]) for p in pts)
+    @test c.significant == any(rc.mask[pts])
+end
+@test !(:f_start in propertynames(cs))
+@test plot_study_clusters(rc) isa GLMakie.Figure
+@test plot_study_clusters(rc; n = 2, mono = true) isa GLMakie.Figure
+rct = study_stats(st, :tf; factor = :condition, nperm = 50, rng = Random.Xoshiro(1))
+cst = cluster_summary(rct)
+@test :f_start in propertynames(cst) && :t_start in propertynames(cst)
+@test plot_study_clusters(rct) isa GLMakie.Figure
+rcn = study_stats(st, :erp; factor = :condition, correction = :none)
+@test isempty(rcn.null) && isnan(rcn.threshold)
+@test_throws ArgumentError cluster_summary(rcn)
+@test_throws ArgumentError plot_study_clusters(rcn)
+@test_throws ArgumentError cluster_summary((a = 1,))
+@test_throws ArgumentError plot_study_clusters(rc; n = 0)
+
 @info "Test: plot_study_stats()"
 lbl = ["O1", "Fp1-avg", "Cz", "T3", "Fz", "F4", "F7", "P3", "EOG", "Pz", "F3"]
 @test lbl[NeuroAnalyzer._region_order(lbl)] ==
@@ -357,5 +418,35 @@ r3 = study_stats(st, :erp; condition = "a", levels = ["p", "c"], correction = :f
 @test_throws ArgumentError plot_study_stats((a = 1,))
 @test_throws ArgumentError plot_study_stats(r; value = :x)
 @test_throws ArgumentError plot_study_stats(r; ch = "Cz")
+
+@info "Test: plot_study_topo()"
+# subject averages of the levels (all channels)
+lv, A, subj = NeuroAnalyzer._study_level_data(
+    m_erp, d_erp, i_erp; factor = :group, levels = ["c", "p"], condition = "a",
+    group = nothing,
+)
+@test lv == ["c", "p"] && subj == [["02", "04"], ["01", "03"]]
+@test size(A[1]) == (2, 4, length(m_erp.t))
+@test A[2][1, :, :] ≈ (x[1, 1, :, :] .+ x[2, 1, :, :]) ./ 2
+@test all(isnan, A[2][2, 2, :])
+r = study_stats(st, :erp; factor = :condition, correction = :none)
+# (the locations of the test recording have no coordinates)
+@test_throws ArgumentError plot_study_topo(st)
+l1020 = import_locs(joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+@test plot_study_topo(st; locs = l1020) isa GLMakie.Figure
+@test plot_study_topo(st; diff = true, stats = r, width = 0.5, lim = (0, 1), locs = l1020) isa
+      GLMakie.Figure
+@test plot_study_topo(st; factor = :group, condition = "a", windows = [(0, 0.2), (0.5, 1)],
+                      diff = true, mono = true, locs = l1020) isa GLMakie.Figure
+rp = study_stats(st, :psd; factor = :condition, correction = :none)
+@test plot_study_topo(st, :psd; windows = [(4, 8), (8, 13)], stats = rp, locs = l1020) isa
+      GLMakie.Figure
+@test_throws ArgumentError plot_study_topo(st, :tf)
+@test_throws ArgumentError plot_study_topo(st; stats = rp)
+@test_throws ArgumentError plot_study_topo(st; diff = true, levels = ["a"])
+@test_throws ArgumentError plot_study_topo(st; windows = [(0.5, 0.2)])
+@test_throws ArgumentError plot_study_topo(st; windows = [(5, 6)])
+@test_throws ArgumentError plot_study_topo(st; windows = [(0, 0.2)], width = 0.1)
+@test_throws ArgumentError plot_study_topo(st; condition = "a")
 
 true
