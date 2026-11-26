@@ -105,7 +105,7 @@ function plot_topo(
     end
 
     # set color palette
-    pal = mono ? :grays : :bluesreds
+    pal = _palette(:bluesreds; mono = mono)
 
     # number of channels
     ch_n = length(ch)

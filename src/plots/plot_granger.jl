@@ -79,7 +79,7 @@ function _plot_granger_matrix(
         nothing
     end
 
-    pal = mono ? :grays : :viridis
+    pal = _palette(:viridis; mono = mono)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_granger()")

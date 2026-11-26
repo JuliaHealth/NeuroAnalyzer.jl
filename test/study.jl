@@ -299,4 +299,63 @@ s9 = load_study(sf; root = root)
 @test_throws ArgumentError load_study(joinpath(root, files[1]))
 @test_throws ArgumentError load_neuro(sf)
 
+
+@info "Test: plot_study_erp()"
+x = st.measures[:erp].data
+m_erp = st.measures[:erp]
+d_erp, i_erp = NeuroAnalyzer._study_measure_rows(st, m_erp)
+# conditions (within subjects): subject 01 = mean of its 2 sessions
+lv, S, subj = NeuroAnalyzer._study_level_erps(
+    m_erp, d_erp, i_erp, [1]; factor = :condition, levels = nothing, condition = nothing,
+    group = nothing,
+)
+@test lv == ["a", "b"] && subj[1] == ["01", "02", "03", "04"]
+@test S[1][1, :] ≈ (x[1, 1, 1, :] .+ x[2, 1, 1, :]) ./ 2
+@test S[2][3, :] ≈ x[4, 2, 1, :]
+# groups (between subjects), region of interest: mean of Fp1 and Fp2; Fp2 is bad in 03
+lv, S, subj = NeuroAnalyzer._study_level_erps(
+    m_erp, d_erp, i_erp, [1, 2]; factor = :group, levels = ["c", "p"], condition = "a",
+    group = nothing,
+)
+@test lv == ["c", "p"] && subj == [["02", "04"], ["01", "03"]]
+@test S[1][1, :] ≈ (x[3, 1, 1, :] .+ x[3, 1, 2, :]) ./ 2
+@test S[2][2, :] ≈ x[4, 1, 1, :]
+# grand average and bands
+g = NeuroAnalyzer._ga_band(S[1], :ci95)
+@test g.m ≈ vec(mean(S[1]; dims = 1)) && g.n == 2
+@test g.ul .- g.m ≈ vec(std(S[1]; dims = 1)) ./ sqrt(2) .* 12.706204736174698 rtol = 1e-6
+g = NeuroAnalyzer._ga_band(S[1], :se)
+@test g.ul .- g.m ≈ vec(std(S[1]; dims = 1)) ./ sqrt(2)
+@test NeuroAnalyzer._true_runs([false, true, true, false, true]) == [(2, 3), (5, 5)]
+# plots
+@test plot_study_erp(st; ch = "Fp1") isa GLMakie.Figure
+@test plot_study_erp(st; ch = ["Fp1", "Fp2"], factor = :group, condition = "a",
+                     subjects = true, diff = true, band = :se) isa GLMakie.Figure
+r = study_stats(st, :erp; factor = :condition, correction = :none)
+@test plot_study_erp(st; ch = "Cz", diff = true, stats = r, yrev = true, mono = true) isa
+      GLMakie.Figure
+@test plot_study_erp(st; ch = "Cz", factor = :session, condition = "a") isa GLMakie.Figure
+@test_throws ArgumentError plot_study_erp(st; ch = "X")
+@test_throws ArgumentError plot_study_erp(st; ch = "Cz", factor = :group)
+@test_throws ArgumentError plot_study_erp(st; ch = "Cz", levels = ["a", "z"])
+@test_throws ArgumentError plot_study_erp(st; ch = "Cz", factor = :group, condition = "a",
+                                          levels = ["p"], diff = true)
+@test_throws ArgumentError plot_study_erp(st; ch = "Cz", stats = (kind = :psd,))
+
+@info "Test: plot_study_stats()"
+lbl = ["O1", "Fp1-avg", "Cz", "T3", "Fz", "F4", "F7", "P3", "EOG", "Pz", "F3"]
+@test lbl[NeuroAnalyzer._region_order(lbl)] ==
+      ["Fp1-avg", "F7", "F3", "Fz", "F4", "Cz", "T3", "P3", "Pz", "O1", "EOG"]
+@test NeuroAnalyzer._channel_region("C4")[1] == "central"
+@test NeuroAnalyzer._channel_region("ECG")[1] == "other"
+r = study_stats(st, :erp; factor = :condition, correction = :none)
+@test plot_study_stats(r) isa GLMakie.Figure
+@test plot_study_stats(r; value = :p, sig = :both, order = :none, mono = true) isa
+      GLMakie.Figure
+r3 = study_stats(st, :erp; condition = "a", levels = ["p", "c"], correction = :fdr)
+@test plot_study_stats(r3; value = :p_adj, sig = :dim) isa GLMakie.Figure
+@test_throws ArgumentError plot_study_stats((a = 1,))
+@test_throws ArgumentError plot_study_stats(r; value = :x)
+@test_throws ArgumentError plot_study_stats(r; ch = "Cz")
+
 true

@@ -103,7 +103,7 @@ function plot_mep(
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # number of channels
     ch_n = size(s, 1)
@@ -142,7 +142,7 @@ function plot_mep(
         # draw mean
         GLMakie.lines!(ax, t, s_m; color = :black, linewidth = 2)
     else
-        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+        cmap = _trace_colors(ch_n; mono = mono)
         for idx = 1:ch_n
             GLMakie.lines!(
                 ax, t, s[idx, :];
@@ -216,7 +216,7 @@ function plot_mep_stack(
     )
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # apply Gaussian filter if requested
     smooth && (s = imfilter(s, Kernel.gaussian(ks)))

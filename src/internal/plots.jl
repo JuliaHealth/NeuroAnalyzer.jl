@@ -417,10 +417,23 @@ Colors of the traces of a multi-channel line plot (`plot_psd()`, `plot_phs()`, `
 - `mono::Bool`: monochrome palette
 - `black::Bool`: all traces black (single channel, or only the mean ± 95% CI is drawn)
 """
-function _trace_colors(n::Int64; mono::Bool, black::Bool)::Vector
-    return black ? fill(:black, n) :
-           GLMakie.resample_cmap(mono ? :grays : :darktest, max(2, n))[1:n]
+function _trace_colors(n::Int64; mono::Bool, black::Bool = false)::Vector
+    black && return fill(:black, n)
+    # mono: grays from black to mid-gray (never white, which is invisible on the background)
+    mono && return [GLMakie.RGBf(g, g, g) for g in range(0, _MONO_MAXGRAY; length = n)]
+    return GLMakie.resample_cmap(:darktest, max(2, n))[1:n]
 end
+
+# monochrome palettes, used by all plots with `mono = true`:
+# - continuous color scales (heatmaps, topographical maps, spectrograms): _MONO_CMAP
+# - colors of overlaid traces (e.g. butterfly plots): _trace_colors(n; mono = true),
+#   grays from black to _MONO_MAXGRAY
+# (traces drawn in separate rows, e.g. signal plots, are black)
+const _MONO_CMAP = :grays
+const _MONO_MAXGRAY = 0.6
+
+# continuous color scale `name`, or the monochrome color scale
+_palette(name::Symbol; mono::Bool) = mono ? _MONO_CMAP : name
 
 """
     _ch_locs_inset!(fig, obj, ch, colors; <keyword arguments>)
@@ -470,6 +483,16 @@ function _ch_locs_inset!(
     return nothing
 end
 
+# figure `pl` rendered to an image, with the white background made transparent
+function _figure_image(pl::GLMakie.Figure)::Matrix{RGBA{Float64}}
+    img = GLMakie.colorbuffer(pl)
+    # (colorbuffer gives 8-bit N0f8 colors, whose sums wrap around: convert to Float64 first)
+    return map(img) do c
+        r, g, b = Float64(red(c)), Float64(green(c)), Float64(blue(c))
+        return RGBA(r, g, b, r + g + b > 2.97 ? 0.0 : 1.0)
+    end
+end
+
 """
     _figure_inset!(fig, pl; <keyword arguments>)
 
@@ -493,13 +516,7 @@ function _figure_inset!(
     _check_var(pos, [:outside, :rt, :lt, :rb, :lb], "pos")
     isnothing(width) || width > 0 || throw(ArgumentError("width must be > 0."))
 
-    img = GLMakie.colorbuffer(pl)
-    # white background → transparent
-    # (colorbuffer gives 8-bit N0f8 colors, whose sums wrap around: convert to Float64 first)
-    img = map(img) do c
-        r, g, b = Float64(red(c)), Float64(green(c)), Float64(blue(c))
-        return RGBA(r, g, b, r + g + b > 2.97 ? 0.0 : 1.0)
-    end
+    img = _figure_image(pl)
     w = isnothing(width) ? size(img, 2) : width
     h = round(Int64, w * size(img, 1) / size(img, 2))
 

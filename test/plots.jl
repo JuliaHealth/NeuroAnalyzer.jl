@@ -46,6 +46,13 @@ p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], avg = false, gui = false)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], ci95 = true, gui = false)
 @test p isa GLMakie.Figure
+p = plot_erp(e10_erp; ch = "Fp1", ci95 = true, gui = false)
+@test p isa GLMakie.Figure
+p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], ci95 = true, ci_over = :epochs, gui = false)
+@test p isa GLMakie.Figure
+@test_throws ArgumentError plot_erp(e10_erp; ch = "Fp1", ci_over = :x, gui = false)
+@test_throws ArgumentError plot_erp(extract_epoch(e10_erp; ep = 1); ch = "Fp1", ci95 = true,
+                                    gui = false)
 p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :stack, gui = false)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp; ch = "Fp1", type = :stack, gui = false)
@@ -54,6 +61,16 @@ p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :topo, gui = false)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], type = :gfp, gui = false)
 @test p isa GLMakie.Figure
+p = plot_erp(e10_erp; ch = "eeg", tm = [100, 250, 400], tm_topo = true, gui = false)
+@test p isa GLMakie.Figure
+p = plot_erp(e10_erp; ch = "Fp1", tm = 200, tm_topo = true, gui = false)
+@test p isa GLMakie.Figure
+p = plot_erp(e10_erp; ch = "eeg", tm = [100, 300], tm_topo = true, type = :gfp, gui = false)
+@test p isa GLMakie.Figure
+@test_throws ArgumentError plot_erp(e10_erp; ch = "eeg", tm_topo = true, gui = false)
+@test_throws ArgumentError plot_erp(
+    e10_erp; ch = "eeg", tm = 100, tm_topo = true, type = :stack, gui = false,
+)
 
 @info "Test: plot_filter()"
 p = plot_filter(;

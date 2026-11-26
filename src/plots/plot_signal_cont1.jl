@@ -71,7 +71,7 @@ function plot_cont(
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # set maximum length to display
     if signal_len(obj) <= seg[2] * sr(obj)

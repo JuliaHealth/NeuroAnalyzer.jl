@@ -162,7 +162,7 @@ function plot_locs(
     _check_var(plane, [:xy, :yz, :xz], "plane")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # significant channel labels
     sch_labels = ch_labels
@@ -335,7 +335,7 @@ function plot_locs(
     # draw channel markers
     ch_n = length(ch)
     # (resample_cmap needs ≥ 2 colors)
-    cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+    cmap = _trace_colors(ch_n; mono = mono)
     sch_set = Set(sch)
 
     for (i, idx) in enumerate(ch)

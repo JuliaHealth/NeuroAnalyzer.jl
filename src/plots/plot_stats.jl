@@ -65,7 +65,7 @@ function plot_histogram(
     type === :kd && (type = :density)
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_histogram()")
@@ -163,7 +163,7 @@ function plot_bar(
     )
 
     # set color palette
-    pal   = mono ? :grays : :darktest
+    pal   = _palette(:darktest; mono = mono)
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
@@ -290,7 +290,7 @@ function plot_line(
     )
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # set y-axis limits
     yl = _ylims_padded(s)
@@ -313,7 +313,7 @@ function plot_line(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-    cmap = GLMakie.resample_cmap(pal, max(2, size(s, 1)))
+    cmap = _trace_colors(size(s, 1); mono = mono)
     for idx in axes(s, 1)
         GLMakie.lines!(
             eachindex(glabels),
@@ -365,7 +365,7 @@ function plot_box(
     )
 
     # set color palette
-    pal   = mono ? :grays : :darktest
+    pal   = _palette(:darktest; mono = mono)
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
@@ -433,7 +433,7 @@ function plot_violin(
     )
 
     # set color palette
-    pal   = mono ? :grays : :darktest
+    pal   = _palette(:darktest; mono = mono)
     color = mono ? :lightgrey : :lightblue
 
     # set y-axis limits
@@ -502,7 +502,7 @@ function plot_dots(
     )
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # set y-axis limits
     yl = _ylims_padded(s)
@@ -525,7 +525,7 @@ function plot_dots(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-    cmap = GLMakie.resample_cmap(pal, max(2, length(glabels)))
+    cmap = _trace_colors(length(glabels); mono = mono)
     for idx in eachindex(glabels)
         if mono
             GLMakie.scatter!(repeat([idx], size(s, 2)), s[idx, :]; color = :black)
@@ -576,7 +576,7 @@ function plot_paired(
     )
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # set y-axis limits
     yl = _ylims_padded(s)
@@ -604,7 +604,7 @@ function plot_paired(
     GLMakie.ylims!(ax, yl)
     _style_axis!(ax)
 
-    cmap = GLMakie.resample_cmap(pal, max(2, length(glabels)))
+    cmap = _trace_colors(length(glabels); mono = mono)
 
     for idx in eachindex(glabels)
         if mono

@@ -64,7 +64,7 @@ function plot_locs3d(
     end
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
     effective_alpha = mesh_type === :head ? 1.0 : mesh_alpha
 
     if cart
@@ -124,7 +124,7 @@ function plot_locs3d(
     mesh_type !== :disabled && GLMakie.mesh!(msh; alpha = effective_alpha, color = :gray)
 
     ch_n = length(ch)
-    cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+    cmap = _trace_colors(ch_n; mono = mono)
 
     # markers of all channels (selected ones in color); color index = position in ch,
     # as in plot_locs()

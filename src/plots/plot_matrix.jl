@@ -59,7 +59,7 @@ function plot_matrix(
     n = size(m, 1)
 
     # set color palette
-    pal = mono ? :grays : :bluesreds
+    pal = _palette(:bluesreds; mono = mono)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_matrix()")
@@ -196,7 +196,7 @@ function plot_heatmap(
     )
 
     # set color palette
-    pal = mono ? :grays : :bluesreds
+    pal = _palette(:bluesreds; mono = mono)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_heatmap()")

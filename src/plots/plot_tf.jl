@@ -67,7 +67,7 @@ function plot_eros(
     _check_tuple(flim, extrema(sf), "flim")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # colorbar title
     cb_title = db ? "[dB $units^2/Hz]" : "[$units^2/Hz]"

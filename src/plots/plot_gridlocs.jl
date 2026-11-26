@@ -43,10 +43,10 @@ Plot a simplified grid layout of standard 10-20 EEG channels for reference.
 """
 function plot_gridlocs(; mono::Bool = false)::GLMakie.Figure
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     ch_n = length(_GRIDLOCS_LABELS)
-    cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+    cmap = _trace_colors(ch_n; mono = mono)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_gridlocs()")

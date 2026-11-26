@@ -41,7 +41,7 @@ function plot_coherence(
     _check_tuple(flim, extrema(f), "flim")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # log scale: the lower frequency bound must be > 0
     flim = _log_flim(f, flim, frq)
@@ -148,7 +148,7 @@ function plot_coherence(
     ch_n = size(coh, 1)
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # prepare plot
     GLMakie.activate!(; title = "plot_coherence()")
@@ -203,7 +203,7 @@ function plot_coherence(
     else
 
         # set color palette
-        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+        cmap = _trace_colors(ch_n; mono = mono)
 
         # plot each channel's coherence
         for idx = 1:ch_n

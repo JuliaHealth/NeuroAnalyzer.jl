@@ -75,7 +75,7 @@ function plot_spectrogram(
     _check_tuple(flim, extrema(sf), "flim")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # apply Gaussian filter if requested
     smooth && (sp = imfilter(sp, Kernel.gaussian(ks)))
@@ -210,7 +210,7 @@ function plot_spectrogram(
     _check_tuple(flim, extrema(sf), "flim")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # apply Gaussian filter if requested
     smooth && (sp = imfilter(sp, Kernel.gaussian(ks)))
@@ -345,7 +345,7 @@ function plot_spectrogram_topo(
     _check_tuple(flim, extrema(sf), "flim")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # prepare log-scaled frequencies axis
     flim = _log_flim(sf, flim, frq)

@@ -677,6 +677,7 @@ include("study/apply.jl")
 include("study/measure.jl")
 include("study/average.jl")
 include("study/stats.jl")
+include("study/plot.jl")
 
 # ---------------------------------------------------------------------------
 

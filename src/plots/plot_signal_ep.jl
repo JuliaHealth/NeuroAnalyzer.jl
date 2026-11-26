@@ -69,7 +69,7 @@ function plot_ep(
     !_has_markers(obj) && (markers = false)
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     _check_epochs(obj, ep)
     ep_len = epoch_duration(obj)

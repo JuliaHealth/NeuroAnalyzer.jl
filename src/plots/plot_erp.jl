@@ -143,7 +143,7 @@ function plot_erp(
         throw(ArgumentError("Signal contains non-finite values"))
 
     # select color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # number of channels
     ch_n = size(s, 1)
@@ -192,7 +192,7 @@ function plot_erp(
         GLMakie.Makie.lines!(ax, t, s_m; color = :black, linewidth = 2)
     else
         # plot individual channels
-        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+        cmap = _trace_colors(ch_n; mono = mono)
         for idx = 1:ch_n
             GLMakie.lines!(
                 ax,
@@ -277,7 +277,7 @@ function plot_erp_topo(
         throw(ArgumentError("Signal contains non-finite values"))
 
     # select color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # number of channels
     ch_n = size(s, 1)
@@ -510,7 +510,7 @@ function plot_erp_stack(
     end
 
     # select color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # apply smoothing if requested
     if smooth
@@ -652,7 +652,8 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object containing ERP/ERF data
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, bad channels are not used for the average, the 95% CI (`type = :normal`) and the GFP (`type = :gfp`); all selected channels are shown, bad channels are marked (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
-- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines, useful for adding topoplots at these time points
+- `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) to plot as vertical lines
+- `tm_topo::Bool=false`: if `true`, draw small topographical maps at the time markers `tm` above the plot, with lines pointing to these time points (only for `type = :normal` and `type = :gfp`); the maps are evenly spaced, show all channels of the type of the plotted channels that have locations (bad channels are marked; with `exclude_bad_channels` they are not interpolated) and share one symmetric color range (colorbar on the right)
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title
@@ -667,7 +668,12 @@ Plot Event-Related Potential/Field (ERP/ERF) from a NEURO object.
     - `:topo`: topographical plot
 - `yrev::Bool=false`: if `true`, reverse the y-axis
 - `avg::Bool=true`: if `true`, plot averaged ERP
-- `ci95::Bool=false`: if `true`, plot mean and ±95% CI
+- `ci95::Bool=false`: if `true`, plot the mean and its 95% CI (over channels or epochs, see `ci_over`)
+- `ci_over::Symbol=:channels`: with several channels, the 95% CI is calculated over:
+    - `:channels`: the channels of the ERP (epoch 1)
+    - `:epochs`: the epochs following the ERP (the single trials of `average_epochs()` or the subjects of `study_erp()`), each the mean of the channels (with `exclude_bad_channels` without the bad channels)
+
+  with one channel, the CI is always calculated over the epochs
 - `smooth::Bool=false`: if `true`, apply Gaussian blur smoothing
 - `ks::Int64=3`: smoothing kernel size; larger kernel means more smoothing
 - `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time for each epoch; if provided, the response time line will be plotted over the `:stack` plot
@@ -688,6 +694,7 @@ function plot_erp(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     tm::Union{Nothing, Int64, Vector{Int64}} = nothing,
+    tm_topo::Bool = false,
     xlabel::String = "default",
     ylabel::String = "default",
     title::String = "default",
@@ -699,6 +706,7 @@ function plot_erp(
     yrev::Bool = false,
     avg::Bool = true,
     ci95::Bool = false,
+    ci_over::Symbol = :channels,
     smooth::Bool = false,
     ks::Int64 = 3,
     rt::Union{Nothing, Real, AbstractVector} = nothing,
@@ -715,6 +723,15 @@ function plot_erp(
     # validate
     _check_datatype(obj, ["erp", "erf"])
     _check_var(type, [:normal, :topo, :stack, :gfp], "type")
+    _check_var(ci_over, [:channels, :epochs], "ci_over")
+    # the CI over epochs needs ≥ 2 epochs after the ERP
+    ci95 && type === :normal && (length(ch) == 1 || ci_over === :epochs) && nepochs(obj) < 3 &&
+        throw(ArgumentError("ci95 over epochs requires ≥ 2 epochs after the ERP (epoch 1)."))
+    if tm_topo
+        isnothing(tm) && throw(ArgumentError("tm must be specified for tm_topo."))
+        type in (:normal, :gfp) ||
+            throw(ArgumentError("tm_topo can only be used for type = :normal or :gfp."))
+    end
 
     # all selected channels are shown (bad channels are marked); with exclude_bad_channels
     # the bad channels are not used for the average, the 95% CI and the GFP
@@ -791,19 +808,39 @@ function plot_erp(
                 title,
                 "Time [s]",
                 "Amplitude [$units]",
-                "ERP amplitude, $(clabels[1])$(bad[1] ? " (bad)" : ""), avgₑ: $ep_n",
+                "ERP amplitude, $(clabels[1])$(bad[1] ? " (bad)" : ""), avgₑ: $ep_n" *
+                (ci95 ? ", 95% CI over epochs" : ""),
             )
-            fig = plot_erp(
-                t,
-                s;
-                xlabel = xl,
-                ylabel = yl,
-                title = tt,
-                rt = rt,
-                yrev = yrev,
-                zl = zl,
-                mono = mono,
-            )
+            fig = if ci95
+                # mean and 95% CI over the epochs following the ERP
+                plot_erp(
+                    t,
+                    Matrix(obj.data[ch[1], :, 2:end]');
+                    xlabel = xl,
+                    ylabel = yl,
+                    title = tt,
+                    clabels = string.(1:ep_n),
+                    rt = rt,
+                    yrev = yrev,
+                    avg = false,
+                    ci95 = true,
+                    leg = false,
+                    zl = zl,
+                    mono = mono,
+                )
+            else
+                plot_erp(
+                    t,
+                    s;
+                    xlabel = xl,
+                    ylabel = yl,
+                    title = tt,
+                    rt = rt,
+                    yrev = yrev,
+                    zl = zl,
+                    mono = mono,
+                )
+            end
             ch_locs && _ch_locs_inset!(fig, obj, ch, [:black]; pos = ch_locs_pos)
         end
 
@@ -817,25 +854,47 @@ function plot_erp(
             title,
             "Time [s]",
             "Amplitude [$units]",
-            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n",
+            "ERP amplitude, $(length(ch)) channels, avgₑ: $ep_n" *
+            (ci95 ? ", 95% CI over $(ci_over)" : ""),
         )
-        fig = plot_erp(
-            t,
-            s;
-            xlabel = xl,
-            ylabel = yl,
-            title = tt,
-            clabels = clabels,
-            rt = rt,
-            yrev = yrev,
-            avg = avg,
-            ci95 = ci95,
-            leg = leg,
-            zl = zl,
-            mono = mono,
-            bad = bad,
-            exclude_bad = exclude_bad_channels,
-        )
+        fig = if ci95 && ci_over === :epochs
+            # each epoch following the ERP: the mean of the (good) channels
+            ch_m = exclude_bad_channels && !all(bad) ? ch[.!bad] : ch
+            S = dropdims(mean(obj.data[ch_m, :, 2:end]; dims = 1); dims = 1)
+            plot_erp(
+                t,
+                Matrix(S');
+                xlabel = xl,
+                ylabel = yl,
+                title = tt,
+                clabels = string.(1:ep_n),
+                rt = rt,
+                yrev = yrev,
+                avg = false,
+                ci95 = true,
+                leg = false,
+                zl = zl,
+                mono = mono,
+            )
+        else
+            plot_erp(
+                t,
+                s;
+                xlabel = xl,
+                ylabel = yl,
+                title = tt,
+                clabels = clabels,
+                rt = rt,
+                yrev = yrev,
+                avg = avg,
+                ci95 = ci95,
+                leg = leg,
+                zl = zl,
+                mono = mono,
+                bad = bad,
+                exclude_bad = exclude_bad_channels,
+            )
+        end
         ch_locs && _ch_locs_inset!(
             fig, obj, ch, _trace_colors(length(ch); mono = mono, black = ci95);
             pos = ch_locs_pos,
@@ -1004,5 +1063,125 @@ function plot_erp(
         end
     end
 
+    # topographical maps at the time markers, above the plot (drawn last: the plot moves
+    # to the second layout row)
+    tm_topo && _erp_topo_row!(
+        fig, obj, ch, t, tm isa Int64 ? [tm] : tm;
+        units = units, mono = mono, exclude_bad_channels = exclude_bad_channels,
+    )
+
     return fig
+end
+
+# small topographical maps at the time points `tm` (in milliseconds) in a row above the
+# plot of `fig`, connected by lines with the time points on the time axis of the plot;
+# channels: all channels of the type of the plotted channels `ch` that have locations
+function _erp_topo_row!(
+    fig::GLMakie.Figure,
+    obj::NeuroAnalyzer.NEURO,
+    ch::AbstractVector{<:Integer},
+    t::AbstractVector,
+    tm::Vector{Int64};
+    units::String,
+    mono::Bool,
+    exclude_bad_channels::Bool,
+)::Nothing
+    _has_locs(obj)
+    ch_type = obj.header.recording[:channel_type][ch[1]]
+    t_lbl = labels(obj)[obj.header.recording[:channel_type] .== ch_type]
+    locs = Base.filter(:label => in(Set(t_lbl)), _locs_unit(obj.locs))
+    # data rows of the location rows (matched by label)
+    ch_idx = [findfirst(==(l), labels(obj)) for l in locs[!, :label]]
+    bad_rows = findall(obj.header.recording[:bad_channel][ch_idx])
+    ch_rows = exclude_bad_channels ? setdiff(1:length(ch_idx), bad_rows) :
+              collect(1:length(ch_idx))
+    length(ch_rows) >= 3 || throw(
+        ArgumentError(
+            "tm_topo requires ≥ 3 channels of type $ch_type with locations (not bad).",
+        ),
+    )
+
+    # values at the time points (averaged epoch), one color range for all maps
+    t_idx = [vsearch(m / 1000, t) for m in tm]
+    v = obj.data[ch_idx, t_idx, 1]
+    v_max = maximum(abs, v[ch_rows, :])
+    v_max > 0 || (v_max = 1.0)
+    crange = (-v_max, v_max)
+    pal = _palette(:bluesreds; mono = mono)
+
+    # map size [px]; the figure is made higher by the row of maps
+    w = 110
+    fw, fh = fig.scene.viewport[].widths
+    GLMakie.resize!(fig.scene, round(Int64, fw), round(Int64, fh + w + 30))
+
+    # (bottom margin: room for the lines between the maps and the plot)
+    top = GLMakie.GridLayout(fig[0, 1]; alignmode = Outside(0, 0, 20, 0))
+    # the plot title is moved above the maps (the lines would cross it)
+    ax = _main_axis(fig)
+    r = 1
+    if !isempty(ax.title[])
+        GLMakie.Label(
+            top[1, 1:(length(tm) + 1)], ax.title[];
+            fontsize = ax.titlesize[], font = ax.titlefont[], tellwidth = false,
+        )
+        ax.title = ""
+        r = 2
+    end
+    axs = GLMakie.Axis[]
+    for (i, m) in enumerate(tm)
+        pl = plot_topo(
+            v[ch_rows, i];
+            locs      = locs,
+            ch        = ch_rows,
+            bad       = bad_rows,
+            cb        = false,
+            ps        = :m,
+            nmethod   = :none,
+            crange    = crange,
+            mono      = mono,
+            ch_labels = false,
+        )
+        ax_t = GLMakie.Axis(
+            top[r, i];
+            height          = w,
+            aspect          = DataAspect(),
+            title           = "$m ms",
+            titlesize       = 11,
+            titlegap        = 2,
+            titlefont       = :regular,
+            backgroundcolor = :transparent,
+            _AXIS_LOCK_KWARGS...,
+        )
+        hidedecorations!(ax_t)
+        hidespines!(ax_t)
+        GLMakie.image!(ax_t, rotr90(_figure_image(pl)))
+        push!(axs, ax_t)
+    end
+    GLMakie.Colorbar(
+        top[r, length(tm) + 1];
+        colormap      = pal,
+        limits        = crange,
+        label         = "[$units]",
+        labelsize     = 10,
+        ticklabelsize = 9,
+        ticks         = _cb_tickfun(; n = 3),
+        height        = round(Int64, 0.8 * w),
+        width         = 8,
+        tellheight    = false,
+    )
+
+    # lines from the bottom of each map to its time point at the top of the plot
+    for (i, ax_t) in enumerate(axs)
+        tp = t[t_idx[i]]
+        pts = GLMakie.lift(ax_t.scene.viewport, ax.scene.viewport, ax.finallimits) do vt, vm, lim
+            x = vm.origin[1] + (tp - lim.origin[1]) / lim.widths[1] * vm.widths[1]
+            return [
+                Point2f(vt.origin[1] + vt.widths[1] / 2, vt.origin[2]),
+                Point2f(x, vm.origin[2] + vm.widths[2]),
+            ]
+        end
+        GLMakie.lines!(fig.scene, pts; space = :pixel, color = :black, linewidth = 0.75)
+    end
+
+    return nothing
 end

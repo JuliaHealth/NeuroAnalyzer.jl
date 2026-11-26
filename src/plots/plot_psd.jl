@@ -133,7 +133,7 @@ function plot_psd(
     avg && ci95 && throw(ArgumentError("avg and ci95 cannot both be true."))
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # number of channels
     ch_n = size(p, 1)
@@ -188,7 +188,7 @@ function plot_psd(
         # draw mean
         GLMakie.lines!(ax, f[f1:f2], s_m; color = :black, linewidth = 2)
     else
-        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+        cmap = _trace_colors(ch_n; mono = mono)
         for idx = 1:ch_n
             Makie.lines!(
                 ax,
@@ -264,7 +264,7 @@ function plot_psd_3d(
     _check_tuple(flim, extrema(f), "flim")
 
     # set color palette
-    pal = mono ? :grays : :darktest
+    pal = _palette(:darktest; mono = mono)
 
     # number of channels
     ch_n = size(p, 1)
@@ -313,7 +313,7 @@ function plot_psd_3d(
 
     # plot powers
     if variant === :w
-        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+        cmap = _trace_colors(ch_n; mono = mono)
         for idx = 1:ch_n
             GLMakie.lines!(
                 fx,
@@ -326,7 +326,7 @@ function plot_psd_3d(
         end
     elseif variant === :s
         # plot powers
-        cmap = GLMakie.resample_cmap(pal, max(2, ch_n))
+        cmap = _trace_colors(ch_n; mono = mono)
         GLMakie.surface!(fx, eachindex(clabels), p[:, f1:f2]'; colormap = pal)
     end
 
