@@ -311,3 +311,61 @@ function _h5_read(obj)
     # a group without a tag: dictionary of its members
     return Dict{String, Any}(_h5_unname(k) => _h5_read(obj[k]) for k in keys(obj))
 end
+
+# write a scalar variable-length UTF-8 string dataset (HDF5.jl writes scalar strings with
+# fixed length; some formats, e.g. SNIRF, require variable-length strings)
+function _h5_vstr!(parent, name::AbstractString, s::AbstractString)::Nothing
+    str = string(s)
+    dt = HDF5.Datatype(HDF5.API.h5t_copy(HDF5.API.H5T_C_S1))
+    try
+        HDF5.API.h5t_set_size(dt, HDF5.API.H5T_VARIABLE)
+        HDF5.API.h5t_set_cset(dt, HDF5.API.H5T_CSET_UTF8)
+        ds = HDF5.create_dataset(parent, name, dt, HDF5.dataspace(()))
+        try
+            GC.@preserve str HDF5.API.h5d_write(
+                ds, dt, HDF5.API.H5S_ALL, HDF5.API.H5S_ALL, HDF5.API.H5P_DEFAULT,
+                Ref(pointer(str)),
+            )
+        finally
+            close(ds)
+        end
+    finally
+        close(dt)
+    end
+    return nothing
+end
+
+"""
+    _h5_load_flat(file_name)
+
+Read all datasets of an HDF5 file (e.g. SNIRF, NWB) into a dictionary keyed by their paths (without the leading "/", e.g. "nirs/data1/time").
+
+# Arguments
+
+- `file_name::String`
+
+# Returns
+
+- `Dict{String, Any}`
+"""
+function _h5_load_flat(file_name::String)::Dict{String, Any}
+    out = Dict{String, Any}()
+    function walk(g, prefix::String)
+        for k in keys(g)
+            p = isempty(prefix) ? k : "$prefix/$k"
+            o = g[k]
+            try
+                if o isa HDF5.Group
+                    walk(o, p)
+                elseif o isa HDF5.Dataset
+                    out[p] = read(o)
+                end
+            finally
+                close(o)
+            end
+        end
+        return nothing
+    end
+    HDF5.h5open(f -> walk(f, ""), file_name, "r")
+    return out
+end

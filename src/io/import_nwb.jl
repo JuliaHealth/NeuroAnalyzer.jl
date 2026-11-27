@@ -80,7 +80,7 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
     end
 
     # load data
-    dataset = JLD2.load(file_name)
+    dataset = _h5_load_flat(file_name)
     k = keys(dataset)
 
     recording_date = ""

@@ -56,7 +56,7 @@ end
 """
     load_study(file_name; <keyword arguments>)
 
-Load a study saved by `save_study()` (also files saved with JLD2 by NeuroAnalyzer before v0.26.12).
+Load a study saved by `save_study()` (NeuroAnalyzer v0.26.12 or later).
 
 # Arguments
 
@@ -87,7 +87,6 @@ function load_study(
     end
     study = NeuroAnalyzer.STUDY(
         d["name"],
-        # (studies saved before v0.26.12 have no notes)
         d["notes"],
         r,
         d["design"],
@@ -138,25 +137,10 @@ function _study_read(file_name::String)::Dict{String, Any}
             )
         end
     end
-    fmt == "" || throw(ArgumentError("$file_name is not a NeuroAnalyzer study ($fmt)."))
-
-    # saved with JLD2 (before v0.26.12)
-    d = try
-        JLD2.load(file_name)
-    catch e
-        throw(
-            ArgumentError(
-                "$file_name is not a NeuroAnalyzer study ($(sprint(showerror, e))).",
-            ),
-        )
-    end
-    haskey(d, "neuroanalyzer_study") || throw(
+    fmt == "" && throw(
         ArgumentError(
-            "$file_name does not contain a NeuroAnalyzer study (for NEURO objects use load_neuro()).",
+            "$file_name is not a NeuroAnalyzer study of v0.26.12 or later (files saved with JLD2 by older versions of NeuroAnalyzer are not supported).",
         ),
     )
-    d["measures"] = Dict{Symbol, Any}(Symbol(k) => v for (k, v) in d["measures"])
-    # (studies saved before v0.26.12 have no notes)
-    d["notes"] = get(d, "notes", "")
-    return d
+    throw(ArgumentError("$file_name is not a NeuroAnalyzer study ($fmt)."))
 end

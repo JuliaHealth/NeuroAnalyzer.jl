@@ -130,7 +130,7 @@ Distinguish NWB from SNIRF by inspecting HDF5 root contents. Returns `:nwb`, `:s
 function _hdf5_flavor(file_name::String)::Union{Nothing, Symbol}
     # only the root keys are inspected
     k = try
-        JLD2.jldopen(f -> keys(f), file_name, "r")
+        HDF5.h5open(f -> keys(f), file_name, "r")
     catch
         return nothing
     end

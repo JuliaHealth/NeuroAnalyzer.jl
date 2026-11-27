@@ -289,6 +289,11 @@ s8 = load_study(sf)
 @test sort(collect(keys(s8.measures))) == [:erp, :psd, :tf]
 @test isequal(s8.measures[:erp].data, st.measures[:erp].data)
 @test s8.measures[:psd].params == st.measures[:psd].params
+# HDF5 encoding: measures and design restored with their types
+@test isequal(s8.measures, st.measures)
+@test typeof(s8.measures[:tf]) == typeof(st.measures[:tf])
+@test eltype.(eachcol(s8.design)) == eltype.(eachcol(st.design))
+@test_throws "not supported" load_study(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
 # measures are still up to date
 nh = length(s8.history)
 study_measure!(s8, :psd; ch = "all", flim = (0, 40))

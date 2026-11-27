@@ -697,7 +697,8 @@ d = import_dat(joinpath(testfiles_path, "eeg", "eeg-test-dat.dat"))
 @info "Test: import_nwb()"
 # minimal NWB-like file: acquisition/EEG data + timestamps, NWB root datasets
 nwb = joinpath(tmp, "rec_eeg.nwb")
-NeuroAnalyzer.JLD2.jldopen(nwb, "w") do f
+# (written with a 512 B userblock before the HDF5 signature)
+NeuroAnalyzer.HDF5.h5open(nwb, "w"; userblock = 512) do f
     f["acquisition/EEG/data"] = [1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0]
     f["acquisition/EEG/timestamps"] = [0.0, 0.01, 0.02, 0.03]
     f["file_create_date"] = "2020-01-01T10:00:00+00:00"
@@ -708,7 +709,7 @@ write(
     joinpath(tmp, "rec_events.tsv"),
     "onset\tduration\ttrial_type\tvalue\n0.01\t0\tstim\ta\n",
 )
-# JLD2 writes a 512 B userblock before the HDF5 signature: still detected by content
+# userblock before the HDF5 signature: still detected by content
 @test detect_format(nwb) === :nwb
 n = import_nwb(nwb)
 @test n.header.recording[:file_type] == "NWB"
@@ -940,18 +941,9 @@ r = keep_epoch(keep_channel(e10; ch = ["Fp1", "Cz", "O2"]); ep = [2, 4])
 @test size(load_neuro(f; ep = 3).data) == (nchannels(e10), epoch_len(e10), 1)
 @test_throws ArgumentError load_neuro(f; ep = 1000)
 @test_throws ArgumentError load_neuro(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
-# headers saved before v0.26.12: experiment → notes
-h = NeuroAnalyzer.JLD2.rconvert(
-    NeuroAnalyzer.HEADER,
-    (subject = Dict(), recording = Dict(),
-     experiment = Dict(:name => "oddball", :notes => "n", :design => "")),
-)
-@test h.notes == "Experiment: oddball\nn"
-# file shipped with the test data: an EEG object saved by an old version of NeuroAnalyzer → clear error
-# (JLD2 warns that it reconstructs the unknown type; the warning is silenced)
-@test_throws ArgumentError Base.CoreLogging.with_logger(Base.CoreLogging.NullLogger()) do
-    load_neuro(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
-end
+# file shipped with the test data: an EEG object saved with JLD2 by an old version of
+# NeuroAnalyzer → clear error
+@test_throws "not supported" load_neuro(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
 
 @info "Test: export_csv()"
 f = joinpath(tmp, "eeg.csv")

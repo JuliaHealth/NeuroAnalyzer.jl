@@ -100,7 +100,7 @@ end
 """
     load_neuro(file_name; <keyword arguments>)
 
-Load `NeuroAnalyzer.NEURO` object from `file_name` file (saved by `save_neuro()`). Files saved by NeuroAnalyzer before v0.26.12 (JLD2) are also loaded.
+Load `NeuroAnalyzer.NEURO` object from `file_name` file (saved by `save_neuro()` of NeuroAnalyzer v0.26.12 or later).
 
 Selected channels and/or epochs may be loaded: only these signals are read from the file.
 
@@ -123,31 +123,18 @@ function load_neuro(
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
     fmt = _neuro_format_version(file_name)
-    obj = if isnothing(fmt)
-        # not written by save_neuro() of v0.26.12 or later: JLD2 file
-        o = _load_neuro_jld2(file_name)
-        if !isnothing(ch)
-            n0 = length(o.history)
-            keep_channel!(o; ch = ch)
-            length(o.history) > n0 && pop!(o.history)
-        end
-        if !isnothing(ep)
-            n0 = length(o.history)
-            keep_epoch!(o; ep = ep)
-            length(o.history) > n0 && pop!(o.history)
-        end
-        o
-    else
-        fmt > _NEURO_FORMAT_VERSION && throw(
-            ArgumentError(
-                "$file_name was saved by a newer version of NeuroAnalyzer (file format version $fmt); update NeuroAnalyzer to load it.",
-            ),
-        )
-        HDF5.h5open(f -> _load_neuro_hdf5(f, fmt; ch = ch, ep = ep), file_name, "r")
-    end
+    isnothing(fmt) && throw(
+        ArgumentError(
+            "$file_name is not a NeuroAnalyzer file of v0.26.12 or later (files saved with JLD2 by older versions of NeuroAnalyzer are not supported).",
+        ),
+    )
+    fmt > _NEURO_FORMAT_VERSION && throw(
+        ArgumentError(
+            "$file_name was saved by a newer version of NeuroAnalyzer (file format version $fmt); update NeuroAnalyzer to load it.",
+        ),
+    )
+    obj = HDF5.h5open(f -> _load_neuro_hdf5(f, fmt; ch = ch, ep = ep), file_name, "r")
 
-    # objects saved by older versions
-    _neuro_upgrade!(obj)
     (isnothing(ch) && isnothing(ep)) || _history!(obj, "load_neuro", (; ch, ep))
 
     _info(
@@ -159,8 +146,8 @@ function load_neuro(
     return obj
 end
 
-# file format version of a NEURO file written by save_neuro(); nothing: not such a file
-# (e.g. a JLD2 file of an older version)
+# file format version of a NEURO file written by save_neuro(); nothing: an HDF5 file without
+# the format attribute (e.g. a JLD2 file of an older version)
 function _neuro_format_version(file_name::String)::Union{Nothing, Int64}
     HDF5.ishdf5(file_name) || throw(
         ArgumentError("$file_name is not a NeuroAnalyzer file (not an HDF5 file)."),
@@ -271,80 +258,4 @@ function _load_neuro_hdf5(
     obj.epochs = _epochs_table(obj)
 
     return obj
-end
-
-# upgrades of objects saved by older versions of NeuroAnalyzer
-function _neuro_upgrade!(obj::NeuroAnalyzer.NEURO)::Nothing
-    # marker channels saved as numbers → channel labels
-    _markers_upgrade!(obj)
-    _epochs_upgrade!(obj)
-    # recording notes (before v0.26.12: header.recording[:recording_notes]) → header notes
-    rn = strip(string(pop!(obj.header.recording, :recording_notes, "")))
-    isempty(rn) ||
-        (obj.header.notes = isempty(obj.header.notes) ? rn : obj.header.notes * "\n" * rn)
-    # :prefiltering descriptions → per-channel low-pass and high-pass frequencies
-    _rec_filters!(obj.header.recording)
-    return nothing
-end
-
-# NEURO objects saved with JLD2 (before v0.26.12)
-function _load_neuro_jld2(file_name::String)::NeuroAnalyzer.NEURO
-    # objects saved before v0.26.12 have no epoch metadata (`epochs`) and a header with an
-    # `experiment` dictionary instead of `notes`: NEURO and HEADER objects are read through
-    # `rconvert`, which adds the default table and converts the experiment to notes
-    obj = try
-        JLD2.jldopen(
-        file_name, "r";
-        typemap = Dict(
-            "NeuroAnalyzer.NEURO" => JLD2.Upgrade(NeuroAnalyzer.NEURO),
-            "NeuroAnalyzer.HEADER" => JLD2.Upgrade(NeuroAnalyzer.HEADER),
-        ),
-    ) do f
-        k = keys(f)
-        length(k) == 1 || throw(
-            ArgumentError("$file_name must contain one object (found: $(length(k)))."),
-        )
-        f[k[1]]
-    end
-    catch e
-        e isa ArgumentError && rethrow()
-        throw(
-            ArgumentError(
-                "$file_name is not a NeuroAnalyzer file ($(sprint(showerror, e)))."
-            ),
-        )
-    end
-    # files saved by old versions of NeuroAnalyzer (e.g. EEG objects) are reconstructed by JLD2 as
-    # anonymous types without the NEURO fields
-    obj isa NeuroAnalyzer.NEURO || throw(
-        ArgumentError(
-            "$file_name does not contain a NEURO object (found: $(typeof(obj).name.name)); it may have been saved by an incompatible version of NeuroAnalyzer.",
-        ),
-    )
-    return obj
-end
-
-# upgrade path of `load_neuro()`: a NEURO object read from a file as a NamedTuple of its
-# fields; objects saved before v0.26.12 have no `epochs` field
-function JLD2.rconvert(::Type{NeuroAnalyzer.NEURO}, nt::NamedTuple)::NeuroAnalyzer.NEURO
-    haskey(nt, :epochs) && return NeuroAnalyzer.NEURO(
-        nt.header, nt.history, nt.markers, nt.epochs, nt.locs, nt.time_pts,
-        nt.epoch_time, nt.data,
-    )
-    return NeuroAnalyzer.NEURO(
-        nt.header, nt.history, nt.markers, nt.locs, nt.time_pts, nt.epoch_time, nt.data,
-    )
-end
-
-# upgrade path of `load_neuro()`: a header read from a file as a NamedTuple of its fields;
-# headers saved before v0.26.12 have an `experiment` dictionary (name, notes, design) instead
-# of `notes`
-function JLD2.rconvert(::Type{NeuroAnalyzer.HEADER}, nt::NamedTuple)::NeuroAnalyzer.HEADER
-    haskey(nt, :notes) && return NeuroAnalyzer.HEADER(nt.subject, nt.recording, nt.notes)
-    e = haskey(nt, :experiment) ? nt.experiment : Dict()
-    notes = _header_notes(
-        "Experiment" => get(e, :name, ""), "" => get(e, :notes, ""),
-        "Design" => get(e, :design, ""),
-    )
-    return NeuroAnalyzer.HEADER(nt.subject, nt.recording, notes)
 end

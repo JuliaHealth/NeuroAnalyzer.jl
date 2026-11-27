@@ -77,18 +77,22 @@ function export_snirf(
     length_unit == "" && (length_unit = "mm")
 
     rm(file_name; force = true)
-    JLD2.jldopen(file_name, "w") do f
-        f["formatVersion"] = "1.1"
+    HDF5.h5open(file_name, "w") do f
+        _h5_vstr!(f, "formatVersion", "1.1")
         g = "nirs"
         # metadata
-        f["$g/metaDataTags/SubjectID"] = string(obj.header.subject[:id])
-        f["$g/metaDataTags/MeasurementDate"] =
-            rec[:recording_date] == "" ? "unknown" : string(rec[:recording_date])
-        f["$g/metaDataTags/MeasurementTime"] =
-            rec[:recording_time] == "" ? "unknown" : string(rec[:recording_time])
-        f["$g/metaDataTags/LengthUnit"] = length_unit
-        f["$g/metaDataTags/TimeUnit"] = "s"
-        f["$g/metaDataTags/FrequencyUnit"] = "Hz"
+        _h5_vstr!(f, "$g/metaDataTags/SubjectID", string(obj.header.subject[:id]))
+        _h5_vstr!(
+            f, "$g/metaDataTags/MeasurementDate",
+            rec[:recording_date] == "" ? "unknown" : string(rec[:recording_date]),
+        )
+        _h5_vstr!(
+            f, "$g/metaDataTags/MeasurementTime",
+            rec[:recording_time] == "" ? "unknown" : string(rec[:recording_time]),
+        )
+        _h5_vstr!(f, "$g/metaDataTags/LengthUnit", length_unit)
+        _h5_vstr!(f, "$g/metaDataTags/TimeUnit", "s")
+        _h5_vstr!(f, "$g/metaDataTags/FrequencyUnit", "Hz")
 
         # data: (channels, samples) in Julia = (time, channels) in HDF5 (row-major)
         f["$g/data1/dataTimeSeries"] = obj.data[1:n_opt, :, 1]
@@ -102,13 +106,16 @@ function export_snirf(
                 f["$m/dataType"] = 1
             else
                 f["$m/dataType"] = 99999
-                f["$m/dataTypeLabel"] = get(_SNIRF_LABELS, ct[j], replace(ct[j], "nirs_" => ""))
+                _h5_vstr!(
+                    f, "$m/dataTypeLabel",
+                    get(_SNIRF_LABELS, ct[j], replace(ct[j], "nirs_" => "")),
+                )
             end
             f["$m/dataTypeIndex"] = 1
-            rec[:unit][j] != "" && (f["$m/dataUnit"] = rec[:unit][j])
+            rec[:unit][j] != "" && _h5_vstr!(f, "$m/dataUnit", rec[:unit][j])
         end
 
-        # probe
+        # probe (label vectors: variable-length strings)
         f["$g/probe/wavelengths"] = Float64.(rec[:wavelengths])
         f["$g/probe/sourcePos3D"] = src_pos
         f["$g/probe/detectorPos3D"] = det_pos
@@ -119,7 +126,7 @@ function export_snirf(
         if _has_markers(obj)
             for (s_idx, v) in enumerate(unique(string.(obj.markers[!, :value])))
                 m = obj.markers[string.(obj.markers[!, :value]) .== v, :]
-                f["$g/stim$s_idx/name"] = v
+                _h5_vstr!(f, "$g/stim$s_idx/name", v)
                 f["$g/stim$s_idx/data"] =
                     permutedims(hcat(m[!, :start], m[!, :length], ones(DataFrames.nrow(m))))
             end
@@ -127,7 +134,7 @@ function export_snirf(
 
         # auxiliary channels
         for (a_idx, a) in enumerate(aux)
-            f["$g/aux$a_idx/name"] = labels(obj)[a]
+            _h5_vstr!(f, "$g/aux$a_idx/name", labels(obj)[a])
             f["$g/aux$a_idx/dataTimeSeries"] = obj.data[a, :, 1]
             f["$g/aux$a_idx/time"] = collect(obj.time_pts)
         end

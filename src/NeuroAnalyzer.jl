@@ -139,7 +139,6 @@ const _NA_REQUIRED_PACKAGES = [
     "InformationMeasures",
     "Interpolations",
     "Jacobi",
-    "JLD2",
     "JSON",
     "KernelDensity",
     "LibSerialPort",
@@ -177,9 +176,9 @@ const _NA_REQUIRED_PACKAGES = [
 for pkg in _NA_REQUIRED_PACKAGES
     @eval using $(Symbol(pkg))
 end
-# NeuroAnalyzer files (save_neuro(), save_study()) are written with HDF5.jl, imported (not
-# used) so that its exported names (e.g. attributes) do not clash with NeuroAnalyzer and
-# other dependencies; JLD2 reads files saved by older versions
+# HDF5 files (NeuroAnalyzer files, SNIRF, NWB) are read and written with HDF5.jl, imported
+# (not used) so that its exported names (e.g. attributes) do not clash with NeuroAnalyzer
+# and other dependencies
 import HDF5
 
 # functions of Base and of dependencies that NeuroAnalyzer extends with methods

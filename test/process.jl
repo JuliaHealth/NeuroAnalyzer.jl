@@ -1184,6 +1184,13 @@ f_snirf = joinpath(mktempdir(), "test.snirf")
 export_snirf(n_s; file_name = f_snirf)
 @test_throws ArgumentError export_snirf(n_s; file_name = f_snirf)
 r_s = import_snirf(f_snirf)
+# written with HDF5.jl: strings are variable-length (SNIRF specification)
+@test NeuroAnalyzer.HDF5.h5open(f_snirf, "r") do h
+    all(
+        k -> NeuroAnalyzer.HDF5.API.h5t_is_variable_str(NeuroAnalyzer.HDF5.datatype(h[k])),
+        ("formatVersion", "nirs/metaDataTags/SubjectID", "nirs/probe/sourceLabels"),
+    )
+end
 @test labels(r_s) == labels(n_s)
 @test r_s.header.recording[:channel_type] == n_s.header.recording[:channel_type]
 @test r_s.data ≈ n_s.data

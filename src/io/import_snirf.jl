@@ -25,7 +25,7 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         throw(ArgumentError("$file_name is not SNIRF file."))
 
     nirs = try
-        FileIO.load(file_name)
+        _h5_load_flat(file_name)
     catch err
         throw(ArgumentError("File $file_name cannot be loaded: $err"))
     end
