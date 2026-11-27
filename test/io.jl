@@ -1148,6 +1148,7 @@ e_ed.data[5, :, :] .= 3.0   # constant channel
 n_ed = signal_len(e_ed)
 for (ext, exp_f, imp_f, steps) in ((".edf", export_edf, import_edf, 65535),
                                    (".bdf", export_bdf, import_bdf, 16777215))
+    local f, b, err, mb, me
     f = joinpath(tmp, "edf_test" * ext)
     exp_f(e_ed; file_name = f)
     b = imp_f(f)

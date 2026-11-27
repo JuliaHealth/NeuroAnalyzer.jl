@@ -2221,6 +2221,7 @@ for (f!, f, kw) in (
     (edit_channel!, edit_channel, (; ch = "Fp1", field = :label, value = "FP1")),
 )
     e_in = deepcopy(e_io)
+    local d0
     d0, l0, h0 = copy(e_io.data), copy(labels(e_io)), copy(e_io.history)
     e_oop = f(e_io; kw...)
     @test e_io.data == d0 && labels(e_io) == l0 && e_io.history == h0

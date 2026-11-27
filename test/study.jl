@@ -14,6 +14,7 @@ e.epochs.condition = [isodd(i) ? "a" : "b" for i = 1:nepochs(e)]
 files = String[]
 for (s, ses, gain) in (("01", "1", 1), ("01", "2", 3), ("02", "1", 2), ("03", "1", 4),
                        ("04", "1", 5))
+    local o, f
     o = deepcopy(e)
     o.data .*= gain
     s == "03" && (o.header.recording[:bad_channel][2] = true)
@@ -393,6 +394,7 @@ rc = study_stats(st, :erp; factor = :condition, nperm = 100, rng = Random.Xoshir
 cs = cluster_summary(rc)
 @test cs.id == rc.clusters.id && cs.mass ≈ rc.clusters.mass
 for c in eachrow(cs)
+    local pts
     pts = findall(==(c.id), rc.cluster_id)
     @test c.t_start == rc.t[minimum(p[2] for p in pts)]
     @test c.n_channels == length(unique(p[1] for p in pts))

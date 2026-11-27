@@ -1074,9 +1074,9 @@ scale_txt(f) = [t.text[] for t in plots_of(f) if t isa GLMakie.Makie.Text && occ
 eeg_bc = deepcopy(eeg)
 eeg_bc.header.recording[:bad_channel] .= e_bc.header.recording[:bad_channel]
 for o in (eeg_bc, e_bc)
-    st = [scale_txt(NeuroAnalyzer.plot(o; ch = "eeg", type = :butterfly, avg = true,
-                                       exclude_bad_channels = x, gui = false)) for x in (false, true)]
-    @test st[1] == st[2] && parse(Float64, split(only(only(st[1])))[1]) > 0
+    sbar = [scale_txt(NeuroAnalyzer.plot(o; ch = "eeg", type = :butterfly, avg = true,
+                                         exclude_bad_channels = x, gui = false)) for x in (false, true)]
+    @test sbar[1] == sbar[2] && parse(Float64, split(only(only(sbar[1])))[1]) > 0
 end
 
 true
