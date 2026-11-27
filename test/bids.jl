@@ -194,4 +194,95 @@ st2 = study_bids(d2; out_dir = mktempdir(), group = :outcome, covariates = [:sit
 @test_throws ArgumentError study_bids(d2; out_dir = out, group = :x)
 @test_throws ArgumentError study_bids(d2; out_dir = out, covariates = [:x])
 
+
+@info "Test: export_bids()"
+br = mktempdir()
+e_b = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edfplus.edf"))
+NeuroAnalyzer.filter!(e_b; ch = "all", fprototype = :butterworth, ftype = :hp, cutoff = 0.5, order = 4)
+e_b.header.recording[:bad_channel][3] = true
+e_b.header.subject[:last_name] = "Secret"
+add_marker!(e_b; type = "response", start = 1.0, len = 0.5, value = "a, b", ch = labels(e_b)[3])
+load_locs!(e_b; file_name = joinpath(testfiles_path, "locs", "standard-10-20-cap19-elmiko.ced"))
+fb = export_bids(e_b; root = br, subject = "01", task = "rest", participant = (; age = 30, sex = "F"),
+                 authors = ["A. Author"], license = "CC0")
+dd = joinpath(br, "sub-01", "eeg")
+@test sort(basename.(fb)) == sort(["sub-01_task-rest_eeg.vhdr", "sub-01_task-rest_eeg.eeg",
+                                   "sub-01_task-rest_eeg.vmrk", "sub-01_task-rest_eeg.json",
+                                   "sub-01_task-rest_channels.tsv", "sub-01_task-rest_events.tsv",
+                                   "sub-01_task-rest_events.json", "sub-01_electrodes.tsv",
+                                   "sub-01_coordsystem.json"])
+@test isfile(joinpath(br, "dataset_description.json")) && isfile(joinpath(br, "README"))
+dsd = NeuroAnalyzer.JSON.parsefile(joinpath(br, "dataset_description.json"))
+@test dsd["Authors"] == ["A. Author"] && dsd["License"] == "CC0"
+ej = NeuroAnalyzer.JSON.parsefile(joinpath(dd, "sub-01_task-rest_events.json"))
+@test haskey(ej, "value") && haskey(ej, "sample") && haskey(ej, "channel") && !haskey(ej, "onset")
+js = NeuroAnalyzer.JSON.parsefile(joinpath(dd, "sub-01_task-rest_eeg.json"))
+@test js["TaskName"] == "rest" && js["SamplingFrequency"] == 200 && js["RecordingType"] == "continuous"
+@test js["EEGChannelCount"] == count(==("eeg"), e_b.header.recording[:channel_type])
+ch = CSV.read(joinpath(dd, "sub-01_task-rest_channels.tsv"), DataFrame; missingstring = "n/a")
+@test js["MISCChannelCount"] == count(==("MISC"), ch.type)
+@test ch.name == labels(e_b) && ch.status[3] == "bad" && ch.units[1] == "uV" && ch.low_cutoff[1] == 0.5
+cs = NeuroAnalyzer.JSON.parsefile(joinpath(dd, "sub-01_coordsystem.json"))
+@test cs["EEGCoordinateSystem"] == "Other" && cs["EEGCoordinateUnits"] == "n/a"
+@test !occursin("Secret", read(joinpath(dd, "sub-01_task-rest_eeg.vhdr"), String))
+# round trip
+b = import_bids(joinpath(dd, "sub-01_task-rest_eeg.vhdr"))
+@test labels(b) == labels(e_b)
+@test b.data ≈ e_b.data rtol = 1e-6
+@test b.header.recording[:channel_type] == e_b.header.recording[:channel_type]
+@test b.header.recording[:bad_channel] == e_b.header.recording[:bad_channel]
+@test b.locs.loc_x ≈ e_b.locs.loc_x && b.locs.loc_y ≈ e_b.locs.loc_y
+mb = sort(b.markers, :start)
+me = sort(e_b.markers, :start)
+@test mb.start ≈ me.start && mb.length ≈ me.length && mb.value == me.value
+@test mb.type == me.type && mb.channel == me.channel
+p = CSV.read(joinpath(br, "participants.tsv"), DataFrame; missingstring = "n/a")
+@test p.participant_id == ["sub-01"] && names(p) == ["participant_id", "age", "sex"]
+@test_throws ArgumentError export_bids(e_b; root = br, subject = "01", task = "rest")
+# EDF, epochs
+e_ep = epoch(e_b; ep_len = 10)
+export_bids(e_ep; root = br, subject = "01", task = "rest", run = "2", format = :edf)
+js = NeuroAnalyzer.JSON.parsefile(joinpath(dd, "sub-01_task-rest_run-2_eeg.json"))
+@test js["RecordingType"] == "epoched" && js["EpochLength"] == 10
+ev = CSV.read(joinpath(dd, "sub-01_task-rest_run-2_events.tsv"), DataFrame; missingstring = "n/a")
+@test count(==("epoch"), ev.trial_type) == nepochs(e_ep)
+# iEEG as NWB, with a session; participants: row added
+o = import_bids(joinpath(d2, bf2.file[1]))
+o = trim(o; seg = (0, 20), keep = true)
+fi = export_bids(o; root = br, subject = "jh101", session = "pre", task = "ictal", format = :nwb,
+                 sex = "U", age = "P30Y")
+@test basename(fi[1]) == "sub-jh101_ses-pre_task-ictal_ieeg.nwb"
+# (iEEG: electrodes.tsv is required, n/a positions without locations)
+@test "sub-jh101_ses-pre_electrodes.tsv" in basename.(fi)
+ii = import_bids(fi[1])
+@test datatype(ii) == "ecog" && labels(ii) == labels(o)
+@test count(ii.header.recording[:bad_channel]) == count(o.header.recording[:bad_channel])
+@test nrow(ii.markers) == nrow(o.markers)
+js = NeuroAnalyzer.JSON.parsefile(joinpath(br, "sub-jh101", "ses-pre", "ieeg", "sub-jh101_ses-pre_task-ictal_ieeg.json"))
+@test js["ECOGChannelCount"] == count(==("ecog"), o.header.recording[:channel_type])
+@test CSV.read(joinpath(br, "participants.tsv"), DataFrame).participant_id == ["sub-01", "sub-jh101"]
+@test_throws ArgumentError export_bids(o; root = br, subject = "x", task = "t", format = :fiff)
+# NIRS, optodes
+n = import_bids(f3)
+fn = export_bids(n; root = br, subject = "03", task = "tapping")
+@test "sub-03_optodes.tsv" in basename.(fn)
+nch = CSV.read(joinpath(br, "sub-03", "nirs", "sub-03_task-tapping_channels.tsv"), DataFrame)
+@test names(nch)[1:6] == ["name", "type", "source", "detector", "wavelength_nominal", "units"]
+@test !("notch" in names(nch))
+nn = import_bids(fn[1])
+@test labels(nn) == labels(n)
+@test nn.data ≈ n.data rtol = 1e-5
+@test nn.locs.loc_x ≈ n.locs.loc_x && nrow(nn.markers) == nrow(n.markers)
+fnb = bids_files(br)
+@test sort(unique(fnb.modality)) == ["eeg", "ieeg", "nirs"]
+@test_throws ArgumentError export_bids(e_b; root = br, subject = "-", task = "rest")
+# a study: subjects, groups and covariates
+sb = mktempdir()
+st = study_bids(d4; out_dir = mktempdir(), subject = ["001", "037"], group = :Group,
+                covariates = [:Age])
+fs_ = export_bids(st; root = sb, task = "eyesclosed")
+@test bids_files(sb).subject == ["001", "037"]
+p = CSV.read(joinpath(sb, "participants.tsv"), DataFrame; missingstring = "n/a")
+@test p.participant_id == ["sub-001", "sub-037"] && p.group == ["A", "C"] && p.Age == [57, 57]
+
 true

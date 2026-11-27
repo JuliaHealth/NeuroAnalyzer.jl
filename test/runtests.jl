@@ -45,6 +45,9 @@ global testfiles_path =
     @info "Running bids.jl tests"
     @test include("bids.jl")
 
+    @info "Running nwb.jl tests"
+    @test include("nwb.jl")
+
     @info "Running na.jl tests"
     @test include("na.jl")
 end

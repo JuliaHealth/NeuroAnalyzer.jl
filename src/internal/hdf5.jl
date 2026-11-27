@@ -335,6 +335,29 @@ function _h5_vstr!(parent, name::AbstractString, s::AbstractString)::Nothing
     return nothing
 end
 
+# write a scalar variable-length UTF-8 string attribute (HDF5.jl writes string attributes with
+# fixed length; NWB files written by pynwb use variable-length strings)
+function _h5_vstr_attr!(obj, name::AbstractString, s::AbstractString)::Nothing
+    str = string(s)
+    haskey(HDF5.attributes(obj), name) && HDF5.delete_attribute(obj, name)
+    dt = HDF5.Datatype(HDF5.API.h5t_copy(HDF5.API.H5T_C_S1))
+    sp = HDF5.dataspace(())
+    try
+        HDF5.API.h5t_set_size(dt, HDF5.API.H5T_VARIABLE)
+        HDF5.API.h5t_set_cset(dt, HDF5.API.H5T_CSET_UTF8)
+        a = HDF5.API.h5a_create(obj, name, dt, sp, HDF5.API.H5P_DEFAULT, HDF5.API.H5P_DEFAULT)
+        try
+            GC.@preserve str HDF5.API.h5a_write(a, dt, Ref(pointer(str)))
+        finally
+            HDF5.API.h5a_close(a)
+        end
+    finally
+        close(sp)
+        close(dt)
+    end
+    return nothing
+end
+
 """
     _h5_load_flat(file_name)
 

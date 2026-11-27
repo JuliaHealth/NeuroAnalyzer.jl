@@ -1,7 +1,7 @@
 export export_recording
 
 # all formats export_recording() can dispatch to
-const _EXPORT_FORMATS = (:fiff, :bv, :edf, :bdf, :snirf, :csv, :neuro)
+const _EXPORT_FORMATS = (:fiff, :bv, :edf, :bdf, :nwb, :snirf, :csv, :neuro)
 
 # data types that can be exported to each signal format (CSV and HDF: all data types)
 # - ERP and ERF objects are exported as EEG and MEG signals
@@ -12,6 +12,7 @@ const _EXPORT_DATATYPES = Dict{Symbol, Vector{String}}(
     :bv    => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp"],
     :edf   => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp", "sensors", "eda", "mep"],
     :bdf   => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp", "sensors", "eda", "mep"],
+    :nwb   => ["eeg", "ecog", "seeg", "ieeg", "csd", "erp"],
     :snirf => ["nirs"],
 )
 
@@ -35,6 +36,7 @@ const _EXPORT_EXT_FORMAT = Dict{String, Symbol}(
     ".vhdr" => :bv,
     ".edf" => :edf,
     ".bdf" => :bdf,
+    ".nwb" => :nwb,
     ".snirf" => :snirf,
     ".csv" => :csv,
     ".hdf" => :neuro,
@@ -62,6 +64,7 @@ This is a meta-function: the format is selected by the file name extension (or b
 | BrainVision                      | `.vhdr`         | `:bv`       | `export_bv`   | EEG, ECoG, sEEG, iEEG, CSD, ERP |
 | EDF+                             | `.edf`          | `:edf`      | `export_edf`  | EEG, ECoG, sEEG, iEEG, CSD, ERP, sensors, EDA, MEP |
 | BDF+                             | `.bdf`          | `:bdf`      | `export_bdf`  | EEG, ECoG, sEEG, iEEG, CSD, ERP, sensors, EDA, MEP |
+| Neurodata Without Borders        | `.nwb`          | `:nwb`      | `export_nwb`  | EEG, ECoG, sEEG, iEEG, CSD, ERP |
 | SNIRF                            | `.snirf`        | `:snirf`    | `export_snirf`| NIRS                   |
 | CSV                              | `.csv`          | `:csv`      | `export_csv`  | all                    |
 | NeuroAnalyzer (HDF5)             | `.hdf`          | `:neuro`    | `save_neuro`  | all                    |
@@ -111,6 +114,9 @@ function export_recording(
         return [file_name]
     elseif fmt === :bdf
         export_bdf(obj; file_name = file_name, overwrite = overwrite, kwargs...)
+        return [file_name]
+    elseif fmt === :nwb
+        export_nwb(obj; file_name = file_name, overwrite = overwrite, kwargs...)
         return [file_name]
     elseif fmt === :snirf
         export_snirf(obj; file_name = file_name, overwrite = overwrite, kwargs...)

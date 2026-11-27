@@ -128,12 +128,16 @@ end
 Distinguish NWB from SNIRF by inspecting HDF5 root contents. Returns `:nwb`, `:snirf` or `nothing`.
 """
 function _hdf5_flavor(file_name::String)::Union{Nothing, Symbol}
-    # only the root keys are inspected
-    k = try
-        HDF5.h5open(f -> keys(f), file_name, "r")
+    # only the root keys and the root neurodata type (NWB 2.x: "NWBFile") are inspected
+    k, nt = try
+        HDF5.h5open(file_name, "r") do f
+            a = HDF5.attributes(f)
+            (keys(f), haskey(a, "neurodata_type") ? string(read(a["neurodata_type"])) : "")
+        end
     catch
         return nothing
     end
+    nt == "NWBFile" && return :nwb
     # SNIRF: required root datasets
     ("formatVersion" in k && any(startswith("nirs"), k)) && return :snirf
     # NWB 1.x: root dataset; NWB 2.x: datasets required by the NWBFile specification
@@ -294,6 +298,7 @@ Sampling rates are stored as integers. A non-integer rate is converted on import
 - `sampling_rate::Union{Nothing, Int64}=nothing`: sampling rate for `.npy` files, which store only raw signal data with no embedded metadata
 - `n::Int64=0`: subject index to extract from multi-subject SNIRF files
 - `format::Union{Nothing, Symbol}=nothing`: force a specific format (see table), skipping detection
+- `series::Union{Nothing, String}=nothing`: signal of NWB files with several series (path or name, see `nwb_series()`); `nothing`: the first `ElectricalSeries`
  
 # Returns
  
@@ -308,6 +313,7 @@ function import_recording(
     sampling_rate::Union{Nothing, Int64} = nothing,
     n::Int64 = 0,
     format::Union{Nothing, Symbol} = nothing,
+    series::Union{Nothing, String} = nothing,
 )::Union{NeuroAnalyzer.NEURO, DataFrame}
     # validate (folders: DigiTrack exams)
     (isfile(file_name) || isdir(file_name)) ||
@@ -343,7 +349,7 @@ function import_recording(
         return import_npy(file_name; sampling_rate = sampling_rate)
     end
     fmt === :xdf && return import_xdf(file_name)
-    fmt === :nwb && return import_nwb(file_name; detect_type = detect_type)
+    fmt === :nwb && return import_nwb(file_name; detect_type = detect_type, series = series)
     fmt === :ncs && return import_ncs(file_name)
     fmt === :fiff && return import_fiff(file_name; clean_labels = clean_labels)
     # FieldTrip requires explicit type hint - auto-detection is not possible

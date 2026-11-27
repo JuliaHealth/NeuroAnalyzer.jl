@@ -437,6 +437,7 @@ Markers from a BIDS `events.tsv` table.
 
 - `start`, `length`: `onset` and `duration` (seconds), or `sample` (0-based) / `fs`
 - `type`, `value`: a `trial_type` that names a marker type (e.g. `stimulus`, `response`, `BAD_…`, see `_marker_type()`) gives the type and the value is the event code (`value`); a condition (e.g. `face`) gives type `stim` and the value is the condition (used by `epoch()`); without `trial_type` the type is `stim` and the value is the event code
+- `channel`: channels of the markers (labels joined by ",")
 - all other columns are kept as extra columns (`value` as `bids_value`)
 
 # Arguments
@@ -474,6 +475,12 @@ function _bids_events(events::DataFrame, fs::Real)::DataFrame
     )
     for c in cols
         c in ("onset", "duration") && continue
+        # channels of the markers (labels joined by ",")
+        if c == "channel"
+            markers.channel = [ismissing(x) || isempty(string(x)) ? String[] :
+                               String.(strip.(split(string(x), ","))) for x in events[!, c]]
+            continue
+        end
         name = c in _MARKER_FIXED ? "bids_" * c : c
         markers[!, name] = events[!, c]
     end

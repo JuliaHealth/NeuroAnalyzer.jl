@@ -695,33 +695,30 @@ d = import_dat(joinpath(testfiles_path, "eeg", "eeg-test-dat.dat"))
 @test_throws ArgumentError import_dat(joinpath(testfiles_path, "locs", "locs.ced"))
 
 @info "Test: import_nwb()"
-# minimal NWB-like file: acquisition/EEG data + timestamps, NWB root datasets
+# minimal NWB file: acquisition/EEG (ElectricalSeries) data + timestamps, root datasets
+# (more NWB tests: nwb.jl)
 nwb = joinpath(tmp, "rec_eeg.nwb")
 # (written with a 512 B userblock before the HDF5 signature)
 NeuroAnalyzer.HDF5.h5open(nwb, "w"; userblock = 512) do f
     f["acquisition/EEG/data"] = [1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0]
     f["acquisition/EEG/timestamps"] = [0.0, 0.01, 0.02, 0.03]
-    f["file_create_date"] = "2020-01-01T10:00:00+00:00"
+    NeuroAnalyzer._nwb_attrs!(f["acquisition/EEG"], "ElectricalSeries")
+    f["session_start_time"] = "2020-01-01T10:00:00+02:00"
+    f["file_create_date"] = ["2020-01-02T10:00:00+00:00"]
     f["identifier"] = "sub-01"
     return f["session_description"] = "test"
 end
-write(
-    joinpath(tmp, "rec_events.tsv"),
-    "onset\tduration\ttrial_type\tvalue\n0.01\t0\tstim\ta\n",
-)
 # userblock before the HDF5 signature: still detected by content
 @test detect_format(nwb) === :nwb
 n = import_nwb(nwb)
 @test n.header.recording[:file_type] == "NWB"
-@test sr(n) == 100
+@test sr(n) == 100 && labels(n) == ["ch_1", "ch_2"]
 @test n.data[:, :, 1] == [1.0 2.0 3.0 4.0; 5.0 6.0 7.0 8.0]
 @test n.header.subject[:id] == "sub-01"
-@test n.header.recording[:recording_date] == "2020-01-01"
-@test n.markers[!, :start] == [0.01]
-@test n.markers[!, :value] == ["a"]
-@test n.markers[!, :type] == ["stim"]
-# other columns of events.tsv are kept (BIDS value as bids_value)
-@test n.markers[!, :trial_type] == ["stim"] && n.markers[!, :bids_value] == ["a"]
+# session start time, in UTC
+@test (n.header.recording[:recording_date], n.header.recording[:recording_time]) ==
+      ("2020-01-01", "08:00:00")
+@test nrow(n.markers) == 0
 @test_throws ArgumentError import_nwb(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
 
 @info "Test: import_recording()"
