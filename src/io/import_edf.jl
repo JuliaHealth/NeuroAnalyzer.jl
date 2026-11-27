@@ -234,7 +234,6 @@ function import_edf(
         # replace dots with colons (Alice 4 / non-conforming EDF writers
         # sometimes use '.' as a time separator instead of ':').
         recording_time = replace(recording_time, '.' => ':'),
-        recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
         reference = _detect_montage(clabels, ch_type, "eeg"),
@@ -247,8 +246,7 @@ function import_edf(
         gain = gain,
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)

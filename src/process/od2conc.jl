@@ -112,7 +112,7 @@ function od2conc!(
     age::Union{Nothing, Real} = nothing,
 )::Nothing
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     length(get_channel(obj; type = "nirs_od")) > 0 || throw(
         ArgumentError("OBJ does not contain NIRS OD channels, use intensity2od() first."),
     )

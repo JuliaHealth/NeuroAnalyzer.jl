@@ -44,7 +44,7 @@ function generate_ssp_projectors(
     U::Matrix{Float64},
 }
     # validate
-    _check_datatype(obj, "meg")
+    _check_chtype(obj, "meg")
     rec = obj.header.recording
     (:ssp_data in keys(rec) && :ssp_channels in keys(rec)) ||
         throw(ArgumentError("OBJ does not contain SSP projections."))
@@ -170,7 +170,7 @@ function apply_ssp_projectors!(
     pidx::Union{Int64, Vector{Int64}} = 0,
 )::Nothing
     # validate
-    _check_datatype(obj, "meg")
+    _check_chtype(obj, "meg")
 
     # generate the projector matrix and the noise-subspace basis U
     ssp_projectors, U = generate_ssp_projectors(obj; pidx = pidx)

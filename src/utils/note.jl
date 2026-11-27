@@ -7,7 +7,7 @@ export delete_note!
 """
     view_note(obj)
 
-Return the recording note stored in the object header.
+Return the header notes (`obj.header.notes`) stored in the object header.
 
 # Arguments
 
@@ -15,16 +15,16 @@ Return the recording note stored in the object header.
 
 # Returns
 
-- `String`: recording note (empty string if no note has been set)
+- `String`: header notes (empty string if no note has been set)
 """
 function view_note(obj::NeuroAnalyzer.NEURO)::String
-    return obj.header.recording[:recording_notes]
+    return obj.header.notes
 end
 
 """
     add_note(obj; <keyword arguments>)
 
-Return a copy of `obj` with the recording note set to `note`. The original object is not modified.
+Return a copy of `obj` with the header notes set to `note`. The original object is not modified.
 
 # Arguments
 
@@ -33,7 +33,7 @@ Return a copy of `obj` with the recording note set to `note`. The original objec
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: new NEURO object with the updated recording note
+- `NeuroAnalyzer.NEURO`: new NEURO object with the updated header notes
 """
 function add_note(obj::NeuroAnalyzer.NEURO; note::String)::NeuroAnalyzer.NEURO
     # create new dataset
@@ -46,7 +46,7 @@ end
 """
     add_note!(obj; <keyword arguments>)
 
-Set the recording note in `obj` in-place.
+Set the header notes in `obj` in-place.
 
 # Arguments
 
@@ -58,7 +58,7 @@ Set the recording note in `obj` in-place.
 - `Nothing`
 """
 function add_note!(obj::NeuroAnalyzer.NEURO; note::String)::Nothing
-    obj.header.recording[:recording_notes] = note
+    obj.header.notes = note
     _history!(obj, "add_note", (; note))
 
     return nothing
@@ -67,7 +67,7 @@ end
 """
     delete_note(obj)
 
-Return a copy of `obj` with the recording note cleared. The original object is not modified.
+Return a copy of `obj` with the header notes cleared. The original object is not modified.
 
 # Arguments
 
@@ -75,7 +75,7 @@ Return a copy of `obj` with the recording note cleared. The original object is n
 
 # Returns
 
-- `NeuroAnalyzer.NEURO`: new NEURO object with an empty recording note
+- `NeuroAnalyzer.NEURO`: new NEURO object with an empty header notes
 """
 function delete_note(obj::NeuroAnalyzer.NEURO)::NeuroAnalyzer.NEURO
     # create new dataset
@@ -88,7 +88,7 @@ end
 """
     delete_note!(obj)
 
-Clear the recording note in `obj` in-place.
+Clear the header notes in `obj` in-place.
 
 # Arguments
 
@@ -99,7 +99,7 @@ Clear the recording note in `obj` in-place.
 - `Nothing`
 """
 function delete_note!(obj::NeuroAnalyzer.NEURO)::Nothing
-    obj.header.recording[:recording_notes] = ""
+    obj.header.notes = ""
     _history!(obj, "delete_note", NamedTuple())
 
     return nothing

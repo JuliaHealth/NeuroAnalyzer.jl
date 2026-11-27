@@ -554,7 +554,6 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         recording = "",
         recording_date = recording_date,
         recording_time = recording_time,
-        recording_notes = "",
         wavelengths = wavelengths,
         wavelength_index = wavelength_index,
         optode_pairs = opt_pairs,
@@ -569,9 +568,8 @@ function import_snirf(file_name::String; n::Int64 = 0)::NeuroAnalyzer.NEURO
         bad_channels = zeros(Bool, size(data, 1)),
         length_unit = string(length_unit),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
 
     history = String[]
 

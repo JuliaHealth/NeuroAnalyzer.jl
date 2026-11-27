@@ -82,7 +82,7 @@ function intensity2od!(
     # validate
     length(get_channel(obj; type = "nirs_int")) > 0 ||
         throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     _check_channels(get_channel(obj; type = "nirs_int"), ch)
 
     # optical channels (described by :wavelength_index and :optode_pairs) come first

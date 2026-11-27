@@ -71,7 +71,7 @@ function _delete_channel!(
         throw(ArgumentError("Channel indices must be in [1, $ch_n]."))
     # NIRS: an intensity or OD channel is deleted together with the channels of the same
     # type and optode pair at the other wavelengths (OD -> concentration needs all of them)
-    datatype(obj) == "nirs" &&
+    _nirs_n_opt(obj.header.recording) > 0 &&
         (ch_idx = _nirs_pair_wl(obj, ch_idx; msg = "Also deleting"))
     length(ch_idx) < ch_n || throw(
         ArgumentError(
@@ -113,7 +113,6 @@ function _select_channels!(obj::NeuroAnalyzer.NEURO, idx::Vector{Int64})::Nothin
     new_pos[idx] = 1:length(idx)
 
     rec = obj.header.recording
-    dt = rec[:data_type]
 
     # universal per-channel header vectors
     _rec_filters!(rec)
@@ -121,37 +120,26 @@ function _select_channels!(obj::NeuroAnalyzer.NEURO, idx::Vector{Int64})::Nothin
         rec[field] = rec[field][idx]
     end
 
-    # type-specific per-channel header vectors
-    if dt in _EEG_LIKE_DATA
-        for field in (:transducers, :gain)
-            rec[field] = rec[field][idx]
-        end
+    # per-channel header fields of any modality present in the header (objects may contain
+    # channels of several types, e.g. EEG and NIRS)
+    for field in keys(_REC_CH_FIELDS)
+        field === :ssp_channels && continue
+        _rec_has_ch_field(rec, field, ch_n) && (rec[field] = rec[field][idx])
+    end
+    # sensor geometry, one row per channel
+    _rec_has_ch_field(rec, :coil_loc, ch_n) && (rec[:coil_loc] = rec[:coil_loc][idx, :])
 
-    elseif dt == "mep"
-        for field in (:stimulation_intensity, :coil_type)
-            rec[field] = rec[field][idx]
-        end
+    # MEG sensor index lists: removed channels dropped, the others renumbered
+    for field in (:gradiometers, :magnetometers)
+        haskey(rec, field) || continue
+        rec[field] = sort(Int64[new_pos[i] for i in rec[field] if new_pos[i] > 0])
+    end
 
-    elseif dt in _MEG_LIKE_DATA
-        rec[:coil_type] = rec[:coil_type][idx]
-
-        # sensor index lists: removed channels dropped, the others renumbered
-        for field in (:gradiometers, :magnetometers)
-            rec[field] = sort(Int64[new_pos[i] for i in rec[field] if new_pos[i] > 0])
-        end
-
-        # sensor geometry (absent in objects created before it was introduced)
-        if haskey(rec, :coil_loc) && !isempty(rec[:coil_loc])
-            rec[:coil_loc] = rec[:coil_loc][idx, :]
-        end
-        if haskey(rec, :coil_id) && !isempty(rec[:coil_id])
-            rec[:coil_id] = rec[:coil_id][idx]
-        end
-
-        # SSP: the columns of ssp_data are the channels marked in ssp_channels (in the
-        # channel order)
-        if haskey(rec, :ssp_channels) && any(rec[:ssp_channels])
-            ssp_mask = rec[:ssp_channels]
+    # SSP: the columns of ssp_data are the channels marked in ssp_channels (in the channel
+    # order)
+    if _rec_has_ch_field(rec, :ssp_channels, ch_n)
+        ssp_mask = rec[:ssp_channels]
+        if any(ssp_mask)
             ssp_col = cumsum(ssp_mask)
             cols = Int64[ssp_col[i] for i in idx if ssp_mask[i]]
             if length(cols) < count(ssp_mask)
@@ -159,14 +147,16 @@ function _select_channels!(obj::NeuroAnalyzer.NEURO, idx::Vector{Int64})::Nothin
                     "$(count(ssp_mask) - length(cols)) deleted channel(s) are part of SSP projectors; their weights are removed from the projection vectors.",
                 )
             end
-            rec[:ssp_channels] = ssp_mask[idx]
-            !isempty(rec[:ssp_data]) && (rec[:ssp_data] = rec[:ssp_data][:, cols])
+            haskey(rec, :ssp_data) && !isempty(rec[:ssp_data]) &&
+                (rec[:ssp_data] = rec[:ssp_data][:, cols])
         end
+        rec[:ssp_channels] = ssp_mask[idx]
+    end
 
-    elseif dt == "nirs"
-        # the first entries of wavelength_index / optode_pairs describe the first channels
-        # (intensity or OD); they must stay the first channels
-        n_opt = length(rec[:wavelength_index])
+    # NIRS: the first entries of wavelength_index / optode_pairs describe the first channels
+    # (intensity or OD); they must stay the first channels
+    n_opt = _nirs_n_opt(rec)
+    if n_opt > 0
         opt = Base.filter(<=(n_opt), idx)
         idx[1:length(opt)] == opt || throw(
             ArgumentError(
@@ -272,7 +262,8 @@ function keep_channel!(
     isempty(ch_idx) && throw(ArgumentError("No channels selected."))
     # NIRS: keeping an intensity or OD channel keeps the channels of the same type and
     # optode pair at the other wavelengths
-    datatype(obj) == "nirs" && (ch_idx = _nirs_pair_wl(obj, ch_idx; msg = "Also keeping"))
+    _nirs_n_opt(obj.header.recording) > 0 &&
+        (ch_idx = _nirs_pair_wl(obj, ch_idx; msg = "Also keeping"))
     # nothing to remove
     length(ch_idx) == ch_n && return nothing
     # labels of the kept channels (history), before the header is modified

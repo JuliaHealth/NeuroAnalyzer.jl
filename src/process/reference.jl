@@ -193,7 +193,7 @@ function reference_ce!(
     med::Bool = false,
 )::Nothing
     # validate
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
 
     # reference channel indices
     ch == "" && throw(ArgumentError("No reference channels selected."))
@@ -314,7 +314,7 @@ function reference_avg!(
     weighted::Bool = false,
 )::Nothing
     # validate
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
 
     # channels that will be referenced
     sig_ch_idx = _eeg_ch_idx(obj)
@@ -414,7 +414,7 @@ function _reference_paired!(
     name::String,
 )::Nothing
     # validate
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
     _check_var(type, [:l, :i, :c], "type")
     r1 in labels(obj) || throw(ArgumentError("OBJ does not contain $r1 channel."))
     r2 in labels(obj) || throw(ArgumentError("OBJ does not contain $r2 channel."))
@@ -628,7 +628,7 @@ function _laplacian_reference(
     spherical::Bool,
 )::Tuple{Vector{Int64}, Array{Float64, 3}}
     # validate
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
 
     ch = _eeg_ch_idx(obj)
     ch_n = length(ch)
@@ -923,7 +923,7 @@ function reference_rest!(
     model::Symbol = :shell3,
 )::Nothing
     # validate
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
     _check_var(model, [:shell3, :sphere], "model")
     ndip >= 1 || throw(ArgumentError("ndip must be ≥ 1."))
     rmax = model === :shell3 ? 0.87 : 1.0
@@ -1110,7 +1110,7 @@ function reference_custom!(
     ref_name::String = "longitudinal-BIP",
     loc::Symbol = :mid,
 )::Nothing
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
     isempty(ref_list) && throw(ArgumentError("ref_list must not be empty."))
     _check_var(loc, [:mid, :first], "loc")
 

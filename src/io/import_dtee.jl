@@ -302,7 +302,6 @@ function import_dtee(
         recording_time = isnothing(start) ? "" :
             Dates.format(start, "HH:MM:SS") * "." *
             lpad(Dates.millisecond(start) ÷ 10, 2, '0'),
-        recording_notes = join(notes, "; "),
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
         reference = _detect_montage(clabels, ch_type, "eeg"),
@@ -315,8 +314,7 @@ function import_dtee(
         gain = gain,
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
-    hdr_obj = _create_header(; subject = s, recording = r, experiment = e)
+    hdr_obj = _create_header(; subject = s, recording = r, notes = join(notes, "\n"))
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr_obj, String[], markers, locs, time_pts, epoch_time, data)

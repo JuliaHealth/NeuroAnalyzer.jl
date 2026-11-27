@@ -101,7 +101,6 @@ function _common_recording_fields(;
     recording::String,
     recording_date::String,
     recording_time::String,
-    recording_notes::String,
     channel_type::Vector{String},
     channel_order::Vector{Int64},
     clabels::Vector{String},
@@ -129,7 +128,6 @@ function _common_recording_fields(;
         :recording => recording,
         :recording_date => recording_date,
         :recording_time => recording_time,
-        :recording_notes => recording_notes,
         :channel_type => channel_type,
         :channel_order => channel_order,
         :label => clabels,
@@ -177,7 +175,6 @@ function _create_recording_eeg_like(;
     recording::String,
     recording_date::String,
     recording_time::String,
-    recording_notes::String,
     channel_type::Vector{String},
     channel_order::Vector{Int64},
     reference::String,
@@ -192,7 +189,7 @@ function _create_recording_eeg_like(;
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
-        recording_date, recording_time, recording_notes,
+        recording_date, recording_time,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
         prefiltering,
     )
@@ -226,7 +223,6 @@ function _create_recording_meg(;
     recording::String,
     recording_date::String,
     recording_time::String,
-    recording_notes::String,
     channel_type::Vector{String},
     channel_order::Vector{Int64},
     reference::String,
@@ -271,7 +267,7 @@ function _create_recording_meg(;
     recording_time = replace(recording_time, '.' => ':')
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
-        recording_date, recording_time, recording_notes,
+        recording_date, recording_time,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
         prefiltering,
     )
@@ -313,7 +309,6 @@ function _create_recording_nirs(;
     recording::String,
     recording_date::String,
     recording_time::String,
-    recording_notes::String,
     wavelengths::Vector{Float64},
     wavelength_index::Vector{Int64},
     optode_pairs::Matrix{Int64},
@@ -330,7 +325,7 @@ function _create_recording_nirs(;
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
-        recording_date, recording_time, recording_notes,
+        recording_date, recording_time,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
     )
     merge!(
@@ -371,7 +366,6 @@ function _create_recording_prefiltered(;
     recording::String,
     recording_date::String,
     recording_time::String,
-    recording_notes::String,
     channel_type::Vector{String},
     channel_order::Vector{Int64},
     clabels::Vector{String},
@@ -382,7 +376,7 @@ function _create_recording_prefiltered(;
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
-        recording_date, recording_time, recording_notes,
+        recording_date, recording_time,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
         prefiltering,
     )
@@ -405,7 +399,6 @@ function _create_recording_mep(;
     recording::String,
     recording_date::String,
     recording_time::String,
-    recording_notes::String,
     channel_type::Vector{String},
     channel_order::Vector{Int64},
     clabels::Vector{String},
@@ -420,7 +413,7 @@ function _create_recording_mep(;
 )::Dict
     d = _common_recording_fields(;
         data_type, file_name, file_size_mb, file_type, recording,
-        recording_date, recording_time, recording_notes,
+        recording_date, recording_time,
         channel_type, channel_order, clabels, units, sampling_rate, bad_channels,
     )
     merge!(
@@ -440,14 +433,22 @@ end
 # header
 # ---------------------------------------------------------------------------
 
-function _create_experiment(; name::String, notes::String, design::String)::Dict
-    return Dict(:name => name, :notes => notes, :design => design)
-end
-
 function _create_header(;
     subject::Dict,
     recording::Dict,
-    experiment::Dict,
+    notes::String = "",
 )::NeuroAnalyzer.HEADER
-    return NeuroAnalyzer.HEADER(subject, recording, experiment)
+    return NeuroAnalyzer.HEADER(subject, recording, notes)
+end
+
+# header notes from labelled parts, one line each ("label" => text; "" => text without a
+# label); empty parts are left out
+function _header_notes(parts::Pair...)::String
+    l = String[]
+    for (k, v) in parts
+        t = strip(string(v))
+        isempty(t) && continue
+        push!(l, isempty(k) ? t : "$k: $t")
+    end
+    return join(l, "\n")
 end

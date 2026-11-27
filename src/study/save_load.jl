@@ -30,6 +30,7 @@ function save_study(
         file_name;
         neuroanalyzer_study = string(pkgversion(NeuroAnalyzer)),
         name = study.name,
+        notes = study.notes,
         root = study.root,
         design = study.design,
         measures = Dict{String, Any}(string(k) => v for (k, v) in study.measures),
@@ -78,6 +79,8 @@ function load_study(
     end
     study = NeuroAnalyzer.STUDY(
         d["name"],
+        # (studies saved before v0.26.12 have no notes)
+        get(d, "notes", ""),
         r,
         d["design"],
         Dict{Symbol, Any}(Symbol(k) => v for (k, v) in d["measures"]),

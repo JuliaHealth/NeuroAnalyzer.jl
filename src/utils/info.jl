@@ -285,7 +285,7 @@ Return optode labels (NIRS objects only).
 """
 function optode_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     length(obj.header.recording[:optode_labels]) > 0 ||
         throw(ArgumentError("OBJ has no optode labels."))
 
@@ -307,7 +307,7 @@ Return source labels (NIRS objects only).
 """
 function source_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     length(obj.header.recording[:src_labels]) > 0 ||
         throw(ArgumentError("OBJ has no source labels."))
 
@@ -329,7 +329,7 @@ Return detector labels (NIRS objects only).
 """
 function detector_labels(obj::NeuroAnalyzer.NEURO)::Vector{String}
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     length(obj.header.recording[:det_labels]) > 0 ||
         throw(ArgumentError("OBJ has no detector labels."))
 
@@ -376,9 +376,10 @@ function _print_header(obj::NeuroAnalyzer.NEURO)
 
     rec = obj.header.recording
     println("              Recording: $(rec[:recording])")
-    println("        Recording notes: $(rec[:recording_notes])")
     println("         Recording date: $(rec[:recording_date])")
     println("         Recording time: $(rec[:recording_time])")
+    isempty(obj.header.notes) ||
+        println("                  Notes: $(replace(obj.header.notes, "\n" => "\n" * " "^25))")
     println("     Sampling rate (Hz): $(sr(obj))")
     println("Signal length [samples]: $(signal_len(obj))")
     println("Signal length [seconds]: $(round(signal_len(obj) / sr(obj), digits = 4))")
@@ -392,28 +393,26 @@ function _print_header(obj::NeuroAnalyzer.NEURO)
         println(" Epoch length [seconds]: $(round(epoch_len(obj) / sr(obj), digits = 4))")
     end
 
-    if datatype(obj) == "eeg"
+    # fields of the channel types present (objects may contain several, e.g. EEG and NIRS)
+    ct = rec[:channel_type]
+    if _has_chtype(obj, _EEG_LIKE_TYPES) && haskey(rec, :reference)
         ref = rec[:reference] == "" ? "unknown" : rec[:reference]
         println("         Reference type: $ref")
     end
 
-    if datatype(obj) == "meg"
+    if _has_chtype(obj, "meg") && haskey(rec, :ssp_labels)
         ssp_labels = rec[:ssp_labels]
         if length(ssp_labels) == 1
             println("       SSP projection: $(ssp_labels[1])")
         elseif length(ssp_labels) > 1
-            print("        SSP projections: ")
-            for idx = 1:(length(ssp_labels) - 1)
-                print("$(ssp_labels[idx]), ")
-            end
-            println("$(ssp_labels[end])")
+            println("        SSP projections: $(join(ssp_labels, ", "))")
         end
     end
 
-    if datatype(obj) in ["eeg", "meg", "ecog", "seeg"]
+    if _has_chtype(obj, [_EEG_LIKE_TYPES; "meg"]) && haskey(rec, :line_frequency)
         println("         Line frequency: $(rec[:line_frequency]) Hz")
     end
-    if datatype(obj) == "nirs"
+    if _has_chtype(obj, "nirs") && haskey(rec, :wavelengths)
         println("        Wavelength [nm]: $(rec[:wavelengths])")
     end
 
@@ -431,26 +430,16 @@ function _print_header(obj::NeuroAnalyzer.NEURO)
         end
     end
 
-    # channel-type counts, grouped by modality
-    dt = datatype(obj)
-    return if dt in ["eeg", "ecog", "seeg", "ieeg", "erp"]
-        nch = count(x -> x in ["eeg", "ecog", "seeg", "ieeg", "erp"], rec[:channel_type])
-        println(" Number of EEG channels: $nch")
-    elseif dt in ["meg", "erf"]
-        println(" Number of MAG channels: $(count(==("mag"), rec[:channel_type]))")
-        println("Number of GRAD channels: $(count(==("grad"), rec[:channel_type]))")
-        println(" Number of EEG channels: $(count(==("eeg"), rec[:channel_type]))")
-    elseif dt == "nirs"
-        nirs_types = [
-            "nirs", "nirs_int", "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew",
-            "nirs_mua", "nirs_musp", "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o",
-            "nirs_lipid", "nirs_bfi", "nirs_hrf_dod", "nirs_hrf_dmean", "nirs_hrf_dvar",
-            "nirs_hrf_dskew", "nirs_hrf_hbo", "nirs_hrf_hbr", "nirs_hrf_hbt",
-            "nirs_hrf_bfi", "nirs_aux",
-        ]
-        nch = count(x -> x in nirs_types, rec[:channel_type])
-        println("Number of NIRS channels: $nch")
-    end
+    # channel-type counts, grouped by modality (all modalities present)
+    n_eeg = count(in(_EEG_LIKE_TYPES), ct)
+    n_eeg > 0 && println(" Number of EEG channels: $n_eeg")
+    n_mag = count(==("mag"), ct)
+    n_mag > 0 && println(" Number of MAG channels: $n_mag")
+    n_grad = count(==("grad"), ct)
+    n_grad > 0 && println("Number of GRAD channels: $n_grad")
+    n_nirs = count(t -> startswith(t, "nirs"), ct)
+    n_nirs > 0 && println("Number of NIRS channels: $n_nirs")
+    return nothing
 end
 
 """
@@ -492,56 +481,28 @@ function info(obj::NeuroAnalyzer.NEURO; df::Bool = false)::Union{Nothing, DataFr
     println("Channels:")
 
     rec = obj.header.recording
-    if rec[:data_type] != "nirs"
-        # standard (non-NIRS) channel table
+    # NIRS optical channels (the first channels, described by optode pairs): wavelength column
+    n_opt = _nirs_n_opt(rec)
+    println(
+        rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) *
+        rpad("unit", 8) * rpad("bad", 8) * (n_opt > 0 ? rpad("wavelength", 12) : ""),
+    )
+    println(
+        " " * repeat("-", 6) * " " * repeat("-", 15) * " " *
+        repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 7) *
+        (n_opt > 0 ? " " * repeat("-", 12) : ""),
+    )
+    for idx in eachindex(rec[:label])
+        wl = idx <= n_opt && rec[:wavelength_index][idx] > 0 ?
+             string(rec[:wavelengths][rec[:wavelength_index][idx]]) : ""
         println(
-            rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) *
-            rpad("unit", 8) * rpad("bad", 8),
+            rpad(" $idx", 8) *
+            rpad(rec[:label][idx], 16) *
+            rpad(uppercase(rec[:channel_type][idx]), 12) *
+            rpad(rec[:unit][idx], 8) *
+            rpad(string(rec[:bad_channel][idx]), 8) *
+            wl,
         )
-        println(
-            " " * repeat("-", 6) * " " * repeat("-", 15) * " " *
-            repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 7),
-        )
-        for idx in eachindex(rec[:label])
-            println(
-                rpad(" $idx", 8) *
-                rpad(rec[:label][idx], 16) *
-                rpad(uppercase(rec[:channel_type][idx]), 12) *
-                rpad(rec[:unit][idx], 8) *
-                rpad(string(rec[:bad_channel][idx]), 8),
-            )
-        end
-    else
-        # NIRS channel table (includes wavelength column for non-derived channels)
-        println(
-            rpad(" ch", 8) * rpad("label", 16) * rpad("type", 12) *
-            rpad("unit", 8) * rpad("wavelength", 12),
-        )
-        println(
-            " " * repeat("-", 6) * " " * repeat("-", 15) * " " *
-            repeat("-", 11) * " " * repeat("-", 7) * " " * repeat("-", 12),
-        )
-        derived = ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]
-        for idx in eachindex(rec[:label])
-            # wavelength_index describes the optical channels (the first channels)
-            if !(rec[:channel_type][idx] in derived) &&
-               idx <= length(rec[:wavelength_index])
-                wl = rec[:wavelengths][rec[:wavelength_index][idx]]
-                println(
-                    rpad(" $idx", 8) *
-                    rpad(rec[:label][idx], 16) *
-                    rpad(uppercase(rec[:channel_type][idx]), 12) *
-                    rpad(rec[:unit][idx], 8) *
-                    rpad(string(wl), 12),
-                )
-            else
-                println(
-                    rpad(" $idx", 8) *
-                    rpad(rec[:label][idx], 16) *
-                    rpad(uppercase(rec[:channel_type][idx]), 12),
-                )
-            end
-        end
     end
 
     return df ? to_df(obj) : nothing
@@ -576,30 +537,15 @@ function channel_info(
     rec = obj.header.recording
     local chi::String
 
-    if rec[:data_type] != "nirs"
-        chi =
-            " ch: $(rpad(string(ch), 4))" *
-            " label: $(rpad(rec[:label][ch], 8))" *
-            " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))" *
-            " unit: $(rpad(rec[:unit][ch], 8))" *
-            " bad: $(rec[:bad_channel][ch])"
-
-    elseif !(rec[:channel_type][ch] in ["nirs_aux", "nirs_hbo", "nirs_hbr", "nirs_hbt"]) &&
-           ch <= length(rec[:wavelength_index])
-        # wavelength_index points into the wavelengths vector; report the value in nm
-        chi =
-            " ch: $(rpad(string(ch), 4))" *
-            " label: $(rpad(rec[:label][ch], 8))" *
-            " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))" *
-            " unit: $(rpad(rec[:unit][ch], 8))" *
-            " wavelength: $(rec[:wavelengths][rec[:wavelength_index][ch]]) nm"
-
-    else
-        chi =
-            " ch: $(rpad(string(ch), 4))" *
-            " label: $(rpad(rec[:label][ch], 8))" *
-            " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))"
-    end
+    chi =
+        " ch: $(rpad(string(ch), 4))" *
+        " label: $(rpad(rec[:label][ch], 8))" *
+        " type: $(rpad(uppercase(rec[:channel_type][ch]), 8))" *
+        " unit: $(rpad(rec[:unit][ch], 8))" *
+        " bad: $(rec[:bad_channel][ch])"
+    # NIRS optical channels: wavelength (wavelength_index points into the wavelengths vector)
+    ch <= _nirs_n_opt(rec) && rec[:wavelength_index][ch] > 0 &&
+        (chi *= " wavelength: $(rec[:wavelengths][rec[:wavelength_index][ch]]) nm")
 
     if pr
         println(chi)
@@ -637,7 +583,7 @@ function channel_pick(
     pick::Union{Symbol, Vector{Symbol}},
 )::Vector{String}
     # validate
-    _check_datatype(obj, ["eeg", "erp"])
+    _check_chtype(obj, "eeg")
     length(labels(obj)) != 0 || throw(ArgumentError("OBJ does not contain channel labels."))
     valid = [
         :central,

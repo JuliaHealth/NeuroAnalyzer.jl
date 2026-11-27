@@ -24,8 +24,8 @@ end
 
 @info "Test: study_create()"
 st = study_create(files; group = ["p", "p", "c", "p", "c"], root = root,
-                  covariates = (; age = [30, 30, 40, 50, 60]), name = "test")
-@test st isa NeuroAnalyzer.STUDY
+                  covariates = (; age = [30, 30, 40, 50, 60]), name = "test", notes = "n")
+@test st isa NeuroAnalyzer.STUDY && st.notes == "n"
 @test st.design.subject == ["01", "01", "02", "03", "04"]
 @test st.design.session == ["1", "2", "1", "1", "1"]
 @test propertynames(st.design) == [:subject, :session, :group, :file, :include, :age]
@@ -284,7 +284,7 @@ save_study(st; file_name = sf)
 @test_throws ArgumentError save_study(st; file_name = sf)
 @test_throws ArgumentError save_study(st; file_name = joinpath(root, "study.jld2"))
 s8 = load_study(sf)
-@test s8.name == "test" && s8.root == st.root && s8.design == st.design
+@test s8.name == "test" && s8.notes == "n" && s8.root == st.root && s8.design == st.design
 @test s8.history == st.history
 @test sort(collect(keys(s8.measures))) == [:erp, :psd, :tf]
 @test isequal(s8.measures[:erp].data, st.measures[:erp].data)

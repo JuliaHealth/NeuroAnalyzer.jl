@@ -209,7 +209,7 @@ function _reject_flags(
         # :z: in addition, more than 1 - p of the samples must be outliers
         method === :z && (flags .&= st .> 1 - p)
     elseif method === :ransac
-        _check_datatype(obj, ["eeg", "seeg", "ecog", "meg"])
+        _check_chtype(obj, ["eeg", "seeg", "ecog", "ieeg", "meg"])
         ch_list = labels(obj)[ch]
         loc_labels = lowercase.(obj.locs[!, :label])
         loc_idx = [findfirst(==(lowercase(l)), loc_labels) for l in ch_list]

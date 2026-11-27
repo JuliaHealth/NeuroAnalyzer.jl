@@ -54,7 +54,6 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         recording = "",
         recording_date = "",
         recording_time = "",
-        recording_notes = "",
         channel_type = String[],
         channel_order = Int64[],
         clabels = String[],
@@ -116,8 +115,7 @@ function create_object(; data_type::String)::NeuroAnalyzer.NEURO
         )
     end
 
-    e = _create_experiment(; name = "", notes = "", design = "")
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
     locs = _initialize_locs()
 
     return NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, ep_time, data)

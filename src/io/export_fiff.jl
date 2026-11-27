@@ -82,7 +82,7 @@ Written:
 - channel information: FIFF channel kind (from channel type), coil type, unit and the 12-element `loc` vector (sensor position and orientation); channel names longer than 15 characters are stored as MNE-Python does (short unique names in `ch_info` + full names in per-channel blocks)
 - MEG geometry stored by `import_fiff()` (`:coil_loc`, `:coil_id`, `:dev_head_t`): MEG sensors in the device frame, EEG electrodes in the head frame; without it, positions come from `OBJ.locs` (head frame, meters) and MEG sensors get default coil types and orientations
 - EEG/sEEG/ECoG electrode positions also as digitization points; cHPI coil frequencies and digitized positions
-- SSP projectors (inactive), bad channels, sampling rate, line frequency, low-pass/high-pass frequency (the lowest `:lowpass` and the highest `:highpass` of the channels), measurement date, subject (ID, names, handedness, weight, height), recording description and experiment name
+- SSP projectors (inactive), bad channels, sampling rate, line frequency, low-pass/high-pass frequency (the lowest `:lowpass` and the highest `:highpass` of the channels), measurement date, subject (ID, names, handedness, weight, height), recording description and project name (the `Project: ` line of the header notes)
 - markers as MNE annotations (onset relative to the first sample, duration, description = marker value, or the type if the value is empty; `BAD` markers are written as `BAD_<value>` and `boundary` markers as `BAD boundary`, which MNE-Python treats as bad segments); marker channels as the channels of the annotations (`ch_names` in MNE-Python); marker types, values and extra marker columns as the annotation extras (`extras` in MNE-Python), read back by `import_fiff()`
 - MEG `first_time` as `first_samp`; IAS (MaxShield) objects as MaxShield raw data
 
@@ -359,7 +359,9 @@ function export_fiff(
 
             r = string(get(rec, :recording, ""))
             isempty(r) || _fiff_write_string(io, tag("description"), r)
-            pn = string(get(obj.header.experiment, :name, ""))
+            # project name: the "Project: " line of the header notes (see import_fiff())
+            pl = findfirst(startswith("Project: "), split(obj.header.notes, "\n"))
+            pn = isnothing(pl) ? "" : strip(split(obj.header.notes, "\n")[pl][10:end])
             isempty(pn) || _fiff_write_string(io, tag("proj_name"), pn)
             isnothing(meas_date) || _fiff_write_int(io, tag("meas_date"), [meas_date, 0])
             _fiff_write_int(io, tag("nchan"), ch_n)

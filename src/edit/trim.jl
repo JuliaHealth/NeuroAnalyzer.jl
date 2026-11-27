@@ -150,7 +150,7 @@ function trim!(
     # first and last sample of the segment
     s1, s2 = vsearch(seg[1], obj.time_pts), vsearch(seg[2], obj.time_pts)
 
-    (datatype(obj) == "meg" && size(obj.header.recording[:ssp_data], 1) != 0) && _warn(
+    _has_ssp(obj) && _warn(
         "OBJ contains SSP projections data, you should apply them before modifying OBJ data.",
     )
 

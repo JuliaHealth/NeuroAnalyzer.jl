@@ -5,7 +5,7 @@ export view_header
 
 Print all keys and values stored in the object header.
 
-Iterates over the `:subject`, `:recording`, and `:experiment` sub-dictionaries of `obj.header` and prints each key–value pair in the format `header.<section>[:<key>]: <value>`.
+Iterates over the `:subject` and `:recording` sub-dictionaries of `obj.header` and prints each key–value pair in the format `header.<section>[:<key>]: <value>`, followed by the header notes (`header.notes`).
 
 # Arguments
 
@@ -20,11 +20,12 @@ function view_header(obj::NeuroAnalyzer.NEURO)::Nothing
     fields = Base.join(fieldnames(typeof(obj.header)), ", ")
     println("Header fields: $fields")
 
-    for section in (:subject, :recording, :experiment)
+    for section in (:subject, :recording)
         for (key, value) in getfield(obj.header, section)
             println("header.$section[:$key]: $value")
         end
     end
+    println("header.notes: $(obj.header.notes)")
 
     return nothing
 end

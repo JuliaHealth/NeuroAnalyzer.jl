@@ -122,7 +122,7 @@ function nirs_glm(
     exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::DataFrame
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     nepochs(obj) == 1 || throw(ArgumentError("OBJ must be continuous (one epoch)."))
     _has_markers(obj) || throw(ArgumentError("OBJ does not contain markers."))
     isnothing(duration) || duration > 0 || throw(ArgumentError("duration must be > 0."))

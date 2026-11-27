@@ -202,21 +202,34 @@ function _markers_epochs(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
     return mrk_epoch
 end
 
-# thresholds per channel type: a number applies to the channels of the data type of the object
+# thresholds per channel type: a number applies to the signal channels of the object, which
+# must be of one type (objects with channels of several types, e.g. MEG magnetometers and
+# gradiometers or EEG and NIRS, need thresholds per channel type)
 function _ptp_thresholds(
     obj::NeuroAnalyzer.NEURO,
     t::Union{Nothing, Real, AbstractDict},
     name::String,
 )::Dict{String, Float64}
     isnothing(t) && return Dict{String, Float64}()
-    d = t isa Real ? Dict(datatype(obj) => Float64(t)) :
-        Dict{String, Float64}(String(k) => Float64(v) for (k, v) in t)
+    if t isa Real
+        st = unique(Base.filter(in(_SIGNAL_CH_TYPES), obj.header.recording[:channel_type]))
+        length(st) == 1 || throw(
+            ArgumentError(
+                "$name: OBJ has " * (isempty(st) ? "no signal channels" :
+                "signal channels of several types ($(join(st, ", ")))") *
+                "; give the thresholds per channel type" *
+                (isempty(st) ? "." : ", e.g. Dict(" * join(["\"$t\" => …" for t in st], ", ") * ")."),
+            ),
+        )
+        d = Dict(st[1] => Float64(t))
+    else
+        d = Dict{String, Float64}(String(k) => Float64(v) for (k, v) in t)
+    end
     ct = obj.header.recording[:channel_type]
     for (k, v) in d
         k in ct || throw(
             ArgumentError(
-                "$name: no channels of type $k" *
-                (t isa Real ? " (give the thresholds per channel type, e.g. Dict(\"mag\" => …, \"grad\" => …))." : "."),
+                "$name: no channels of type $k.",
             ),
         )
         v > 0 || throw(ArgumentError("$name thresholds must be > 0."))
@@ -232,7 +245,7 @@ Epochs with a peak-to-peak amplitude above `reject` or below `flat` in at least 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: epoched object
-- `reject::Union{Nothing, Real, AbstractDict}`: maximum peak-to-peak amplitude, a number (channels of the data type of the object) or a dictionary of channel types and thresholds (in the units of the channels)
+- `reject::Union{Nothing, Real, AbstractDict}`: maximum peak-to-peak amplitude, a number (the signal channels, of one type) or a dictionary of channel types and thresholds (in the units of the channels)
 - `flat::Union{Nothing, Real, AbstractDict}`: minimum peak-to-peak amplitude (as `reject`)
 
 # Returns

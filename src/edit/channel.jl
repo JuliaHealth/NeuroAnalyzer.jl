@@ -29,7 +29,6 @@ end
 
 # true if the object holds (not yet applied) SSP projection vectors
 _has_ssp(obj::NeuroAnalyzer.NEURO)::Bool =
-    datatype(obj) in _MEG_LIKE_DATA &&
     haskey(obj.header.recording, :ssp_data) &&
     !isempty(obj.header.recording[:ssp_data])
 
@@ -127,7 +126,12 @@ function set_channel_type!(
 
     rec[:channel_type][ch_idx] = type
     rec[:channel_order] = _sort_channels(rec[:channel_type])
-    datatype(obj) in _MEG_LIKE_DATA && _update_meg_sensor_lists!(rec, ch_idx, type)
+    (type in ("mag", "grad") || haskey(rec, :magnetometers)) &&
+        _update_meg_sensor_lists!(rec, ch_idx, type)
+    # per-channel fields needed by the new type (e.g. :gain of an EEG channel)
+    for f in _rec_fields_for_type(type)
+        _rec_ensure_ch_field!(rec, f, nchannels(obj))
+    end
 
     _history!(obj, "set_channel_type", (; ch = labels(obj)[ch_idx], type))
 
@@ -447,6 +451,28 @@ function append_channel!(
     type::Union{String, Vector{String}},
     unit::Union{String, Vector{String}},
 )::Nothing
+    _append_channel!(obj; data = data, label = label, type = type, unit = unit)
+    _history!(
+        obj, "append_channel",
+        (; label = label isa String ? [label] : label,
+         type = lowercase.(type isa String ? [type] : type),
+         unit = unit isa String ? [unit] : unit, data),
+    )
+
+    return nothing
+end
+
+# core of append_channel!(): data and header fields of the new channels (no history);
+# `nirs_opt = true`: NIRS optical channels may be added (their optode description is set by
+# the caller)
+function _append_channel!(
+    obj::NeuroAnalyzer.NEURO;
+    data::Array{<:Number, 3},
+    label::Union{String, Vector{String}},
+    type::Union{String, Vector{String}},
+    unit::Union{String, Vector{String}},
+    nirs_opt::Bool = false,
+)::Nothing
     ch_n = size(data, 1)
     ch_n > 0 || throw(ArgumentError("data must contain at least one channel."))
 
@@ -457,9 +483,10 @@ function append_channel!(
 
     rec = obj.header.recording
     dt = rec[:data_type]
-    # NIRS objects: NIRS channels are described by optode pairs, other channels (e.g. EEG,
-    # auxiliary) can be appended
-    dt == "nirs" && any(t -> startswith(t, "nirs") && t != "nirs_aux", type_v) &&
+    # objects with NIRS channels: NIRS channels are described by optode pairs, other channels
+    # (e.g. EEG, auxiliary) can be appended
+    !nirs_opt && (dt == "nirs" || _nirs_n_opt(rec) > 0) &&
+        any(t -> startswith(t, "nirs") && t != "nirs_aux", type_v) &&
         throw(ArgumentError("NIRS channels must be added using optode functions."))
 
     # validate
@@ -495,44 +522,47 @@ function append_channel!(
     r = obj.header.recording
     n_old = has_data ? nchannels(obj) : 0
 
-    # extend a per-channel field (or create it for an empty object)
-    function _extend!(field::Symbol, default)
-        old = (has_data && haskey(r, field)) ? r[field] : typeof(default)[]
-        r[field] = vcat(old, fill(default, ch_n))
-        return nothing
-    end
-
     obj.data = has_data ? cat(obj.data, data; dims = 1) : Array{Float64}(data)
     r[:label] = vcat(old_labels, label_v)
     r[:channel_type] = vcat(has_data ? r[:channel_type] : String[], type_v)
     r[:unit] = vcat(has_data ? r[:unit] : String[], unit_v)
-    _extend!(:bad_channel, false)
+    _vext(field, default) = vcat(
+        (has_data && haskey(r, field) && length(r[field]) == n_old) ? r[field] :
+        typeof(default)[],
+        fill(default, ch_n),
+    )
+    r[:bad_channel] = _vext(:bad_channel, false)
     # low-pass and high-pass frequency: no filter
-    _extend!(:lowpass, Float64(r[:sampling_rate]) / 2)
-    _extend!(:highpass, 0.0)
+    r[:lowpass] = _vext(:lowpass, Float64(r[:sampling_rate]) / 2)
+    r[:highpass] = _vext(:highpass, 0.0)
     # notch frequencies: none (one vector per channel, not shared)
     r[:notch] = vcat(
         (has_data && haskey(r, :notch)) ? r[:notch] : Vector{Float64}[],
         [Float64[] for _ = 1:ch_n],
     )
 
-    if dt in _EEG_LIKE_DATA
-        _extend!(:transducers, "")
-        _extend!(:gain, 1.0)
-
-    elseif dt == "mep"
-        _extend!(:stimulation_intensity, 0)
-        _extend!(:coil_type, "")
-
-    elseif dt in _MEG_LIKE_DATA
-        _extend!(:coil_type, "")
-        _extend!(:ssp_channels, false)
-        if haskey(r, :coil_loc) && !isempty(r[:coil_loc])
-            r[:coil_loc] = vcat(r[:coil_loc], zeros(ch_n, 12))
-        end
-        if haskey(r, :coil_id) && !isempty(r[:coil_id])
-            r[:coil_id] = vcat(r[:coil_id], zeros(Int64, ch_n))
-        end
+    # per-channel fields present in the header (of any modality): default values for the
+    # new channels
+    for (f, d) in _REC_CH_FIELDS
+        _rec_has_ch_field(r, f, n_old) && (r[f] = vcat(r[f], fill(d, ch_n)))
+    end
+    _rec_has_ch_field(r, :coil_loc, n_old) && (r[:coil_loc] = vcat(r[:coil_loc], zeros(ch_n, 12)))
+    # fields needed by the new channel types (e.g. :gain of EEG channels appended to a NIRS
+    # object) and, for an empty object, by its data type
+    need = unique(vcat(_rec_fields_for_type.(type_v)...))
+    if !has_data
+        dt in _EEG_LIKE_DATA && append!(need, [:transducers, :gain])
+        dt in _MEG_LIKE_DATA && append!(need, [:coil_type, :ssp_channels])
+        dt == "mep" && append!(need, [:stimulation_intensity, :coil_type])
+    end
+    for f in unique(need)
+        _rec_ensure_ch_field!(r, f, n_old + ch_n)
+    end
+    for t in unique(type_v), (k, v) in _rec_scalar_defaults(t)
+        haskey(r, k) || (r[k] = deepcopy(v))
+    end
+    # MEG sensor index lists
+    if any(in(("mag", "grad")), type_v) || haskey(r, :magnetometers)
         for field in (:magnetometers, :gradiometers)
             has_data && haskey(r, field) || (r[field] = Int64[])
         end
@@ -555,8 +585,6 @@ function append_channel!(
         obj.epoch_time = _time_axis(n_s, fs)
     end
 
-    _history!(obj, "append_channel", (; label = label_v, type = type_v, unit = unit_v, data))
-
     return nothing
 end
 
@@ -565,7 +593,14 @@ end
 
 Return a copy of `obj1` with channels of `obj2` appended, e.g. EEG with auxiliary, EOG or ECG channels recorded separately, or EEG recorded simultaneously with NIRS.
 
-The objects must have the same sampling rate, epoch length and number of epochs (the signals must be synchronized). The channel types, units, low-pass, high-pass and notch frequencies, bad channel flags, gain and transducers (EEG), coil type, geometry and code (MEG) and locations of the channels are copied; markers are not.
+The objects must have the same sampling rate, epoch length and number of epochs (the signals must be synchronized). The objects may contain channels of different types (e.g. EEG and NIRS): the header fields of all channel types are merged:
+
+- per-channel fields: types, units, low-pass, high-pass and notch frequencies, bad channel flags, gain and transducers (EEG-like channels), coil type, geometry and code (MEG), stimulation intensity (MEP); fields missing in `obj1` are added (with default values for its channels)
+- recording fields missing in `obj1` (e.g. line frequency, reference, NIRS wavelengths and optode labels, MEG device-to-head transform); if both objects have different values, those of `obj1` are kept (with a warning)
+- NIRS optical channels (described by optode pairs) of `obj2`, with the other wavelengths of their optode pairs: placed before the channels of `obj1` (optical channels are the first channels), with their optode description; `obj1` must not contain optical channels
+- channel locations
+
+Markers and SSP projectors of `obj2` are not copied.
 
 # Arguments
 
@@ -579,7 +614,7 @@ The objects must have the same sampling rate, epoch length and number of epochs 
 
 # Notes
 
-The channel labels of `obj2` must not exist in `obj1` (rename them with `rename_channel()`). NIRS channels can be merged into a NIRS object only with optode functions; to analyze EEG recorded simultaneously with NIRS, append the EEG channels to the NIRS object.
+The channel labels of `obj2` must not exist in `obj1` (rename them with `rename_channel()`). The data type of `obj1` is kept; functions for a channel type (e.g. referencing of EEG channels, NIRS processing) use the channels of that type.
 """
 function append_channel(
     obj1::NeuroAnalyzer.NEURO,
@@ -597,7 +632,14 @@ end
 
 Append channels of `obj2` to `obj1` in-place, e.g. EEG with auxiliary, EOG or ECG channels recorded separately, or EEG recorded simultaneously with NIRS.
 
-The objects must have the same sampling rate, epoch length and number of epochs (the signals must be synchronized). The channel types, units, low-pass, high-pass and notch frequencies, bad channel flags, gain and transducers (EEG), coil type, geometry and code (MEG) and locations of the channels are copied; markers are not.
+The objects must have the same sampling rate, epoch length and number of epochs (the signals must be synchronized). The objects may contain channels of different types (e.g. EEG and NIRS): the header fields of all channel types are merged:
+
+- per-channel fields: types, units, low-pass, high-pass and notch frequencies, bad channel flags, gain and transducers (EEG-like channels), coil type, geometry and code (MEG), stimulation intensity (MEP); fields missing in `obj1` are added (with default values for its channels)
+- recording fields missing in `obj1` (e.g. line frequency, reference, NIRS wavelengths and optode labels, MEG device-to-head transform); if both objects have different values, those of `obj1` are kept (with a warning)
+- NIRS optical channels (described by optode pairs) of `obj2`, with the other wavelengths of their optode pairs: placed before the channels of `obj1` (optical channels are the first channels), with their optode description; `obj1` must not contain optical channels
+- channel locations
+
+Markers and SSP projectors of `obj2` are not copied.
 
 # Arguments
 
@@ -611,7 +653,7 @@ The objects must have the same sampling rate, epoch length and number of epochs 
 
 # Notes
 
-The channel labels of `obj2` must not exist in `obj1` (rename them with `rename_channel()`). NIRS channels can be merged into a NIRS object only with optode functions; to analyze EEG recorded simultaneously with NIRS, append the EEG channels to the NIRS object.
+The channel labels of `obj2` must not exist in `obj1` (rename them with `rename_channel()`). The data type of `obj1` is kept; functions for a channel type (e.g. referencing of EEG channels, NIRS processing) use the channels of that type.
 """
 function append_channel!(
     obj1::NeuroAnalyzer.NEURO,
@@ -638,37 +680,106 @@ function append_channel!(
     lbl = labels(obj2)[idx]
     n_old = nchannels(obj1)
     n0 = length(obj1.history)
-    append_channel!(
+    r1 = obj1.header.recording
+
+    # NIRS optical channels of obj2 (described by optode pairs): added before the channels of
+    # obj1 (optical channels are the first channels), with their optode description
+    n_opt2 = _nirs_n_opt(r2)
+    opt = Base.filter(<=(n_opt2), idx)
+    if !isempty(opt)
+        _nirs_n_opt(r1) == 0 || throw(
+            ArgumentError(
+                "OBJ1 already contains NIRS optical channels; NIRS channels are merged with optode functions.",
+            ),
+        )
+        # (the other wavelengths of the same optode pairs are needed by od2conc())
+        opt2 = _nirs_pair_wl(obj2, opt; msg = "Also appending")
+        if length(opt2) > length(opt)
+            idx = sort(unique(vcat(idx, opt2)))
+            lbl = labels(obj2)[idx]
+            opt = Base.filter(<=(n_opt2), idx)
+        end
+        idx = vcat(opt, setdiff(idx, opt))
+        lbl = labels(obj2)[idx]
+    end
+
+    # recording-level fields of obj2 missing (or empty) in obj1, before the channels are
+    # appended (which adds default values of some of them)
+    miss1 = Set(k for k in keys(r2) if !haskey(r1, k) || _rec_empty(r1[k]))
+
+    _append_channel!(
         obj1;
         data = obj2.data[idx, :, :],
         label = lbl,
         type = r2[:channel_type][idx],
         unit = r2[:unit][idx],
+        nirs_opt = !isempty(opt),
     )
 
-    # per-channel header fields of obj2
-    r1 = obj1.header.recording
+    # per-channel header fields of obj2: copied (fields missing in obj1 are added, with
+    # default values for its channels)
     new = (n_old + 1):(n_old + length(idx))
+    ch_n = nchannels(obj1)
     for f in (:lowpass, :highpass, :bad_channel)
         r1[f][new] = r2[f][idx]
     end
     r1[:notch][new] = [copy(n) for n in r2[:notch][idx]]
-    dt1, dt2 = r1[:data_type], r2[:data_type]
-    if dt1 in _EEG_LIKE_DATA && dt2 in _EEG_LIKE_DATA
-        for f in (:gain, :transducers)
-            haskey(r2, f) && (r1[f][new] = r2[f][idx])
-        end
-    elseif dt1 in _MEG_LIKE_DATA && dt2 in _MEG_LIKE_DATA
-        r1[:coil_type][new] = r2[:coil_type][idx]
-        for f in (:coil_loc, :coil_id)
-            (haskey(r1, f) && !isempty(r1[f]) && haskey(r2, f) && !isempty(r2[f])) || continue
-            f === :coil_loc ? (r1[f][new, :] = r2[f][idx, :]) : (r1[f][new] = r2[f][idx])
-        end
+    for f in keys(_REC_CH_FIELDS)
+        _rec_has_ch_field(r2, f, nchannels(obj2)) || continue
+        _rec_ensure_ch_field!(r1, f, ch_n)
+        r1[f][new] = r2[f][idx]
+    end
+    if _rec_has_ch_field(r2, :coil_loc, nchannels(obj2))
+        _rec_has_ch_field(r1, :coil_loc, ch_n) || (r1[:coil_loc] = zeros(ch_n, 12))
+        r1[:coil_loc][new, :] = r2[:coil_loc][idx, :]
+    end
+    # SSP projectors of obj2 are not copied (their vectors refer to the channels of obj2)
+    if haskey(r1, :ssp_channels) && any(r1[:ssp_channels][new])
+        r1[:ssp_channels][new] .= false
+        _warn("SSP projectors of OBJ2 are not copied.")
     end
 
-    # locations of the appended channels
+    # recording-level fields of obj2 missing in obj1 (e.g. line frequency, reference, NIRS
+    # wavelengths and optode labels, MEG device-to-head transform); differences are reported
+    skip = Set([
+        :label, :channel_type, :unit, :bad_channel, :lowpass, :highpass, :notch,
+        :channel_order, :coil_loc, :magnetometers, :gradiometers, :ssp_data, :ssp_labels,
+        :wavelength_index, :optode_pairs, :data_type, :file_name, :file_size_mb,
+        :file_type, :sampling_rate, keys(_REC_CH_FIELDS)...,
+    ])
+    differ = Symbol[]
+    for (k, v) in r2
+        k in skip && continue
+        if k in miss1
+            r1[k] = deepcopy(v)
+        elseif !_rec_empty(v) && !isequal(r1[k], v) &&
+               k in (:line_frequency, :reference, :wavelengths, :coord_system, :length_unit)
+            push!(differ, k)
+        end
+    end
+    isempty(differ) || _warn(
+        "Header fields differ, the values of OBJ1 are kept: $(join(string.(differ), ", ")).",
+    )
+
+    # NIRS optical channels: moved to the front, optode description of obj2
+    if !isempty(opt)
+        n_o = length(opt)
+        _select_channels!(obj1, vcat(new[1:n_o], 1:n_old, new[(n_o + 1):end]))
+        r1[:wavelengths] = copy(r2[:wavelengths])
+        r1[:wavelength_index] = r2[:wavelength_index][opt]
+        r1[:optode_pairs] = r2[:optode_pairs][opt, :]
+        for f in (:src_labels, :det_labels, :optode_labels)
+            haskey(r2, f) && (r1[f] = copy(r2[f]))
+        end
+        _info("NIRS optical channels of OBJ2 are placed before the channels of OBJ1.")
+    end
+
+    # locations of the appended channels (NIRS optical channels: of their optodes)
     if DataFrames.nrow(obj2.locs) > 0
-        l2 = obj2.locs[in(lbl).(obj2.locs[!, :label]), :]
+        ll = isempty(opt) ? lbl :
+             vcat(lbl, get(r2, :optode_labels, String[]), get(r2, :src_labels, String[]),
+                  get(r2, :det_labels, String[]))
+        l2 = obj2.locs[in(ll).(obj2.locs[!, :label]), :]
         l2 = l2[.!in(obj1.locs[!, :label]).(l2[!, :label]), :]
         if DataFrames.nrow(l2) > 0
             obj1.locs = DataFrames.nrow(obj1.locs) == 0 ? copy(l2) :

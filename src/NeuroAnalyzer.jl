@@ -275,7 +275,7 @@ end
 mutable struct HEADER
     subject::Dict
     recording::Dict
-    experiment::Dict
+    notes::String
 end
 
 mutable struct NEURO
@@ -312,6 +312,7 @@ NEURO(
 # for every recording and condition (see study_create())
 mutable struct STUDY
     name::String
+    notes::String                   # free-text notes
     root::String                    # base folder; relative file names are relative to it
     design::DataFrame               # one row per recording: subject, session, group, file, include, ...
     measures::Dict{Symbol, Any}     # cached measures (:erp, :psd, :tf), see study_measure!()

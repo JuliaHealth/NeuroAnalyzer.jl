@@ -712,7 +712,7 @@ nn = import_snirf(joinpath(testfiles_path, "nirs", "fnirs-test-snirf.snirf"))
 @test occursin("wavelength", channel_info(nn; ch = labels(nn)[1], pr = false)) ||
       occursin("type:", channel_info(nn; ch = labels(nn)[1], pr = false))
 out = capture(() -> view_header(e10))
-@test occursin("Header fields: subject, recording, experiment", out)
+@test occursin("Header fields: subject, recording, notes", out)
 @test occursin("header.recording[:sampling_rate]: 256", out)
 out = capture(() -> NeuroAnalyzer._band_list([:list, :a, :b]))
 @test out == "Available band names: :a, :b\n"

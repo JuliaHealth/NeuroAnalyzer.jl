@@ -419,6 +419,49 @@ n_m2 = append_channel(n_m, e_n)
 @test labels(n_m2)[end-1:end] == ["Fp1", "Cz"] && datatype(n_m2) == "nirs"
 @test n_m2.header.recording[:optode_pairs] == n_m.header.recording[:optode_pairs]
 @test_throws ArgumentError append_channel(n_m, n_m)
+# objects with channels of several types: header fields of all types are kept consistent
+r = n_m2.header.recording
+@test length(r[:gain]) == nchannels(n_m2) && length(r[:transducers]) == nchannels(n_m2)
+@test haskey(r, :reference) && haskey(r, :line_frequency)
+# functions for a channel type use the channels of that type (EEG referencing of a NIRS
+# object with EEG channels)
+d0 = copy(n_m2.data)
+reference_avg!(n_m2)
+@test n_m2.data[1:(end - 2), :, :] == d0[1:(end - 2), :, :]
+@test n_m2.data[(end - 1):end, :, :] != d0[(end - 1):end, :, :]
+n_m3 = delete_channel(n_m2; ch = "Cz-avg")
+@test length(n_m3.header.recording[:gain]) == nchannels(n_m3)
+@test_throws ArgumentError reference_avg(n_m)
+@test_throws ArgumentError NeuroAnalyzer._ptp_thresholds(n_m2, 100, "reject")
+# NIRS channels appended to an EEG object: optical channels first, optode description
+e_n3 = append_channel(e_n, n_m)
+r = e_n3.header.recording
+n_opt = length(n_m.header.recording[:wavelength_index])
+@test datatype(e_n3) == "eeg"
+@test labels(e_n3)[1:n_opt] == labels(n_m)[1:n_opt]
+@test labels(e_n3)[(n_opt + 1):(n_opt + 2)] == ["Fp1", "Cz"]
+@test e_n3.data[1:n_opt, :, :] == n_m.data[1:n_opt, :, :]
+@test e_n3.data[(n_opt + 1):(n_opt + 2), :, :] == e_n.data
+@test r[:optode_pairs] == n_m.header.recording[:optode_pairs]
+@test r[:wavelength_index] == n_m.header.recording[:wavelength_index]
+@test r[:wavelengths] == n_m.header.recording[:wavelengths]
+@test length(r[:gain]) == nchannels(e_n3)
+@test all(in(e_n3.locs[!, :label]), n_m.header.recording[:optode_labels])
+c = od2conc(intensity2od(e_n3))
+@test count(==("nirs_hbo"), c.header.recording[:channel_type]) == n_opt ÷ 2
+@test get_channel(c; type = "eeg") == ["Fp1", "Cz"]
+@test_throws ArgumentError append_channel(n_m, e_n3)
+# join_epoch(), append_epoch(): bad channels of both objects, missing header fields
+e_j1 = keep_epoch(e_a; ep = 1:2)
+e_j2 = keep_epoch(e_a; ep = 3:4)
+e_j2.header.recording[:bad_channel][3] = true
+e_j = join_epoch(e_j1, e_j2)
+@test e_j.header.recording[:bad_channel] == [false, false, true]
+e_j = append_epoch(e_j1, e_j2)
+@test e_j.header.recording[:bad_channel] == [false, false, true]
+e_j3 = deepcopy(e_j2)
+set_channel_type!(e_j3; ch = "Cz", type = "eog")
+@test_throws ArgumentError join_epoch(e_j1, e_j3)
 
 @info "Test: insert_channel()"
 lbl = labels(e10)

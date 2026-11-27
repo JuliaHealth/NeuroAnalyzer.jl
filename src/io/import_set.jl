@@ -265,7 +265,6 @@ function import_set(
         recording = "",
         recording_date = "",
         recording_time = "",
-        recording_notes = string(dataset["setname"]),
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
         reference = ref,
@@ -278,9 +277,12 @@ function import_set(
         gain = gain,
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = "", notes = note, design = "")
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(;
+        subject = s,
+        recording = r,
+        notes = _header_notes("Set name" => string(dataset["setname"]), "" => note),
+    )
 
     obj = NeuroAnalyzer.NEURO(hdr, history, markers, locs, time_pts, epoch_time, data)
     # chanlocs in the EEGLAB coordinate system (x towards the nose, rotated on import); the

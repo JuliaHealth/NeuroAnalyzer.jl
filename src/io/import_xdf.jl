@@ -140,7 +140,6 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         recording = "",
         recording_date = "",
         recording_time = "",
-        recording_notes = "",
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
         reference = "",
@@ -153,9 +152,8 @@ function import_xdf(file_name::String)::NeuroAnalyzer.NEURO
         gain = ones(ch_n),
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
 
     history = String[]
 

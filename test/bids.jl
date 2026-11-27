@@ -53,7 +53,7 @@ bf4 = bids_files(d4)
 @info "Test: import_bids() (EEG, EEGLAB)"
 o = import_bids(f1)
 rec = o.header.recording
-@test o.header.subject[:id] == "002" && o.header.experiment[:name] == "FaceRecognition"
+@test o.header.subject[:id] == "002" && startswith(o.header.notes, "Task: FaceRecognition")
 @test rec[:line_frequency] == 50 && rec[:reference] == "nose"
 # channels.tsv: 70 EEG, HEOG + VEOG, 2 EKG
 @test count(==("eeg"), rec[:channel_type]) == 70
@@ -81,7 +81,7 @@ f2 = joinpath(d2, bf2.file[1])
 o2 = import_bids(f2)
 rec2 = o2.header.recording
 @test datatype(o2) == "ecog" && sr(o2) == 1000 && signal_len(o2) == 90_000
-@test o2.header.subject[:id] == "jh101" && o2.header.experiment[:name] == "ictal"
+@test o2.header.subject[:id] == "jh101" && startswith(o2.header.notes, "Task: ictal")
 @test rec2[:line_frequency] == 60
 ct2 = CSV.read(replace(f2, "_ieeg.vhdr" => "_channels.tsv"), DataFrame; missingstring = "n/a")
 @test count(rec2[:bad_channel]) == count(==("bad"), ct2.status)
@@ -147,7 +147,7 @@ bf3 = bids_files(d3)
 f3 = joinpath(d3, bf3.file[1])
 o3 = import_bids(f3)
 @test datatype(o3) == "nirs" && o3.header.subject[:id] == "01"
-@test o3.header.experiment[:name] == "tapping"
+@test startswith(o3.header.notes, "Task: tapping")
 # optodes.tsv: CapTrak (RAS), meters
 ot3 = CSV.read(joinpath(d3, "sub-01", "nirs", "sub-01_optodes.tsv"), DataFrame)
 @test o3.header.recording[:length_unit] == "m"
@@ -164,7 +164,7 @@ st3 = study_bids(d3; out_dir = mktempdir(), group = :sex, covariates = [:age])
 @info "Test: import_bids() (EEG, ds004504)"
 f4 = joinpath(d4, bf4.file[1])
 o4 = import_bids(f4)
-@test o4.header.subject[:id] == "001" && o4.header.experiment[:name] == "eyesclosed"
+@test o4.header.subject[:id] == "001" && startswith(o4.header.notes, "Task: eyesclosed")
 @test o4.header.recording[:line_frequency] == 50 && o4.header.recording[:reference] == "A1 A2"
 @test nchannels(o4) == 19 && sr(o4) == 500
 

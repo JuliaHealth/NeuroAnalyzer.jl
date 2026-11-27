@@ -179,7 +179,6 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         file_size_mb = file_size_mb,
         file_type = file_type,
         recording = "", recording_date = "", recording_time = "",
-        recording_notes = "",
         wavelengths = wavelengths,
         wavelength_index = wavelength_index,
         optode_pairs = opt_pairs,
@@ -194,8 +193,7 @@ function import_nirs(file_name::String)::NeuroAnalyzer.NEURO
         bad_channels = zeros(Bool, size(data, 1)),
         length_unit = string(get(probes, "SpatialUnit", "")),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     # unit of the optode positions (system unknown)

@@ -6,7 +6,7 @@ Load a BrainVision BV/BVCDF recording and return a `NeuroAnalyzer.NEURO` object.
 
 At minimum two files are required: a `.vhdr` (or `.ahdr`) header file and the corresponding `.eeg` signal file. Event markers are loaded automatically from the `.vmrk` file when present, or from a BIDS-style `_events.tsv` sidecar.
 
-Channel locations are read from the `[Coordinates]` section of the header when available. A BIDS JSON sidecar (`.json`) is parsed for experiment metadata.
+Channel locations are read from the `[Coordinates]` section of the header when available. A BIDS JSON sidecar (`.json`) is parsed for the task (header notes).
 
 # Arguments
 
@@ -411,7 +411,6 @@ function import_bv(
         recording = string(recording),
         recording_date = recording_date,
         recording_time = replace(recording_time, '.' => ':'),
-        recording_notes = r_notes,
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
         reference = ref,
@@ -424,8 +423,13 @@ function import_bv(
         gain = gain,
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = e_name, notes = e_notes, design = "")
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(;
+        subject = s,
+        recording = r,
+        notes = _header_notes(
+            "Task" => e_name, "" => e_notes, "Amplifier model" => r_notes,
+        ),
+    )
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     # [Coordinates]: spherical coordinates on the unit sphere (unit: none)

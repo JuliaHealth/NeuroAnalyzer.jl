@@ -567,13 +567,16 @@ function plot_locs(
     gui::Bool = true,
 )::Union{GLMakie.Figure, Nothing}
     # validate
-    datatype(obj) != "ecog" || throw(ArgumentError("Use plot_locs_ecog() for ECoG data."))
 
     # all selected channels are shown (bad channels are marked)
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
 
-    datatype(obj) == "nirs" && return _plot_locs_nirs_obj(
+    # channel types of the selected channels (objects may contain several, e.g. EEG and NIRS)
+    ct = obj.header.recording[:channel_type][ch]
+    all(==("ecog"), ct) && throw(ArgumentError("Use plot_locs_ecog() for ECoG channels."))
+    _nirs_n_opt(obj.header.recording) > 0 && all(t -> startswith(t, "nirs"), ct) &&
+        return _plot_locs_nirs_obj(
         obj, ch;
         sch          = sch,
         ch_labels    = ch_labels,
@@ -610,7 +613,7 @@ function plot_locs(
         _find_bylabel(locs, sch_chs)
     end
 
-    if datatype(obj) in ["eeg", "meg", "csd", "erp", "erf"]
+    if any(in(("eeg", "csd", "mag", "grad")), ct) || any(t -> startswith(t, "nirs"), ct)
         return plot_locs(
             locs;
             ch             = ch,
@@ -631,22 +634,15 @@ function plot_locs(
             bad            = in(Set(labels(obj)[obj.header.recording[:bad_channel]])).(locs[!, :label]),
             gui            = gui,
         )
-    elseif datatype(obj) == "ecog"
-        _warn("ECOG locs are not supported yet.")
-        return nothing
-    elseif datatype(obj) == "seeg"
-        _warn("SEEG locs are not supported yet.")
-        return nothing
-    elseif datatype(obj) == "ieeg"
-        _warn("iEEG locs are not supported yet.")
-        return nothing
-    elseif datatype(obj) in ["sensors", "eda", "mep", "tpt"]
-        _warn("For $(datatype(obj)) object type locs are not available.")
+    elseif any(in(("seeg", "ieeg")), ct)
+        _warn("sEEG and iEEG locs are not supported yet.")
         return nothing
     end
 
     return throw(
-        ArgumentError("Locations plot is not available for $(datatype(obj)) data."),
+        ArgumentError(
+            "Locations plot is not available for channels of type $(join(unique(ct), ", ")).",
+        ),
     )
 end
 

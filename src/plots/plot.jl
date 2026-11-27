@@ -225,10 +225,8 @@ function plot(
     gui::Bool = true,
 )::GLMakie.Figure
     # validate
-    datatype(obj1) in ["eeg", "meg"] ||
-        throw(ArgumentError("This function works for continuous EEG and MEG objects."))
-    datatype(obj2) in ["eeg", "meg"] ||
-        throw(ArgumentError("This function works for continuous EEG and MEG objects."))
+    _check_chtype(obj1, ["eeg", "meg"])
+    _check_chtype(obj2, ["eeg", "meg"])
     size(obj1) == size(obj2) ||
         throw(ArgumentError("Both objects must have the same size."))
     nepochs(obj1) == 1 ||

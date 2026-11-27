@@ -20,7 +20,7 @@ The primary signal data is always written to `file_name` (time × channels; the 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object
 - `file_name::String`: path of the primary output CSV file
 - `names::Bool=true`: write channel names as the CSV header row
-- `header::Bool=false`: export recording/subject/experiment metadata to a sidecar text file
+- `header::Bool=false`: export subject and recording metadata and notes to a sidecar text file
 - `epoch_time::Bool=false`: export per-epoch time points to a sidecar CSV
 - `markers::Bool=false`: export event markers to a sidecar CSV (skipped when the markers table is empty)
 - `locs::Bool=false`: export channel locations to a sidecar CSV (skipped when the locations table is empty)
@@ -90,11 +90,12 @@ function export_csv(
         check_overwrite(header_file)
         open(header_file, "w") do f
             # write key-value pairs from all three metadata sections
-            for section in (obj.header.subject, obj.header.recording, obj.header.experiment)
+            for section in (obj.header.subject, obj.header.recording)
                 for (key, value) in section
                     println(f, key, ": ", value)
                 end
             end
+            isempty(obj.header.notes) || println(f, "notes: ", obj.header.notes)
         end
     end
 

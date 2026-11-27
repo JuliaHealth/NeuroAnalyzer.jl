@@ -55,7 +55,7 @@ function nirs_distance(obj::NeuroAnalyzer.NEURO)::@NamedTuple{
     d::Vector{Float64},
 }
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     rec = obj.header.recording
     chp = rec[:optode_pairs]
     n_opt = size(chp, 1)
@@ -119,7 +119,7 @@ function nirs_sci(
     sci::Matrix{Float64},
 }
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     fs = sr(obj)
     _check_tuple(flim, (0, fs / 2), "flim")
     type = !isempty(get_channel(obj; type = "nirs_int")) ? "nirs_int" : "nirs_od"
@@ -162,7 +162,7 @@ function nirs_cv(obj::NeuroAnalyzer.NEURO)::@NamedTuple{
     cv::Matrix{Float64},
 }
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     ch = get_channel(obj; ch = get_channel(obj; type = "nirs_int"))
     isempty(ch) && throw(ArgumentError("OBJ does not contain NIRS intensity channels."))
 
@@ -201,7 +201,7 @@ function nirs_quality(
     flim::Tuple{Real, Real} = (0.5, 2.5),
 )::DataFrame
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     -1 <= sci_t <= 1 || throw(ArgumentError("sci_t must be in [-1, 1]."))
     cv_t > 0 || throw(ArgumentError("cv_t must be > 0."))
 

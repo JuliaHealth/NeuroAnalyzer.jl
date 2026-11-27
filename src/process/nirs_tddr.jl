@@ -87,7 +87,7 @@ function tddr!(
     ch::Union{String, Vector{String}, Regex} = get_channel(obj; type = "nirs_od"),
 )::Nothing
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
     any(==("nirs_int"), obj.header.recording[:channel_type][ch]) &&

@@ -70,8 +70,8 @@ function mlinterpolate_channel!(
     model::T,
     reset_bads::Bool = false,
 )::Nothing where {T <: MLJ.Model}
-    # signal channels: names (get_channel(; type) returns names) and numbers
-    channel_labels = get_channel(obj; type = datatype(obj))
+    # signal channels of the type of ch: names and numbers
+    channel_labels = _signal_channels_like(obj, ch)
     channel_indices = [findfirst(==(l), labels(obj)) for l in channel_labels]
 
     # validate

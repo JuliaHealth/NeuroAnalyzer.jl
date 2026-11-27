@@ -199,7 +199,6 @@ r = NeuroAnalyzer._create_recording_eeg(;
     recording = "a",
     recording_date = "a",
     recording_time = "a",
-    recording_notes = "a",
     channel_type = ["a"],
     reference = "a",
     clabels = ["a"],
@@ -222,7 +221,6 @@ r = NeuroAnalyzer._create_recording_meg(;
     recording = "a",
     recording_date = "a",
     recording_time = "a",
-    recording_notes = "a",
     channel_type = ["a"],
     reference = "a",
     clabels = ["a"],
@@ -241,11 +239,12 @@ r = NeuroAnalyzer._create_recording_meg(;
 )
 @test r isa Dict{Symbol, Any}
 
-e = NeuroAnalyzer._create_experiment(; name = "a", notes = "a", design = "a")
-@test e isa Dict{Symbol, String}
-
-hdr = NeuroAnalyzer._create_header(; subject = s, recording = r, experiment = e)
-@test hdr isa NeuroAnalyzer.HEADER
+hdr = NeuroAnalyzer._create_header(; subject = s, recording = r)
+@test hdr isa NeuroAnalyzer.HEADER && hdr.notes == ""
+hdr = NeuroAnalyzer._create_header(; subject = s, recording = r, notes = "a")
+@test hdr.notes == "a"
+@test NeuroAnalyzer._header_notes("Task" => "x", "" => " y ", "Design" => "") == "Task: x\ny"
+@test NeuroAnalyzer._header_notes("Task" => "") == ""
 
 ##
 ## Markers Operations
@@ -1045,7 +1044,7 @@ end
 
 common =
     (data_type = "x", file_name = "f", file_size_mb = 1, file_type = "t", recording = "r",
-        recording_date = "d", recording_time = "12.30.00", recording_notes = "n",
+        recording_date = "d", recording_time = "12.30.00",
         channel_type = ["a"],
         channel_order = [1], clabels = ["a"], units = ["u"], sampling_rate = 100,
         bad_channels = [false])

@@ -60,7 +60,7 @@ function average_epochs!(
     rejected::Bool = false,
 )::Nothing
     # validate
-    _check_datatype(obj, ["eeg", "meg", "nirs"])
+    _check_chtype(obj, ["eeg", "meg", "nirs"])
 
     # epochs to average: condition(s), without the rejected ones (the others are removed)
     ep_sel = get_epochs(obj; condition = condition, rejected = rejected)
@@ -75,14 +75,9 @@ function average_epochs!(
     length(ep_sel) < nepochs(obj) && keep_epoch!(obj; ep = ep_sel)
 
     # signal channels (get_channel(; type) returns names)
-    sig_ch = if datatype(obj) == "eeg"
-        get_channel(obj; type = "eeg")
-    elseif datatype(obj) == "meg"
-        get_channel(obj; type = ["meg", "mag", "grad"])
-    else
-        # NIRS: all optical and derived channels (auxiliary channels are removed)
-        labels(obj)[obj.header.recording[:channel_type] .!= "nirs_aux"]
-    end
+    # (EEG-like, MEG and NIRS optical and derived channels; also of several types, e.g. EEG
+    # recorded with NIRS)
+    sig_ch = labels(obj)[in(_SIGNAL_CH_TYPES).(obj.header.recording[:channel_type])]
     isempty(sig_ch) && throw(ArgumentError("OBJ does not contain signal channels."))
     nchannels(obj) > length(sig_ch) && _warn("Non-signal channels will be removed.")
     # data type before it is changed (EEG → ERP, MEG → ERF)

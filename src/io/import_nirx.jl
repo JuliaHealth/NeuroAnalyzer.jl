@@ -358,7 +358,6 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         recording = string(device[1]),
         recording_date = string(recording_date[1]),
         recording_time = replace(string(recording_time[1]), '.' => ':'),
-        recording_notes = "NIRStar: $nirstar",
         wavelengths = wavelengths,
         wavelength_index = wavelength_index,
         optode_pairs = opt_pairs,
@@ -374,13 +373,16 @@ function import_nirx(file_name::String)::NeuroAnalyzer.NEURO
         # optode coordinates of NIRx probe files (probeInfo.mat) are in cm
         length_unit = "cm",
     )
-    e = _create_experiment(;
-        name = string(study_type1),
-        notes = string(study_type2),
-        design = string(study_type3),
-    )
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(;
+        subject = s,
+        recording = r,
+        notes = _header_notes(
+            "NIRStar" => nirstar,
+            "Study type" => study_type1, "Study type 2" => study_type2,
+            "Study type 3" => study_type3,
+        ),
+    )
 
     history = String[]
 

@@ -110,7 +110,7 @@ function sphinterpolate_channel!(
     reset_bads::Bool = false,
 )::Nothing
     # validate
-    _check_datatype(obj, "eeg")
+    _check_chtype(obj, "eeg")
     _has_locs(obj)
     (2 <= m <= 10) || throw(ArgumentError("m must be in [2, 10]."))
     n >= 1 || throw(ArgumentError("n must be ≥ 1."))

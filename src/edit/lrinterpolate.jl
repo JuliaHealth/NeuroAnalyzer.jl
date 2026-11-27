@@ -71,7 +71,8 @@ function lrinterpolate_channel!(
     ch_idx = get_channel(obj; ch = ch)
     isempty(ch_idx) && throw(ArgumentError("No channels selected."))
     ch_idx = ch_idx[1]
-    channels = get_channel(obj; ch = get_channel(obj; type = datatype(obj)))
+    # signal channels of the type of ch
+    channels = Int64[findfirst(==(l), labels(obj)) for l in _signal_channels_like(obj, labels(obj)[ch_idx])]
     ch_idx in channels ||
         throw(
             ArgumentError(

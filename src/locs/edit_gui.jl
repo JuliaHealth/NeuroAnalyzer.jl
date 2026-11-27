@@ -41,8 +41,7 @@ Named tuple:
 - `cur::Observable{Int64}`: current channel number
 """
 function _edit_locs_build(obj::NeuroAnalyzer.NEURO)
-    datatype(obj) in ("eeg", "meg") ||
-        throw(ArgumentError("Interactive editing is available for EEG and MEG objects."))
+    _check_chtype(obj, ["eeg", "meg"])
     nchannels(obj) > 0 || throw(ArgumentError("OBJ must contain ≥ 1 channel."))
 
     # working copy: everything is edited here, the input object is not touched

@@ -496,7 +496,7 @@ For NIRS objects, each channel (source-detector pair) is located at the midpoint
     - `:sph`: spherical spline (Perrin et al. 1989), fitted at the 3D channel positions if available (and `cart = false`)
 - `nmethod::Symbol=:minmax`: method for normalization, see `normalize()`
 - `crange::Union{Nothing, Tuple{Real, Real}}=nothing`: color range (in the units of the plotted, possibly normalized, values); `nothing`: the range of the values. A fixed range makes several maps comparable (e.g. frames of an animation)
-- `mask::Bool=datatype(obj) == "nirs"`: if `true`, the map is shown only near the channels (within 1.5 × the median distance between neighbouring channels); default for NIRS objects, whose optodes usually cover only a part of the head
+- `mask::Union{Nothing, Bool}=nothing`: if `true`, the map is shown only near the channels (within 1.5 × the median distance between neighbouring channels); `nothing`: `true` for NIRS channels, whose optodes usually cover only a part of the head
 - `contours::Int64=0`: plot contours (if > 0) over topo plot, number specifies how many levels to plot
 - `electrodes::Bool=true`: if `true`, plot electrode locations over topography
 - `ch_labels::Bool=true`: if `true`, plot electrode labels over topography
@@ -542,7 +542,7 @@ function plot_topo(
     imethod::Symbol = :tp,
     nmethod::Symbol = :minmax,
     crange::Union{Nothing, Tuple{Real, Real}} = nothing,
-    mask::Bool = datatype(obj) == "nirs",
+    mask::Union{Nothing, Bool} = nothing,
     contours::Int64 = 0,
     electrodes::Bool = true,
     ch_labels::Bool = true,
@@ -556,11 +556,18 @@ function plot_topo(
     nc::Int64 = 0,
     exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::GLMakie.Figure
-    # NIRS: the values belong to channels (source-detector pairs), located at the midpoints
-    # of their optodes (the data are shared, not copied)
-    if datatype(obj) == "nirs"
+    # NIRS optical channels: the values belong to channels (source-detector pairs), located
+    # at the midpoints of their optodes; other channels (e.g. EEG recorded with NIRS) keep
+    # their locations (the data are shared, not copied)
+    if _nirs_n_opt(obj.header.recording) > 0
+        cl = _nirs_chlocs(obj)
+        other = obj.locs[
+            in(labels(obj)).(obj.locs[!, :label]) .& .!in(cl[!, :label]).(obj.locs[!, :label]),
+            :,
+        ]
         obj = NeuroAnalyzer.NEURO(
-            obj.header, obj.history, obj.markers, _nirs_chlocs(obj),
+            obj.header, obj.history, obj.markers,
+            DataFrames.nrow(other) == 0 ? cl : vcat(cl, other; cols = :union),
             obj.time_pts, obj.epoch_time, obj.data,
         )
     end
@@ -613,6 +620,8 @@ function plot_topo(
     end
 
     length(ch) >= 2 || throw(ArgumentError("plot_topo() requires ≥ 2 channels."))
+    isnothing(mask) &&
+        (mask = all(t -> startswith(t, "nirs"), obj.header.recording[:channel_type][ch]))
 
     chs = intersect(obj.locs[!, :label], labels(obj)[ch])
     locs = Base.filter(:label => in(chs), _locs_unit(obj.locs))

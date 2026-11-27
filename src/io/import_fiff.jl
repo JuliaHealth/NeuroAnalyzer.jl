@@ -1129,7 +1129,6 @@ function import_fiff(
             recording = recording,
             recording_date = rec_d,
             recording_time = rec_t,
-            recording_notes = "",
             channel_type = ch_type,
             channel_order = _sort_channels(ch_type),
             reference = "",
@@ -1166,7 +1165,6 @@ function import_fiff(
             recording = recording,
             recording_date = rec_d,
             recording_time = rec_t,
-            recording_notes = "",
             channel_type = ch_type,
             channel_order = _sort_channels(ch_type),
             reference = "",
@@ -1181,17 +1179,16 @@ function import_fiff(
         )
     end
 
-    e = _create_experiment(;
-        name = get_field(mi[:project_info], :proj_name),
-        notes = "",
-        design = "",
-    )
     # low-pass and high-pass frequencies of the recording as stored in the file (Hz, not
     # rounded; not stored: Nyquist frequency and 0), the same for all channels
     r[:lowpass] = fill(isnothing(mi[:lowpass]) ? sampling_rate / 2 : min(Float64(mi[:lowpass]), sampling_rate / 2), ch_n)
     r[:highpass] = fill(isnothing(mi[:highpass]) ? 0.0 : Float64(mi[:highpass]), ch_n)
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(;
+        subject = s,
+        recording = r,
+        notes = _header_notes("Project" => get_field(mi[:project_info], :proj_name)),
+    )
 
     locs = _initialize_locs()
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)

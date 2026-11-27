@@ -136,7 +136,7 @@ Import a recording of a BIDS dataset (Brain Imaging Data Structure: EEG, iEEG, M
 - `*_electrodes.tsv` and `*_coordsystem.json` (EEG, iEEG): channel locations; coordinates of the ALS systems (`CTF`, `EEGLAB`, `4DBti`, `KitYokogawa`: x towards the nose) are rotated to the NeuroAnalyzer orientation (y towards the nose); the units of the file are kept
 - `*_optodes.tsv` and `*_coordsystem.json` (NIRS): optode positions (`x`, `y`, `z`, or `template_x`, `template_y`, `template_z` if the positions are `n/a`), rotated as electrode positions; optodes are matched by name (`optode_labels` of the header), or by their order within the sources and detectors (`type`) if no name matches; the unit of the positions (`NIRSCoordinateUnits`) becomes the length unit of the recording
 - iEEG recordings (`*_ieeg.*`): data type `"ecog"`, `"seeg"` or `"ieeg"` (both), from the channel types
-- `*_<modality>.json`: line frequency (`PowerLineFrequency`), reference (`EEGReference`, `iEEGReference`), task (`TaskName`, `TaskDescription`: experiment name and notes)
+- `*_<modality>.json`: line frequency (`PowerLineFrequency`), reference (`EEGReference`, `iEEGReference`), task (`TaskName`, `TaskDescription`: header notes)
 
 Sidecars are found by the BIDS inheritance principle: a sidecar may be in the folder of the data file or in a folder above it (up to the dataset root, the folder with `dataset_description.json`), and applies if its entities (e.g. `task-rest`) are a subset of the entities of the data file; the most specific file is used (JSON files are merged). The subject ID (`sub`) becomes the subject ID of the header.
 
@@ -191,9 +191,12 @@ function import_bids(
             rec[:reference] = js[k]
         end
     end
-    haskey(js, "TaskName") && (obj.header.experiment[:name] = string(js["TaskName"]))
-    haskey(js, "TaskDescription") &&
-        (obj.header.experiment[:notes] = string(js["TaskDescription"]))
+    # task: header notes (replacing those of the recording file, e.g. of a BrainVision sidecar)
+    if haskey(js, "TaskName") || haskey(js, "TaskDescription")
+        obj.header.notes = _header_notes(
+            "Task" => get(js, "TaskName", ""), "" => get(js, "TaskDescription", ""),
+        )
+    end
     haskey(ent, "sub") && (obj.header.subject[:id] = ent["sub"])
 
     # channels.tsv

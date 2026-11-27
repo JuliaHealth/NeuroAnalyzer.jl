@@ -48,7 +48,7 @@ function delete_optode!(
     opt::Union{Int64, Vector{Int64}, AbstractUnitRange{Int64}},
 )::Nothing
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     # highest index first, so that lower indices stay valid while deleting
     opt_vec = sort(unique(collect(opt isa Int64 ? [opt] : opt)); rev = true)
     opt_n   = length(obj.header.recording[:optode_labels])
@@ -155,7 +155,7 @@ function delete_pair!(
     pair::Union{String, Vector{String}},
 )::Nothing
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     pairs = pair isa String ? [pair] : pair
     isempty(pairs) && throw(ArgumentError("No pairs selected."))
 

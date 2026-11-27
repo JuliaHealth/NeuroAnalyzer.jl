@@ -105,6 +105,121 @@ const _CH_TYPE_GROUPS = Dict(
     "sensors" => ["accel", "magfld", "orient", "angvel"],
 )
 
+# ---------------------------------------------------------------------------
+# channel types present in an object
+#
+# An object may contain channels of several modalities (e.g. EEG recorded with NIRS):
+# functions for a modality check that the object contains channels of its type(s), not the
+# data type of the object (`datatype()` describes the recording; "erp", "erf", "mep", ...
+# also describe its state)
+# ---------------------------------------------------------------------------
+
+# EEG-like channel types (per-channel :gain, :transducers; :reference)
+const _EEG_LIKE_TYPES = ["eeg", "ecog", "seeg", "ieeg", "csd"]
+# channel types of brain signals (not auxiliary channels)
+const _SIGNAL_CH_TYPES =
+    [_EEG_LIKE_TYPES; "mag"; "grad"; "nirs_int"; Base.filter(!=("nirs_aux"), _NIRS_TYPES)]
+
+# channel types and type groups ("meg", "nirs", "sensors") expanded to channel types
+_ch_types_expand(type::Union{String, AbstractVector{String}})::Vector{String} =
+    unique(reduce(vcat, [get(_CH_TYPE_GROUPS, t, [t]) for t in (type isa String ? [type] : type)]))
+
+# true if the object contains channels of the type(s)
+_has_chtype(obj::NeuroAnalyzer.NEURO, type::Union{String, AbstractVector{String}})::Bool =
+    any(in(_ch_types_expand(type)), obj.header.recording[:channel_type])
+
+# error unless the object contains channels of the type(s)
+function _check_chtype(
+    obj::NeuroAnalyzer.NEURO,
+    type::Union{String, AbstractVector{String}},
+)::Nothing
+    _has_chtype(obj, type) && return nothing
+    t = type isa String ? [type] : type
+    ct = unique(obj.header.recording[:channel_type])
+    throw(
+        ArgumentError(
+            "This function requires $(join(uppercase.(t), "/")) channels; OBJ has none (channel types: $(join(ct, ", "))).",
+        ),
+    )
+end
+
+# ---------------------------------------------------------------------------
+# per-channel fields of the recording header
+#
+# Fields are handled by their presence (not by the data type of the object), so that objects
+# with channels of several modalities keep all of them consistent: a field present in the
+# header has one value per channel; channels of other types get the default value.
+# ---------------------------------------------------------------------------
+
+# per-channel vector fields (besides :label, :channel_type, :unit, :bad_channel, :lowpass,
+# :highpass, :notch) and their default values
+const _REC_CH_FIELDS = Dict{Symbol, Any}(
+    :transducers => "",             # EEG-like
+    :gain => 1.0,                   # EEG-like
+    :coil_type => "",               # MEG (sensor coil), MEP (stimulation coil)
+    :ssp_channels => false,         # MEG: channels of the SSP projectors
+    :coil_id => 0,                  # MEG: FIFF coil type code
+    :stimulation_intensity => 0,    # MEP
+)
+
+# per-channel fields needed by channels of the type
+function _rec_fields_for_type(t::String)::Vector{Symbol}
+    t in _EEG_LIKE_TYPES && return [:transducers, :gain]
+    t in ("mag", "grad") && return [:coil_type, :ssp_channels]
+    t == "mep" && return [:stimulation_intensity, :coil_type]
+    return Symbol[]
+end
+
+# true if the per-channel field `f` is present in the header (one value per channel; empty
+# optional fields such as :coil_id or :coil_loc are absent)
+function _rec_has_ch_field(rec::Dict, f::Symbol, ch_n::Int64)::Bool
+    haskey(rec, f) || return false
+    v = rec[f]
+    v isa AbstractMatrix && return size(v, 1) == ch_n && ch_n > 0
+    return v isa AbstractVector && length(v) == ch_n && ch_n > 0
+end
+
+# add the per-channel field `f` (default values for the `ch_n` channels) if it is missing
+function _rec_ensure_ch_field!(rec::Dict, f::Symbol, ch_n::Int64)::Nothing
+    (haskey(rec, f) && rec[f] isa AbstractVector && length(rec[f]) == ch_n) && return nothing
+    d = _REC_CH_FIELDS[f]
+    rec[f] = fill(d, ch_n)
+    return nothing
+end
+
+# recording-level fields needed by channels of the type (added with these values if missing)
+function _rec_scalar_defaults(t::String)::Dict{Symbol, Any}
+    if t in _EEG_LIKE_TYPES || t in ("mag", "grad")
+        d = Dict{Symbol, Any}(:reference => "", :line_frequency => 50)
+        if t in ("mag", "grad")
+            merge!(d, Dict{Symbol, Any}(
+                :magnetometers => Int64[], :gradiometers => Int64[],
+                :ssp_labels => String[], :ssp_data => Matrix{Float64}(undef, 0, 0),
+                :maxshield => false, :sss => false, :tsss => false,
+            ))
+        end
+        return merge!(d, _locs_coord_fields())
+    end
+    return Dict{Symbol, Any}()
+end
+
+# signal channels (labels) of the type of channel `ch` (e.g. the EEG channels for an EEG
+# channel of an object with EEG and NIRS channels); empty if `ch` is not a signal channel
+function _signal_channels_like(obj::NeuroAnalyzer.NEURO, ch::String)::Vector{String}
+    i = findfirst(==(ch), labels(obj))
+    isnothing(i) && return String[]
+    t = obj.header.recording[:channel_type][i]
+    t in _SIGNAL_CH_TYPES || return String[]
+    return labels(obj)[obj.header.recording[:channel_type] .== t]
+end
+
+# true for empty header values ("", empty vectors, matrices and dictionaries)
+_rec_empty(v)::Bool = (v isa AbstractString || v isa AbstractArray || v isa AbstractDict) && isempty(v)
+
+# number of NIRS optical channels described by optode pairs (the first channels)
+_nirs_n_opt(rec::Dict)::Int64 =
+    haskey(rec, :wavelength_index) ? length(rec[:wavelength_index]) : 0
+
 """Labels from `cl` matched by a regex anywhere in the label (use `^...\$` for exact matches)."""
 _ch_regex(cl::Vector{String}, l::Regex)::Vector{String} = cl[occursin.(l, cl)]
 

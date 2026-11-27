@@ -49,7 +49,7 @@ function get_channel(
             ch = l[[t in type for t in obj.header.recording[:channel_type]]]
         end
     else
-        _check_datatype(obj, ["nirs"])
+        _check_chtype(obj, "nirs")
         wl in obj.header.recording[:wavelengths] ||
             throw(
                 ArgumentError(

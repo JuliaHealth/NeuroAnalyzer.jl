@@ -233,7 +233,6 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         recording = recording,
         recording_date = recording_date,
         recording_time = replace(recording_time, '.' => ':'),
-        recording_notes = recording_notes,
         channel_type = ch_type,
         channel_order = _sort_channels(ch_type),
         reference = recording_reference,
@@ -246,9 +245,15 @@ function import_nwb(file_name::String; detect_type::Bool = true)::NeuroAnalyzer.
         gain = gain,
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = exp_name, notes = exp_notes, design = exp_design)
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(;
+        subject = s,
+        recording = r,
+        notes = _header_notes(
+            "" => recording_notes,
+            "Task" => exp_name, "Task description" => exp_design, "Instructions" => exp_notes,
+        ),
+    )
 
     history = String[]
 

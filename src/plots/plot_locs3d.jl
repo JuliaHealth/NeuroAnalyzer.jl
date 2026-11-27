@@ -249,8 +249,8 @@ function plot_locs3d(
     gui::Bool = true,
 )::GLMakie.Figure
     # validate
-    datatype(obj) in ["eeg"] ||
-        throw(ArgumentError("Currently plot_locs3d() works for EEG objects only."))
+    # (currently EEG channels only)
+    _check_chtype(obj, "eeg")
 
     # resolve channel names to integer indices
     ch   = get_channel(obj; ch = ch)

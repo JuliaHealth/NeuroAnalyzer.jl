@@ -10,6 +10,8 @@ Join two NeuroAnalyzer objects in time: each `obj2` epoch is appended (along tim
 
 A marker of type `"boundary"` (value `"join"`) is placed at each joint (the first sample of the `obj2` signal), so that filtering does not run across it (see `filter()`).
 
+The header is that of `obj1`; a channel marked as bad in either object is marked as bad, header fields missing in `obj1` (and its channel locations, if it has none) are taken from `obj2`, and differences (e.g. of the filters) are reported.
+
 # Arguments
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object
@@ -37,6 +39,8 @@ Join two NeuroAnalyzer objects in time into the first object: each `obj2` epoch 
 
 A marker of type `"boundary"` (value `"join"`) is placed at each joint (the first sample of the `obj2` signal), so that filtering does not run across it (see `filter()`).
 
+The header is that of `obj1`; a channel marked as bad in either object is marked as bad, header fields missing in `obj1` (and its channel locations, if it has none) are taken from `obj2`, and differences (e.g. of the filters) are reported.
+
 # Arguments
 
 - `obj1::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
@@ -63,6 +67,9 @@ function join_epoch!(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Noth
         fs,
         s -> ((s - 1) ÷ l2) * (l1 + l2) + l1 + (s - 1) % l2 + 1,
     )
+
+    # header: bad channels of both objects, fields missing in obj1 (see _merge_headers!())
+    _merge_headers!(obj1, obj2)
 
     # merge data: each obj2 epoch is appended to the respective obj1 epoch
     # epoch metadata of obj1 is kept (each obj2 epoch continues an obj1 epoch)
@@ -109,7 +116,7 @@ The epoch metadata (condition, source, rejection, onset) and the markers of all 
 
 # Notes
 
-The epochs are separate segments of the signal: filters do not run across epochs, so no boundary markers are needed. The header (except bad channels) is that of `obj`; a warning is shown if the low-pass, high-pass or notch frequencies of the objects differ.
+The epochs are separate segments of the signal: filters do not run across epochs, so no boundary markers are needed. The header is that of `obj`; a channel marked as bad in any object is marked as bad, header fields missing in `obj` (and its channel locations, if it has none) are taken from the other objects, and differences (e.g. of the low-pass, high-pass or notch frequencies) are reported.
 
 # See also
 
@@ -140,7 +147,7 @@ The epoch metadata (condition, source, rejection, onset) and the markers of all 
 
 # Notes
 
-The epochs are separate segments of the signal: filters do not run across epochs, so no boundary markers are needed. The header (except bad channels) is that of `obj`; a warning is shown if the low-pass, high-pass or notch frequencies of the objects differ.
+The epochs are separate segments of the signal: filters do not run across epochs, so no boundary markers are needed. The header is that of `obj`; a channel marked as bad in any object is marked as bad, header fields missing in `obj` (and its channel locations, if it has none) are taken from the other objects, and differences (e.g. of the low-pass, high-pass or notch frequencies) are reported.
 """
 function append_epoch!(obj::NeuroAnalyzer.NEURO, objs::NeuroAnalyzer.NEURO...)::Nothing
     # validate
@@ -168,17 +175,9 @@ function append_epoch!(obj::NeuroAnalyzer.NEURO, objs::NeuroAnalyzer.NEURO...)::
         shift = sum(n_ep[1:(k - 1)]; init = 0) * l
         push!(mrk, _remap_markers(o.markers, fs, s -> s + shift))
     end
-    filt_diff = false
-    for o in objs
-        ro = o.header.recording
-        _rec_filters!(ro)
-        filt_diff |= ro[:lowpass] != r[:lowpass] || ro[:highpass] != r[:highpass] ||
-                     ro[:notch] != r[:notch]
-        r[:bad_channel] = r[:bad_channel] .| ro[:bad_channel]
-    end
+    _merge_headers!(obj, objs...)
     any(o -> !(o.epoch_time ≈ obj.epoch_time), objs) &&
         _warn("The epoch time axes of the objects differ; that of the first object is kept.")
-    filt_diff && _warn("The low-pass, high-pass or notch frequencies of the objects differ; those of the first object are kept.")
     data = cat(obj.data, (o.data for o in objs)...; dims = 3)
 
     obj.data = data
@@ -194,7 +193,52 @@ function append_epoch!(obj::NeuroAnalyzer.NEURO, objs::NeuroAnalyzer.NEURO...)::
     return nothing
 end
 
-# data type, sampling rate and channel labels of two objects match
+# headers of objects with the same channels joined or appended to `obj`: a channel bad in any
+# object is bad; recording fields missing (or empty) in `obj` and channel locations (if `obj`
+# has none) are taken from the other objects; differences of the filters and other fields of
+# the channels are reported (those of `obj` are kept)
+function _merge_headers!(obj::NeuroAnalyzer.NEURO, objs::NeuroAnalyzer.NEURO...)::Nothing
+    r = obj.header.recording
+    _rec_filters!(r)
+    ch_n = nchannels(obj)
+    filt_diff = false
+    differ = Set{Symbol}()
+    for o in objs
+        o === obj && continue
+        ro = o.header.recording
+        _rec_filters!(ro)
+        filt_diff |= ro[:lowpass] != r[:lowpass] || ro[:highpass] != r[:highpass] ||
+                     ro[:notch] != r[:notch]
+        r[:bad_channel] = r[:bad_channel] .| ro[:bad_channel]
+        # per-channel fields (e.g. gain of EEG channels, coil types of MEG channels)
+        for f in keys(_REC_CH_FIELDS)
+            _rec_has_ch_field(ro, f, ch_n) || continue
+            if !_rec_has_ch_field(r, f, ch_n)
+                r[f] = copy(ro[f])
+            elseif f !== :ssp_channels && !isequal(r[f], ro[f])
+                push!(differ, f)
+            end
+        end
+        # recording fields missing in obj (e.g. line frequency, reference, wavelengths)
+        for (k, v) in ro
+            (!haskey(r, k) || _rec_empty(r[k])) && !_rec_empty(v) && (r[k] = deepcopy(v))
+        end
+        for k in (:line_frequency, :reference, :wavelengths)
+            haskey(r, k) && haskey(ro, k) && !_rec_empty(ro[k]) && !isequal(r[k], ro[k]) &&
+                push!(differ, k)
+        end
+        DataFrames.nrow(obj.locs) == 0 && DataFrames.nrow(o.locs) > 0 && (obj.locs = copy(o.locs))
+    end
+    filt_diff && _warn(
+        "The low-pass, high-pass or notch frequencies of the objects differ; those of the first object are kept.",
+    )
+    isempty(differ) || _warn(
+        "Header fields of the objects differ, those of the first object are kept: $(join(sort(string.(collect(differ))), ", ")).",
+    )
+    return nothing
+end
+
+# data type, sampling rate, channel labels and types of two objects match
 function _check_compatible(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)::Nothing
     datatype(obj1) == datatype(obj2) ||
         throw(ArgumentError("OBJ1 and OBJ2 must have the same data type."))
@@ -204,6 +248,9 @@ function _check_compatible(obj1::NeuroAnalyzer.NEURO, obj2::NeuroAnalyzer.NEURO)
         throw(ArgumentError("OBJ1 and OBJ2 must have the same number of channels."))
     labels(obj1) == labels(obj2) || throw(
         ArgumentError("OBJ1 and OBJ2 must have the same channel labels (in the same order)."),
+    )
+    obj1.header.recording[:channel_type] == obj2.header.recording[:channel_type] || throw(
+        ArgumentError("OBJ1 and OBJ2 must have the same channel types."),
     )
     return nothing
 end

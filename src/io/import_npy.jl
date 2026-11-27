@@ -70,7 +70,6 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         recording = "",
         recording_date = "",
         recording_time = "",
-        recording_notes = "",
         channel_type = repeat(["eeg"], ch_n),
         channel_order = _sort_channels(repeat(["eeg"], ch_n)),
         reference = "",
@@ -83,9 +82,8 @@ function import_npy(file_name::String; sampling_rate::Int64)::NeuroAnalyzer.NEUR
         gain = repeat([1.0], ch_n),
         bad_channels = zeros(Bool, ch_n),
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
 
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
 
     history = String[]
 

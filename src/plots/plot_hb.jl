@@ -27,7 +27,7 @@ function plot_hb(
     title::String = "",
 )::GLMakie.Figure
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     rec = obj.header.recording
     all_pairs = [
         p for p in _nirs_pairs(obj) if

@@ -59,7 +59,7 @@ function nirs_ssr!(
     short_t::Real = 15,
 )::Nothing
     # validate
-    _check_datatype(obj, "nirs")
+    _check_chtype(obj, "nirs")
     short_t > 0 || throw(ArgumentError("short_t must be > 0."))
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))

@@ -902,14 +902,24 @@ f = joinpath(tmp, "test.hdf")
 save_neuro(eeg; file_name = f)
 @test isfile(f)
 @test_throws ArgumentError save_neuro(eeg; file_name = f)
+eeg.header.notes = "Task: test\nnotes"
 save_neuro(eeg; file_name = f, overwrite = true)
 new = load_neuro(f)
+@test new.header.notes == "Task: test\nnotes"
+eeg.header.notes = ""
 @test new.data == eeg.data
 @test new.header.recording == eeg.header.recording
 @test new.locs == eeg.locs
 @test new.markers == eeg.markers
 @test new.time_pts == eeg.time_pts
 @test_throws ArgumentError load_neuro(joinpath(tmp, "no_such_file.hdf"))
+# headers saved before v0.26.12: experiment → notes
+h = NeuroAnalyzer.JLD2.rconvert(
+    NeuroAnalyzer.HEADER,
+    (subject = Dict(), recording = Dict(),
+     experiment = Dict(:name => "oddball", :notes => "n", :design => "")),
+)
+@test h.notes == "Experiment: oddball\nn"
 # file shipped with the test data: an EEG object saved by an old version of NeuroAnalyzer → clear error
 # (JLD2 warns that it reconstructs the unknown type; the warning is silenced)
 @test_throws ArgumentError Base.CoreLogging.with_logger(Base.CoreLogging.NullLogger()) do

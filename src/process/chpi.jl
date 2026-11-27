@@ -179,7 +179,7 @@ function chpi_head_positions(
     # ------------------------------------------------------------------ #
     # validate                                                           #
     # ------------------------------------------------------------------ #
-    _check_datatype(obj, "meg")
+    _check_chtype(obj, "meg")
     nepochs(obj) == 1 ||
         throw(ArgumentError("cHPI fitting requires continuous (non-epoched) data."))
     t_window > 0 || throw(ArgumentError("t_window must be > 0."))

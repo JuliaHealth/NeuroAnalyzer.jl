@@ -52,7 +52,7 @@ function lat_idx(
 )::Float64
     # validate
     # hemispheres are detected from 10-20 style EEG labels
-    _check_datatype(obj, ["eeg", "erp"])
+    _check_chtype(obj, "eeg")
 
     length(channel_pick(obj; pick = :l)) > 0 ||
         throw(ArgumentError("Could not detect left hemisphere channels, check OBJ labels."))

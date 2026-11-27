@@ -22,6 +22,7 @@ Each recording is described by a row of the design table (`study.design`): subje
 - `group::Vector{String}=String[]`: group of each file; by default `"all"`
 - `root::String=pwd()`: base folder of the study
 - `name::String=""`: study name
+- `notes::String=""`: free-text notes (e.g. the aim of the study, inclusion criteria); can be edited later: `study.notes = "..."`
 - `covariates::NamedTuple=NamedTuple()`: additional columns of the design table, e.g. `(; age = [34, 41, 29])`
 
 # Returns
@@ -43,6 +44,7 @@ function study_create(
     group::Vector{String} = String[],
     root::String = pwd(),
     name::String = "",
+    notes::String = "",
     covariates::NamedTuple = NamedTuple(),
 )::NeuroAnalyzer.STUDY
     isempty(files) && throw(ArgumentError("files must not be empty."))
@@ -72,7 +74,7 @@ function study_create(
         design[!, k] = v
     end
 
-    return study_create(design; root = root, name = name)
+    return study_create(design; root = root, name = name, notes = notes)
 end
 
 """
@@ -85,13 +87,14 @@ Create a study (group-level analysis) from a design table: one row per recording
 - `design::DataFrame`: design table
 - `root::String=pwd()`: base folder of the study
 - `name::String=""`: study name
+- `notes::String=""`: free-text notes (e.g. the aim of the study, inclusion criteria); can be edited later: `study.notes = "..."`
 
 # Returns
 
 - `NeuroAnalyzer.STUDY`
 """
 function study_create(
-    design::DataFrame; root::String = pwd(), name::String = "",
+    design::DataFrame; root::String = pwd(), name::String = "", notes::String = "",
 )::NeuroAnalyzer.STUDY
     d = copy(design)
     for c in (:subject, :session, :group, :file)
@@ -105,7 +108,7 @@ function study_create(
     DataFrames.select!(d, _STUDY_COLS, DataFrames.Not(_STUDY_COLS))
 
     isdir(root) || throw(ArgumentError("Folder $root does not exist."))
-    study = NeuroAnalyzer.STUDY(name, abspath(root), d, Dict{Symbol, Any}(), String[])
+    study = NeuroAnalyzer.STUDY(name, notes, abspath(root), d, Dict{Symbol, Any}(), String[])
 
     # validate
     allunique(study_files(study; all = true)) ||
@@ -145,6 +148,7 @@ A study has one recording per subject and session, so the recordings must be sel
 - `covariates::Union{Nothing, Vector{Symbol}}=nothing`: columns of `participants.tsv` added to the design table; `nothing`: all columns
 - `overwrite::Bool=false`: if `true`, import again recordings whose `.hdf` file exists; otherwise the existing files are used
 - `name::String=""`: study name; `""`: the `Name` of `dataset_description.json`
+- `notes::String=""`: free-text notes
 - `kwargs`: keyword arguments of `import_bids()` (e.g. `events`, `clean_labels`)
 
 # Returns
@@ -169,6 +173,7 @@ function study_bids(
     covariates::Union{Nothing, Vector{Symbol}} = nothing,
     overwrite::Bool = false,
     name::String = "",
+    notes::String = "",
     kwargs...,
 )::NeuroAnalyzer.STUDY
     bf = bids_files(root; subject, session, task, run, modality)
@@ -243,7 +248,7 @@ function study_bids(
         dd = joinpath(root, "dataset_description.json")
         isfile(dd) && (name = string(get(JSON.parsefile(dd), "Name", "")))
     end
-    study = study_create(design; root = out_dir, name = name)
+    study = study_create(design; root = out_dir, name = name, notes = notes)
     study.history[end] = "study_bids($(repr(root)); out_dir = $(repr(out_dir))" *
         join([", $k = $(repr(v))" for (k, v) in
               pairs((; subject, session, task, run, modality, group, covariates))
@@ -285,6 +290,8 @@ function Base.show(io::IO, ::MIME"text/plain", study::NeuroAnalyzer.STUDY)
     inc = d[d.include, :]
     println(io, "NeuroAnalyzer STUDY", isempty(study.name) ? "" : ": $(study.name)")
     println(io, "  root: $(study.root)")
+    isempty(study.notes) ||
+        println(io, "  notes: $(replace(study.notes, "\n" => "\n" * " "^9))")
     println(
         io,
         "  recordings: $(DataFrames.nrow(d)) ($(DataFrames.nrow(inc)) included), " *

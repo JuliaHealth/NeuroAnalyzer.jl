@@ -19,7 +19,7 @@ function itopo(obj::NeuroAnalyzer.NEURO; ch::Union{String, Vector{String}, Regex
     !(nepochs(obj) == 1) &&
         throw(ArgumentError("For epoched object itopo_ep() must be used."))
 
-    _check_datatype(obj, ["eeg", "meg", "erp"])
+    _check_chtype(obj, ["eeg", "meg"])
 
     p = NeuroAnalyzer.plot_topo(obj; ch = ch)
 
@@ -399,7 +399,7 @@ function itopo_ep(
     !(nepochs(obj) > 1) &&
         throw(ArgumentError("For continuous object itopo() must be used."))
 
-    _check_datatype(obj, ["eeg", "meg", "erp"])
+    _check_chtype(obj, ["eeg", "meg"])
 
     p = NeuroAnalyzer.plot_topo(obj; ch = ch)
 

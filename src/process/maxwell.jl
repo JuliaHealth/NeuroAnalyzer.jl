@@ -619,7 +619,7 @@ function maxwell_filter!(
     # ------------------------------------------------------------------ #
     # validate                                                           #
     # ------------------------------------------------------------------ #
-    _check_datatype(obj, "meg")
+    _check_chtype(obj, "meg")
     nepochs(obj) == 1 ||
         throw(ArgumentError("Maxwell filtering requires continuous (non-epoched) data."))
     rec = obj.header.recording

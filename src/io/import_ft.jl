@@ -233,7 +233,7 @@ function import_ft(
             file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
             file_type = file_type,
             recording = "RID" in keys(hdr_orig) ? string(hdr_orig["RID"]) : "",
-            recording_date = "", recording_time = "", recording_notes = "",
+            recording_date = "", recording_time = "",
             channel_type = ch_type,
             channel_order = _sort_channels(ch_type),
             reference = ref,
@@ -359,7 +359,7 @@ function import_ft(
             file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
             file_type = "FT",
             recording = "dataformat" in keys(cfg) ? string(cfg["dataformat"]) : "",
-            recording_date = "", recording_time = "", recording_notes = "",
+            recording_date = "", recording_time = "",
             channel_type = ch_type,
             channel_order = _sort_channels(ch_type),
             reference = ref,
@@ -419,7 +419,6 @@ function import_ft(
             file_size_mb = round(filesize(file_name) / 1024^2; digits = 2),
             file_type = file_type,
             recording = "", recording_date = "", recording_time = "",
-            recording_notes = "",
             wavelengths = wavelengths,
             wavelength_index = wavelength_index,
             optode_pairs = opt_pairs,
@@ -445,8 +444,7 @@ function import_ft(
         weight = -1,
         height = -1,
     )
-    e = _create_experiment(; name = "", notes = "", design = "")
-    hdr = _create_header(; subject = s, recording = r, experiment = e)
+    hdr = _create_header(; subject = s, recording = r)
 
     obj = NeuroAnalyzer.NEURO(hdr, String[], markers, locs, time_pts, epoch_time, data)
     # EEG without electrode positions: standard positions of known labels

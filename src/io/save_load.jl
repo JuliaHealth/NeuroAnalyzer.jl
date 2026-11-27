@@ -59,11 +59,15 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     # validate
     isfile(file_name) || throw(ArgumentError("File $file_name cannot be loaded."))
 
-    # objects saved before v0.26.12 have no epoch metadata (`epochs`): NEURO objects are
-    # read through `rconvert`, which adds the default table
+    # objects saved before v0.26.12 have no epoch metadata (`epochs`) and a header with an
+    # `experiment` dictionary instead of `notes`: NEURO and HEADER objects are read through
+    # `rconvert`, which adds the default table and converts the experiment to notes
     obj = JLD2.jldopen(
         file_name, "r";
-        typemap = Dict("NeuroAnalyzer.NEURO" => JLD2.Upgrade(NeuroAnalyzer.NEURO)),
+        typemap = Dict(
+            "NeuroAnalyzer.NEURO" => JLD2.Upgrade(NeuroAnalyzer.NEURO),
+            "NeuroAnalyzer.HEADER" => JLD2.Upgrade(NeuroAnalyzer.HEADER),
+        ),
     ) do f
         k = keys(f)
         length(k) == 1 || throw(
@@ -82,6 +86,10 @@ function load_neuro(file_name::String)::NeuroAnalyzer.NEURO
     # marker channels saved as numbers by older versions → channel labels
     _markers_upgrade!(obj)
     _epochs_upgrade!(obj)
+    # recording notes (before v0.26.12: header.recording[:recording_notes]) → header notes
+    rn = strip(string(pop!(obj.header.recording, :recording_notes, "")))
+    isempty(rn) ||
+        (obj.header.notes = isempty(obj.header.notes) ? rn : obj.header.notes * "\n" * rn)
     # :prefiltering descriptions → per-channel low-pass and high-pass frequencies
     _rec_filters!(obj.header.recording)
 
@@ -104,4 +112,17 @@ function JLD2.rconvert(::Type{NeuroAnalyzer.NEURO}, nt::NamedTuple)::NeuroAnalyz
     return NeuroAnalyzer.NEURO(
         nt.header, nt.history, nt.markers, nt.locs, nt.time_pts, nt.epoch_time, nt.data,
     )
+end
+
+# upgrade path of `load_neuro()`: a header read from a file as a NamedTuple of its fields;
+# headers saved before v0.26.12 have an `experiment` dictionary (name, notes, design) instead
+# of `notes`
+function JLD2.rconvert(::Type{NeuroAnalyzer.HEADER}, nt::NamedTuple)::NeuroAnalyzer.HEADER
+    haskey(nt, :notes) && return NeuroAnalyzer.HEADER(nt.subject, nt.recording, nt.notes)
+    e = haskey(nt, :experiment) ? nt.experiment : Dict()
+    notes = _header_notes(
+        "Experiment" => get(e, :name, ""), "" => get(e, :notes, ""),
+        "Design" => get(e, :design, ""),
+    )
+    return NeuroAnalyzer.HEADER(nt.subject, nt.recording, notes)
 end

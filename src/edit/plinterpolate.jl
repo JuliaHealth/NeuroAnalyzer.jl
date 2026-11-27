@@ -110,8 +110,9 @@ function plinterpolate_channel!(
     # samples to interpolate within each epoch
     t_rng = isnothing(seg) ? (1:epoch_len(obj)) : _epoch_seg(obj, seg)
 
-    # signal channels (names); the reference channels exclude ch and bad channels
-    signal = get_channel(obj; type = datatype(obj))
+    # signal channels of the type of ch (names); the reference channels exclude ch and bad
+    # channels
+    signal = _signal_channels_like(obj, ch)
     ch in signal ||
         throw(
             ArgumentError(
