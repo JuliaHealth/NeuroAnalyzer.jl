@@ -456,9 +456,9 @@ x2 = copy(x); x2[1, 1, 1] = NaN
 @test mass_ttest(x2).df[1, 1] == 10 && mass_ttest(x2).df[1, 2] == 11
 # RM ANOVA vs manual (k=2 equals paired t^2)
 X = cat(reshape(x[1:10, :, :], 10, 1, 3, 5), reshape(y, 10, 1, 3, 5); dims = 2)
-rm = mass_anova_rm(X)
+r_rm = mass_anova_rm(X)
 pt = mass_ttest(x[1:10, :, :], y; paired = true)
-@test rm.f ≈ pt.t .^ 2 && rm.p ≈ pt.p
+@test r_rm.f ≈ pt.t .^ 2 && r_rm.p ≈ pt.p
 # p_adjust vs R: p.adjust(c(0.01,0.02,0.03,0.04,0.05), "BH"/"holm"/"bonferroni"/"BY")
 p = [0.01, 0.02, 0.03, 0.04, 0.05]
 @test p_adjust(p) ≈ fill(0.05, 5)
