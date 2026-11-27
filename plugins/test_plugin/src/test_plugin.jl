@@ -110,7 +110,7 @@ function test_plugin()::Bool
     s = sin.(2π * 10 .* t .- 0.1)
     obj = create_object(; data_type = "eeg")
     obj.header.recording[:sampling_rate] = fs
-    add_channel!(
+    append_channel!(
         obj;
         data = reshape(repeat(s, 2), 1, fs, 2),
         label = "sine",
