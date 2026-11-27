@@ -1134,7 +1134,7 @@ function _nirs_sim(n0)
     n.data[ht, :, 1] .+= 2a / 3 .* reg
     return n, a
 end
-n_sim, amp = _nirs_sim(n_tmp2)
+n_sim, sim_amp = _nirs_sim(n_tmp2)
 
 @info "Test: nirs_hrf()"
 hrf = nirs_hrf(; fs = 10)
@@ -1145,7 +1145,7 @@ hrf = nirs_hrf(; fs = 10)
 g = nirs_glm(n_sim)
 @test g.channel == ["S1_D1 HbO", "S1_D1 HbR", "S1_D2 HbO", "S1_D2 HbR"]
 @test g.p[1] < 1e-6 && g.beta[1] > 0 && g.p[2] < 0.05 && g.beta[2] < 0
-@test g.beta[1] ≈ amp rtol = 0.3
+@test g.beta[1] ≈ sim_amp rtol = 0.3
 @test g.p[3] > 0.01
 @test_throws ArgumentError nirs_glm(n_tmp2)
 # several marker values modeled as one condition
@@ -1177,7 +1177,7 @@ a_n = average_epochs(e_n; bl = (-5, 0))
 @test nepochs(a_n) == nepochs(e_n) + 1
 @test !("nirs_aux" in a_n.header.recording[:channel_type])
 ho = get_channel(a_n; ch = "S1_D1 HbO")[1]
-@test maximum(a_n.data[ho, :, 1]) > 0.5 * amp
+@test maximum(a_n.data[ho, :, 1]) > 0.5 * sim_amp
 
 @info "Test: export_snirf()"
 f_snirf = joinpath(mktempdir(), "test.snirf")
