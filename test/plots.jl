@@ -638,12 +638,12 @@ hm_tp = only(filter(x -> x isa Heatmap, p.content[1].scene.plots))
 v_tp = Float32.(e10_erp.data[get_channel(e10_erp; ch = "eeg"), tp_idx, 1])
 @test all(x -> isnan(x) || any(isapprox(x; atol = 1e-3), v_tp), hm_tp[3][])
 # vector method with the default channels (all rows of locs)
-@test plot_topo(rand(nrow(e10.locs)); locs = e10.locs) isa GLMakie.Figure
+@test plot_topo(rand(NeuroAnalyzer.DataFrames.nrow(e10.locs)); locs = e10.locs) isa GLMakie.Figure
 # fixed color range
-p = plot_topo(rand(nrow(e10.locs)); locs = e10.locs, nmethod = :none, crange = (-2, 2))
+p = plot_topo(rand(NeuroAnalyzer.DataFrames.nrow(e10.locs)); locs = e10.locs, nmethod = :none, crange = (-2, 2))
 hm_cr = only(filter(x -> x isa Heatmap, p.content[1].scene.plots))
 @test hm_cr.colorrange[] == [-2, 2]
-@test_throws ArgumentError plot_topo(rand(nrow(e10.locs)); locs = e10.locs, crange = (1, 0))
+@test_throws ArgumentError plot_topo(rand(NeuroAnalyzer.DataFrames.nrow(e10.locs)); locs = e10.locs, crange = (1, 0))
 @test plot_locs(e10; ch = "eeg", head_labels = true, gui = false) isa GLMakie.Figure
 @test plot_efield2d([1, -1], [-1.0, 1.0], [0.0, 0.0]) isa GLMakie.Figure
 f = collect(0.0:0.5:50.0)

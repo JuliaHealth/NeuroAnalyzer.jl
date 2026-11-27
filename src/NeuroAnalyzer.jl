@@ -177,9 +177,9 @@ const _NA_REQUIRED_PACKAGES = [
 for pkg in _NA_REQUIRED_PACKAGES
     @eval using $(Symbol(pkg))
 end
-# HDF5 files (NWB, SNIRF) are read and written with HDF5.jl, imported (not used) so that its
-# exported names (e.g. attributes) do not clash with NeuroAnalyzer and other dependencies;
-# NeuroAnalyzer objects are saved with JLD2
+# NeuroAnalyzer files (save_neuro(), save_study()) are written with HDF5.jl, imported (not
+# used) so that its exported names (e.g. attributes) do not clash with NeuroAnalyzer and
+# other dependencies; JLD2 reads files saved by older versions
 import HDF5
 
 # functions of Base and of dependencies that NeuroAnalyzer extends with methods
@@ -363,6 +363,7 @@ include("internal/fir_response.jl")
 include("internal/gdf_etp.jl")
 include("internal/gradient.jl")
 include("internal/gui.jl")
+include("internal/hdf5.jl")
 include("internal/interpolate.jl")
 include("internal/labeled_matrix.jl")
 include("internal/labels.jl")

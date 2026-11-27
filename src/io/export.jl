@@ -64,7 +64,7 @@ This is a meta-function: the format is selected by the file name extension (or b
 | BDF+                             | `.bdf`          | `:bdf`      | `export_bdf`  | EEG, ECoG, sEEG, iEEG, CSD, ERP, sensors, EDA, MEP |
 | SNIRF                            | `.snirf`        | `:snirf`    | `export_snirf`| NIRS                   |
 | CSV                              | `.csv`          | `:csv`      | `export_csv`  | all                    |
-| NeuroAnalyzer (JLD2/HDF5)        | `.hdf`          | `:neuro`    | `save_neuro`  | all                    |
+| NeuroAnalyzer (HDF5)             | `.hdf`          | `:neuro`    | `save_neuro`  | all                    |
 
 # Arguments
 
@@ -124,10 +124,11 @@ function export_recording(
         end
         return written
     else
-        isempty(kwargs) || throw(
-            ArgumentError("save_neuro() does not accept: " * join(string.(keys(kwargs)), ", ") * "."),
+        bad = setdiff(keys(kwargs), (:compress,))
+        isempty(bad) || throw(
+            ArgumentError("save_neuro() does not accept: " * join(string.(bad), ", ") * "."),
         )
-        save_neuro(obj; file_name = file_name, overwrite = overwrite)
+        save_neuro(obj; file_name = file_name, overwrite = overwrite, kwargs...)
         return [file_name]
     end
 end

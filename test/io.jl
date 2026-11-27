@@ -913,6 +913,33 @@ eeg.header.notes = ""
 @test new.markers == eeg.markers
 @test new.time_pts == eeg.time_pts
 @test_throws ArgumentError load_neuro(joinpath(tmp, "no_such_file.hdf"))
+# HDF5 layout
+@test NeuroAnalyzer.HDF5.h5open(f, "r") do h
+    a = NeuroAnalyzer.HDF5.attributes(h)
+    read(a["format"]) == "NeuroAnalyzer NEURO" && read(a["format_version"]) == 1 &&
+        size(h["data"]) == size(eeg.data) && haskey(h, "header/recording/label")
+end
+@test new.header.recording[:file_size_mb] == round(filesize(f) / 1024^2; digits = 2)
+@test typeof(new.header.recording) == typeof(eeg.header.recording)
+@test all(typeof(new.header.recording[k]) == typeof(v) for (k, v) in eeg.header.recording)
+@test eltype.(eachcol(new.markers)) == eltype.(eachcol(eeg.markers))
+save_neuro(eeg; file_name = f, overwrite = true, compress = 0)
+@test load_neuro(f).data == eeg.data
+@test_throws ArgumentError save_neuro(eeg; file_name = f, overwrite = true, compress = 10)
+# partial reading: channels and epochs
+e10 = epoch(eeg; ep_len = 10)
+save_neuro(e10; file_name = f, overwrite = true)
+p = load_neuro(f; ch = ["Fp1", "Cz", "O2"], ep = [2, 4])
+r = keep_epoch(keep_channel(e10; ch = ["Fp1", "Cz", "O2"]); ep = [2, 4])
+@test p.data == r.data
+@test labels(p) == labels(r)
+@test p.markers == r.markers
+@test p.epochs == r.epochs
+@test p.time_pts == r.time_pts
+@test startswith(p.history[end], "load_neuro(")
+@test size(load_neuro(f; ep = 3).data) == (nchannels(e10), epoch_len(e10), 1)
+@test_throws ArgumentError load_neuro(f; ep = 1000)
+@test_throws ArgumentError load_neuro(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
 # headers saved before v0.26.12: experiment → notes
 h = NeuroAnalyzer.JLD2.rconvert(
     NeuroAnalyzer.HEADER,

@@ -246,6 +246,29 @@ hdr = NeuroAnalyzer._create_header(; subject = s, recording = r, notes = "a")
 @test NeuroAnalyzer._header_notes("Task" => "x", "" => " y ", "Design" => "") == "Task: x\ny"
 @test NeuroAnalyzer._header_notes("Task" => "") == ""
 
+@info "Test: _h5_write(), _h5_read()"
+Date = NeuroAnalyzer.Dates.Date
+h5f = tempname() * ".h5"
+vals = Dict{Symbol, Any}(
+    :s => "x", :e => "", :i => 1, :f => 1.5, :b => true, :sym => :a, :c => 'z',
+    :n => nothing, :m => missing, :v => [1.0, 2.0], :vs => String[], :bv => trues(3),
+    :mat => [1 2; 3 4], :rag => [[1.0], Float64[], [2.0, 3.0]],
+    :mis => [1, missing], :t => (1.0, "a"), :nt => (a = 1, b = [2]),
+    :d => Dict{String, Tuple{Float64, Float64}}(), :d2 => Dict("a/b" => 1, "%" => 2),
+    :any => Any[1, "a"], :r => r"^F"i, :date => Date(2026, 1, 2),
+    :df => DataFrame(:a => [1, 2], :b => [["x"], String[]], Symbol("c/d") => [missing, 1.0]),
+)
+NeuroAnalyzer.HDF5.h5open(h -> NeuroAnalyzer._h5_write(h, "v", vals), h5f, "w")
+rv = NeuroAnalyzer.HDF5.h5open(h -> NeuroAnalyzer._h5_read(h["v"]), h5f, "r")
+@test typeof(rv) == typeof(vals)
+@test isequal(rv, vals)
+@test all(typeof(rv[k]) == typeof(v) for (k, v) in vals)
+@test NeuroAnalyzer._h5_type("Tuple{Float64, Float64, Float64}") == NTuple{3, Float64}
+@test NeuroAnalyzer._h5_type("Vector{Int64}") == Vector{Int64}
+@test isnothing(NeuroAnalyzer._h5_type("rm(\"x\")"))
+@test isnothing(NeuroAnalyzer._h5_type("NoSuchType{Int64}"))
+rm(h5f)
+
 ##
 ## Markers Operations
 ##

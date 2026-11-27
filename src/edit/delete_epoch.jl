@@ -64,15 +64,7 @@ function delete_epoch!(
     obj.epochs = _epochs_table(obj)[ep_keep, :]
     obj.data = obj.data[:, :, ep_keep]
 
-    # marker times are in seconds; epoch e spans [(e - 1) * ep_dur, e * ep_dur)
-    ep_dur = epoch_duration(obj)
-    # process latest epochs first to preserve offsets
-    for e in ep_sorted
-        t1 = (e - 1) * ep_dur
-        t2 = e * ep_dur
-        deleteat!(obj.markers, t1 .<= obj.markers.start .< t2)
-        obj.markers[obj.markers.start .>= t2, :start] .-= ep_dur
-    end
+    _delete_epoch_markers!(obj.markers, ep_sorted, epoch_duration(obj))
 
     obj.time_pts, obj.epoch_time = _get_t(obj)
     _history!(obj, "delete_epoch", (; ep))
@@ -134,5 +126,20 @@ function keep_epoch!(
     delete_epoch!(obj; ep = ep_to_remove)
     _history!(obj, "keep_epoch", (; ep); from = n0)
 
+    return nothing
+end
+
+# markers of deleted epochs `ep` (epoch numbers) are removed, markers after them are shifted
+# (epochs of `ep_dur` seconds: epoch e spans [(e - 1) * ep_dur, e * ep_dur))
+function _delete_epoch_markers!(
+    markers::DataFrame, ep::AbstractVector{<:Integer}, ep_dur::Real,
+)::Nothing
+    # process latest epochs first to preserve offsets
+    for e in sort(ep; rev = true)
+        t1 = (e - 1) * ep_dur
+        t2 = e * ep_dur
+        deleteat!(markers, t1 .<= markers.start .< t2)
+        markers[markers.start .>= t2, :start] .-= ep_dur
+    end
     return nothing
 end
