@@ -2243,6 +2243,37 @@ e_out2, df_zl2 = remove_powerline(e_tmp; ch = "eeg", method = :zapline, chunk = 
 @test_throws ArgumentError remove_powerline(e_zl; ch = "eeg", method = :zapline, nremove = :x)
 @test_throws ArgumentError remove_powerline(e_zl; ch = "eeg", method = :x)
 
+@info "Test: remove_powerline(method = :cleanline)"
+# one channel: 10 Hz signal + line noise at 50 Hz and 100 Hz (+ a little noise)
+e_cl = deepcopy(e_pl)
+e_cl.data[1, :, 1] =
+    sin.(2π * 10 .* tp_) .+ sin.(2π * 50 .* tp_ .+ 0.4) .+ 0.3 .* sin.(2π * 100 .* tp_) .+
+    0.05 .* randn(NeuroAnalyzer.Random.MersenneTwister(1), length(tp_))
+e_cl.data[2, :, 1] =
+    sin.(2π * 10 .* tp_) .+
+    0.05 .* randn(NeuroAnalyzer.Random.MersenneTwister(2), length(tp_))
+e_out, df_cl = remove_powerline(e_cl; ch = "Fp1", pl_frq = 50, method = :cleanline)
+@test amp_f(e_out.data[1, :, 1], 50) < 0.05 && amp_f(e_out.data[1, :, 1], 100) < 0.03
+@test amp_f(e_out.data[1, :, 1], 10) > 0.95
+@test df_cl.channel == ["Fp1", "Fp1"] && df_cl.frequency == [50, 100]
+@test all(df_cl.windows .== 1) && all(df_cl.reduction .> 20)
+@test occursin("method=:cleanline", e_out.history[end])
+# other channels are not modified
+@test e_out.data[2:end, :, 1] == e_cl.data[2:end, :, 1]
+# a channel without line noise is (almost) not changed
+e_out, df_cl = remove_powerline(e_cl; ch = "Fp2", pl_frq = 50, method = :cleanline)
+@test maximum(abs, e_out.data[2, :, 1] .- e_cl.data[2, :, 1]) < 0.05
+@test all(df_cl.windows .< 0.2)
+# in-place
+e_tmp = deepcopy(e_cl)
+remove_powerline!(e_tmp; ch = "Fp1", pl_frq = 50, method = :cleanline, wlen = 2, wstep = 0.5)
+@test amp_f(e_tmp.data[1, :, 1], 50) < 0.05
+@test_throws ArgumentError remove_powerline(e_cl; ch = "Fp1", method = :cleanline, p = 0)
+@test_throws ArgumentError remove_powerline(e_cl; ch = "Fp1", method = :cleanline, wstep = 5)
+@test_throws ArgumentError remove_powerline(e_cl; ch = "Fp1", method = :cleanline, wlen = 1)
+@test_throws ArgumentError remove_powerline(e_cl; ch = "Fp1", method = :cleanline, wlen = 100)
+@test_throws ArgumentError remove_powerline(e_cl; ch = "Fp1", method = :cleanline, maxiter = 0)
+
 @info "Test: in-place and out-of-place versions"
 e_io = epoch(eeg; ep_len = 10)
 keep_epoch!(e_io; ep = 1:5)

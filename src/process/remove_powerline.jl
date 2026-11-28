@@ -61,12 +61,20 @@ with the Zapline-plus additions:
 - `nremove = :auto`: the number of components is detected per chunk by iterative outlier detection of the DSS scores (mean + `sigma` × SD); then components are added while the line peak remains in the cleaned chunk (prominence of the channel-averaged spectrum ≥ `pr` dB); at least 1 and at most `max_prop` × number of channels (if the peak remains, e.g. in heavily contaminated recordings, a warning suggests a `max_prop` value that would remove it, or `method = :iir`)
 - `chunk = :adaptive`: the signal is split where the spatial pattern of the line noise changes (peaks of the distance between the covariance matrices of consecutive 1-second segments of the signal band-passed at `pl_frq` ± 3 Hz), chunks at least `min_chunk` seconds long; `:fixed`: chunks of `chunk_len` seconds; `:none`: the whole signal
 
+`method = :cleanline` (CleanLine): estimation and subtraction of the line sinusoids, channel by channel (any number of channels), in sliding windows (`wlen` seconds, step `wstep`):
+
+1. the window is multiplied by Slepian tapers (time-bandwidth `wlen × bw / 2`) and Fourier transformed
+2. for the line frequency and each harmonic, the frequency within ± `bw / 2` with the largest Thomson F statistic (a sinusoid in the window) is found; if the sinusoid is significant (p < `p`, Bonferroni-corrected for the `bw × wlen` independent frequencies scanned), its amplitude and phase are estimated and it is subtracted from the window; repeated (up to `maxiter` times) until no significant sinusoid remains
+3. the fitted sinusoids of the overlapping windows are combined with smooth (Hann) weights and subtracted from the signal
+
+The rest of the spectrum is not changed; non-stationary noise (amplitude or frequency changes within a window) is removed incompletely.
+
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be continuous (1 epoch)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency in Hz; default is read from the object header
-- `method::Symbol=:iir`: method: `:iir` (notch filters) or `:zapline` (Zapline-plus)
+- `method::Symbol=:iir`: method: `:iir` (notch filters), `:zapline` (Zapline-plus) or `:cleanline` (CleanLine)
 - `pr::Real=2.0`: minimum peak prominence in dB (`:iir`: peaks to filter; `:zapline` with `nremove = :auto`: components are added while the remaining line peak is ≥ `pr` dB)
 - `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics) (`:iir`)
 - `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)` (`:iir`)
@@ -77,6 +85,11 @@ with the Zapline-plus additions:
 - `sigma::Real=3`: outlier threshold (number of SDs) for `nremove = :auto` (`:zapline`)
 - `max_prop::Real=0.2`: maximum proportion of components removed for `nremove = :auto` (`:zapline`)
 - `nfft::Int64=1024`: FFT length for the DSS bias (the power at the line frequency and its harmonics) (`:zapline`)
+- `p::Real=0.01`: significance level of the Thomson F-test, corrected for the number of scanned frequencies (`:cleanline`)
+- `wlen::Real=4`: window length in seconds (`:cleanline`)
+- `wstep::Real=1`: window step in seconds (`:cleanline`)
+- `bw::Real=2`: bandwidth (Hz) of the Slepian tapers; the sinusoids are searched within ± `bw / 2` of the line frequency and its harmonics (`:cleanline`)
+- `maxiter::Int64=10`: maximum number of fits in each window (`:cleanline`)
 
 # Returns
 
@@ -84,11 +97,13 @@ with the Zapline-plus additions:
 - `DataFrame`:
     - `:iir`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
     - `:zapline`: one row per chunk: `:start`, `:stop` (seconds), `:nremove` (number of removed components), `:reduction` (reduction of the power at the line frequency and its harmonics, dB), `:prominence` (remaining line peak, dB)
+    - `:cleanline`: one row per channel and line frequency: `:channel` (label), `:frequency` (Hz), `:windows` (proportion of windows with a significant sinusoid), `:reduction` (reduction of the power at the frequency, dB)
 
 # References
 
 1. de Cheveigné A. ZapLine: A simple and effective method to remove power line artifacts. NeuroImage. 2020;207:116356.
 2. Klug M, Kloosterman NA. Zapline-plus: A Zapline extension for automatic and adaptive removal of frequency-specific noise artifacts in M/EEG. Hum Brain Mapp. 2022;43(9):2743-2758.
+3. Mullen T. CleanLine EEGLAB plugin. San Diego, CA: Neuroimaging Informatics Tools and Resources Clearinghouse (NITRC); 2012.
 """
 function remove_powerline(
     obj::NeuroAnalyzer.NEURO;
@@ -105,6 +120,11 @@ function remove_powerline(
     sigma::Real = 3,
     max_prop::Real = 0.2,
     nfft::Int64 = 1024,
+    p::Real = 0.01,
+    wlen::Real = 4,
+    wstep::Real = 1,
+    bw::Real = 2,
+    maxiter::Int64 = 10,
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
     obj_new = deepcopy(obj)
     df = remove_powerline!(
@@ -122,6 +142,11 @@ function remove_powerline(
         sigma = sigma,
         max_prop = max_prop,
         nfft = nfft,
+        p = p,
+        wlen = wlen,
+        wstep = wstep,
+        bw = bw,
+        maxiter = maxiter,
     )
 
     return obj_new, df
@@ -137,7 +162,7 @@ Remove power line noise and its harmonics in-place (see `remove_powerline()`).
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency in Hz; default is read from the object header
-- `method::Symbol=:iir`: method: `:iir` (notch filters) or `:zapline` (Zapline-plus)
+- `method::Symbol=:iir`: method: `:iir` (notch filters), `:zapline` (Zapline-plus) or `:cleanline` (CleanLine)
 - `pr::Real=2.0`: minimum peak prominence in dB (`:iir`: peaks to filter; `:zapline` with `nremove = :auto`: components are added while the remaining line peak is ≥ `pr` dB)
 - `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics) (`:iir`)
 - `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)` (`:iir`)
@@ -148,12 +173,18 @@ Remove power line noise and its harmonics in-place (see `remove_powerline()`).
 - `sigma::Real=3`: outlier threshold (number of SDs) for `nremove = :auto` (`:zapline`)
 - `max_prop::Real=0.2`: maximum proportion of components removed for `nremove = :auto` (`:zapline`)
 - `nfft::Int64=1024`: FFT length for the DSS bias (`:zapline`)
+- `p::Real=0.01`: significance level of the Thomson F-test, corrected for the number of scanned frequencies (`:cleanline`)
+- `wlen::Real=4`: window length in seconds (`:cleanline`)
+- `wstep::Real=1`: window step in seconds (`:cleanline`)
+- `bw::Real=2`: bandwidth (Hz) of the Slepian tapers; the sinusoids are searched within ± `bw / 2` of the line frequency and its harmonics (`:cleanline`)
+- `maxiter::Int64=10`: maximum number of fits in each window (`:cleanline`)
 
 # Returns
 
 - `DataFrame`:
     - `:iir`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
     - `:zapline`: one row per chunk: `:start`, `:stop` (seconds), `:nremove` (number of removed components), `:reduction` (dB), `:prominence` (dB)
+    - `:cleanline`: one row per channel and line frequency: `:channel`, `:frequency` (Hz), `:windows` (proportion of windows with a significant sinusoid), `:reduction` (dB)
 """
 function remove_powerline!(
     obj::NeuroAnalyzer.NEURO;
@@ -170,6 +201,11 @@ function remove_powerline!(
     sigma::Real = 3,
     max_prop::Real = 0.2,
     nfft::Int64 = 1024,
+    p::Real = 0.01,
+    wlen::Real = 4,
+    wstep::Real = 1,
+    bw::Real = 2,
+    maxiter::Int64 = 10,
 )::DataFrame
     # validate
     nepochs(obj) == 1 ||
@@ -177,7 +213,7 @@ function remove_powerline!(
     fs = sr(obj)
     pl_frq > 0 || throw(ArgumentError("pl_frq must be > 0."))
     pl_frq < fs / 2 || throw(ArgumentError("pl_frq must be < $(fs / 2) Hz (Nyquist)."))
-    _check_var(method, [:iir, :zapline], "method")
+    _check_var(method, [:iir, :zapline, :cleanline], "method")
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
@@ -201,6 +237,21 @@ function remove_powerline!(
             obj, "remove_powerline",
             (; ch, pl_frq, method, pr, nremove, chunk, chunk_len, min_chunk, sigma, max_prop, nfft),
         )
+        return df
+    end
+
+    if method === :cleanline
+        df = _cleanline!(
+            obj;
+            ch = ch,
+            fline = pl_frq,
+            p = p,
+            wlen = wlen,
+            wstep = wstep,
+            bw = bw,
+            maxiter = maxiter,
+        )
+        _history!(obj, "remove_powerline", (; ch, pl_frq, method, p, wlen, wstep, bw, maxiter))
         return df
     end
 
