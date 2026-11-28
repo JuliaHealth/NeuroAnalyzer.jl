@@ -237,7 +237,7 @@ function plot_locs(
         grid        = false
     elseif ps === :s
         plot_size   = (100, 100)
-        marker_size = length(ch) > 64 ? 2 : 3
+        marker_size = length(ch) > 64 ? 3 : 4
         font_size   = 8
         lw          = 1
         sw          = 0.0

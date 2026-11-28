@@ -156,7 +156,7 @@ function plot_topo(
         sw = 2
     elseif ps === :s
         plot_size   = (100, 100)
-        marker_size = length(ch) > 64 ? 1 : 2
+        marker_size = length(ch) > 64 ? 2 : 3
         iter        = 128
         font_size   = 5
         label_size  = 4
