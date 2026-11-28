@@ -2193,6 +2193,56 @@ e_out, df_pl = remove_powerline(e_pl; ch = "Fp1", pl_frq = 60)
 @test_throws ArgumentError remove_powerline(e_pl; ch = "Fp1", pl_frq = 50, d = 0)
 @test_throws ArgumentError remove_powerline(epoch(eeg; ep_len = 10); ch = "Fp1")
 
+@info "Test: remove_powerline(method = :zapline)"
+# 19 EEG channels, 120 s: low-pass "brain" activity mixed over the channels + line noise
+# (50 Hz and 100 Hz) with one spatial pattern
+e_zl = keep_epoch(epoch(eeg; ep_len = 120); ep = 1)
+ch_zl = get_channel(e_zl; ch = "eeg")
+rng_zl = NeuroAnalyzer.Random.MersenneTwister(5)
+n_zl = epoch_len(e_zl)
+tz = (0:(n_zl - 1)) ./ sr(e_zl)
+brain = NeuroAnalyzer._zl_smooth(randn(rng_zl, n_zl, 8), 8) * randn(rng_zl, 8, length(ch_zl))
+line = (sin.(2π * 50 .* tz) .+ 0.3 .* sin.(2π * 100 .* tz .+ 1)) * randn(rng_zl, 1, length(ch_zl))
+e_zl.data[ch_zl, :, 1] = permutedims(brain .+ 3 .* line)
+rel_err(e) = LinearAlgebra.norm(permutedims(e.data[ch_zl, :, 1]) .- brain) / LinearAlgebra.norm(brain)
+@test rel_err(e_zl) > 1
+e_out, df_zl = remove_powerline(e_zl; ch = "eeg", pl_frq = 50, method = :zapline, chunk = :none)
+@test rel_err(e_out) < 0.05
+@test nrow(df_zl) == 1 && df_zl[1, :nremove] == 1
+@test df_zl[1, :reduction] > 20 && df_zl[1, :prominence] < 2
+@test df_zl[1, :start] == 0 && df_zl[1, :stop] == 120
+@test occursin("method=:zapline", e_out.history[end])
+# other channels are not modified
+ch_other = setdiff(1:nchannels(e_zl), ch_zl)
+@test e_out.data[ch_other, :, 1] == e_zl.data[ch_other, :, 1]
+# fixed chunks; a fixed number of components
+_, df_zl = remove_powerline(e_zl; ch = "eeg", method = :zapline, chunk = :fixed, chunk_len = 40)
+@test df_zl.start == [0, 40, 80] && all(df_zl.nremove .== 1)
+_, df_zl = remove_powerline(e_zl; ch = "eeg", method = :zapline, chunk = :none, nremove = 2)
+@test df_zl[1, :nremove] == 2
+# adaptive chunks cover the signal
+_, df_zl = remove_powerline(e_zl; ch = "eeg", method = :zapline, min_chunk = 20)
+@test df_zl[1, :start] == 0 && df_zl[end, :stop] == 120
+@test all(df_zl.stop[1:(end - 1)] .== df_zl.start[2:end])
+# the in-place version
+e_tmp = deepcopy(e_zl)
+remove_powerline!(e_tmp; ch = "eeg", method = :zapline, chunk = :none)
+@test rel_err(e_tmp) < 0.05
+# heavily contaminated: line noise in 6 components (amplitude-modulated sources); the default
+# max_prop = 0.2 allows 3 of 19 components, a larger max_prop removes more of the noise
+line6 = reduce(hcat, [(1 .+ 0.5 .* sin.(2π * 0.05 * k .* tz)) .* sin.(2π * 50 .* tz .+ k) for k in 1:6]) *
+        randn(rng_zl, 6, length(ch_zl))
+e_tmp.data[ch_zl, :, 1] = permutedims(brain .+ 3 .* line6)
+e_out, df_zl = remove_powerline(e_tmp; ch = "eeg", method = :zapline, chunk = :none)
+@test df_zl[1, :nremove] == 3 && df_zl[1, :prominence] > 10
+e_out2, df_zl2 = remove_powerline(e_tmp; ch = "eeg", method = :zapline, chunk = :none, max_prop = 0.35)
+@test df_zl2[1, :nremove] > 3 && df_zl2[1, :prominence] < df_zl[1, :prominence]
+@test_throws ArgumentError remove_powerline(e_zl; ch = "Fp1", method = :zapline)
+@test_throws ArgumentError remove_powerline(e_zl; ch = "eeg", method = :zapline, chunk = :x)
+@test_throws ArgumentError remove_powerline(e_zl; ch = "eeg", method = :zapline, nremove = 19)
+@test_throws ArgumentError remove_powerline(e_zl; ch = "eeg", method = :zapline, nremove = :x)
+@test_throws ArgumentError remove_powerline(e_zl; ch = "eeg", method = :x)
+
 @info "Test: in-place and out-of-place versions"
 e_io = epoch(eeg; ep_len = 10)
 keep_epoch!(e_io; ep = 1:5)

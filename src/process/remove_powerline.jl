@@ -44,26 +44,51 @@ end
 
 Remove power line noise and its harmonics from a continuous NEURO object.
 
-For each selected channel:
+`method = :iir` (notch filters), for each selected channel:
 
 1. the power spectrum (Welch, dB) is checked for a peak (prominence ≥ `pr` dB) at the power line frequency `pl_frq` (within `pl_frq ± d`); channels without a peak are not modified
 2. zero-phase IIR notch filters of bandwidths `q`, `2q`, …, 10 Hz are applied to the signal and the bandwidth giving the flattest spectrum (lowest variance of the PSD within `pl_frq ± d`) is used
 3. the procedure is repeated for each harmonic (`2 × pl_frq`, `3 × pl_frq`, … below the Nyquist frequency) that shows a peak in this channel (bandwidths up to 5 Hz, window `± d / 2`)
+
+`method = :zapline` (Zapline-plus): spatial filtering that removes only the line noise components of the selected channels together (at least 2 channels, e.g. all EEG channels), so that the signal at the line frequency and the spectrum around it are preserved, unlike notch filtering. For each chunk of the signal:
+
+1. the signal is smoothed with a moving average of one period of the line frequency (`sr / pl_frq` samples), which cancels the line frequency and all its harmonics
+2. the residual (signal minus smoothed signal) contains the line noise and high-frequency activity; denoising source separation (DSS) finds its spatial components ordered by the ratio of their power at the line frequency and its harmonics to their total power
+3. the first `nremove` components are regressed out of the residual, and the residual is added back to the smoothed signal
+
+with the Zapline-plus additions:
+
+- `nremove = :auto`: the number of components is detected per chunk by iterative outlier detection of the DSS scores (mean + `sigma` × SD); then components are added while the line peak remains in the cleaned chunk (prominence of the channel-averaged spectrum ≥ `pr` dB); at least 1 and at most `max_prop` × number of channels (if the peak remains, e.g. in heavily contaminated recordings, a warning suggests a `max_prop` value that would remove it, or `method = :iir`)
+- `chunk = :adaptive`: the signal is split where the spatial pattern of the line noise changes (peaks of the distance between the covariance matrices of consecutive 1-second segments of the signal band-passed at `pl_frq` ± 3 Hz), chunks at least `min_chunk` seconds long; `:fixed`: chunks of `chunk_len` seconds; `:none`: the whole signal
 
 # Arguments
 
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; must be continuous (1 epoch)
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency in Hz; default is read from the object header
-- `method::Symbol=:iir`: filtering method (currently only `:iir` is supported)
-- `pr::Real=2.0`: minimum peak prominence in dB
-- `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics)
-- `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)`
+- `method::Symbol=:iir`: method: `:iir` (notch filters) or `:zapline` (Zapline-plus)
+- `pr::Real=2.0`: minimum peak prominence in dB (`:iir`: peaks to filter; `:zapline` with `nremove = :auto`: components are added while the remaining line peak is ≥ `pr` dB)
+- `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics) (`:iir`)
+- `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)` (`:iir`)
+- `nremove::Union{Int64, Symbol}=:auto`: number of components to remove in each chunk, or `:auto` (`:zapline`)
+- `chunk::Symbol=:adaptive`: chunking: `:adaptive`, `:fixed` or `:none` (`:zapline`)
+- `chunk_len::Real=150`: chunk length in seconds for `chunk = :fixed` (`:zapline`)
+- `min_chunk::Real=30`: minimum chunk length in seconds for `chunk = :adaptive` (`:zapline`)
+- `sigma::Real=3`: outlier threshold (number of SDs) for `nremove = :auto` (`:zapline`)
+- `max_prop::Real=0.2`: maximum proportion of components removed for `nremove = :auto` (`:zapline`)
+- `nfft::Int64=1024`: FFT length for the DSS bias (the power at the line frequency and its harmonics) (`:zapline`)
 
 # Returns
 
 - `NeuroAnalyzer.NEURO`: new object with power line noise removed
-- `DataFrame`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
+- `DataFrame`:
+    - `:iir`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
+    - `:zapline`: one row per chunk: `:start`, `:stop` (seconds), `:nremove` (number of removed components), `:reduction` (reduction of the power at the line frequency and its harmonics, dB), `:prominence` (remaining line peak, dB)
+
+# References
+
+1. de Cheveigné A. ZapLine: A simple and effective method to remove power line artifacts. NeuroImage. 2020;207:116356.
+2. Klug M, Kloosterman NA. Zapline-plus: A Zapline extension for automatic and adaptive removal of frequency-specific noise artifacts in M/EEG. Hum Brain Mapp. 2022;43(9):2743-2758.
 """
 function remove_powerline(
     obj::NeuroAnalyzer.NEURO;
@@ -73,6 +98,13 @@ function remove_powerline(
     pr::Real = 2.0,
     d::Real = 5.0,
     q::Real = 0.1,
+    nremove::Union{Int64, Symbol} = :auto,
+    chunk::Symbol = :adaptive,
+    chunk_len::Real = 150,
+    min_chunk::Real = 30,
+    sigma::Real = 3,
+    max_prop::Real = 0.2,
+    nfft::Int64 = 1024,
 )::Tuple{NeuroAnalyzer.NEURO, DataFrame}
     obj_new = deepcopy(obj)
     df = remove_powerline!(
@@ -83,6 +115,13 @@ function remove_powerline(
         pr = pr,
         d = d,
         q = q,
+        nremove = nremove,
+        chunk = chunk,
+        chunk_len = chunk_len,
+        min_chunk = min_chunk,
+        sigma = sigma,
+        max_prop = max_prop,
+        nfft = nfft,
     )
 
     return obj_new, df
@@ -98,14 +137,23 @@ Remove power line noise and its harmonics in-place (see `remove_powerline()`).
 - `obj::NeuroAnalyzer.NEURO`: input NEURO object; modified in-place
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `pl_frq::Real=obj.header.recording[:line_frequency]`: power line frequency in Hz; default is read from the object header
-- `method::Symbol=:iir`: filtering method (currently only `:iir` is supported)
-- `pr::Real=2.0`: minimum peak prominence in dB
-- `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics)
-- `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)`
+- `method::Symbol=:iir`: method: `:iir` (notch filters) or `:zapline` (Zapline-plus)
+- `pr::Real=2.0`: minimum peak prominence in dB (`:iir`: peaks to filter; `:zapline` with `nremove = :auto`: components are added while the remaining line peak is ≥ `pr` dB)
+- `d::Real=5.0`: half-width (Hz) of the frequency window around the power line frequency for the peak detection and the bandwidth optimization (`d / 2` for harmonics) (`:iir`)
+- `q::Real=0.1`: bandwidth optimization step size in Hz; must be in `[0.01, 5)` (`:iir`)
+- `nremove::Union{Int64, Symbol}=:auto`: number of components to remove in each chunk, or `:auto` (`:zapline`)
+- `chunk::Symbol=:adaptive`: chunking: `:adaptive`, `:fixed` or `:none` (`:zapline`)
+- `chunk_len::Real=150`: chunk length in seconds for `chunk = :fixed` (`:zapline`)
+- `min_chunk::Real=30`: minimum chunk length in seconds for `chunk = :adaptive` (`:zapline`)
+- `sigma::Real=3`: outlier threshold (number of SDs) for `nremove = :auto` (`:zapline`)
+- `max_prop::Real=0.2`: maximum proportion of components removed for `nremove = :auto` (`:zapline`)
+- `nfft::Int64=1024`: FFT length for the DSS bias (`:zapline`)
 
 # Returns
 
-- `DataFrame`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
+- `DataFrame`:
+    - `:iir`: filtered peaks: `:channel` (label), `:frequency` (Hz), `:bandwidth` (optimized notch bandwidth, Hz)
+    - `:zapline`: one row per chunk: `:start`, `:stop` (seconds), `:nremove` (number of removed components), `:reduction` (dB), `:prominence` (dB)
 """
 function remove_powerline!(
     obj::NeuroAnalyzer.NEURO;
@@ -115,6 +163,13 @@ function remove_powerline!(
     pr::Real = 2.0,
     d::Real = 5.0,
     q::Real = 0.1,
+    nremove::Union{Int64, Symbol} = :auto,
+    chunk::Symbol = :adaptive,
+    chunk_len::Real = 150,
+    min_chunk::Real = 30,
+    sigma::Real = 3,
+    max_prop::Real = 0.2,
+    nfft::Int64 = 1024,
 )::DataFrame
     # validate
     nepochs(obj) == 1 ||
@@ -122,14 +177,36 @@ function remove_powerline!(
     fs = sr(obj)
     pl_frq > 0 || throw(ArgumentError("pl_frq must be > 0."))
     pl_frq < fs / 2 || throw(ArgumentError("pl_frq must be < $(fs / 2) Hz (Nyquist)."))
-    q >= 0.01 || throw(ArgumentError("q must be ≥ 0.01."))
-    q < 5 || throw(ArgumentError("q must be < 5."))
-    d > 0 || throw(ArgumentError("d must be > 0."))
-    _check_var(method, [:iir], "method")
+    _check_var(method, [:iir, :zapline], "method")
 
     # resolve channel names to integer indices
     ch = get_channel(obj; ch = ch)
     isempty(ch) && throw(ArgumentError("No channels selected."))
+
+    if method === :zapline
+        df = _zapline!(
+            obj;
+            ch = ch,
+            fline = pl_frq,
+            nremove = nremove,
+            chunk = chunk,
+            chunk_len = chunk_len,
+            min_chunk = min_chunk,
+            sigma = sigma,
+            max_prop = max_prop,
+            nfft = nfft,
+            pr = pr,
+        )
+        _history!(
+            obj, "remove_powerline",
+            (; ch, pl_frq, method, pr, nremove, chunk, chunk_len, min_chunk, sigma, max_prop, nfft),
+        )
+        return df
+    end
+
+    q >= 0.01 || throw(ArgumentError("q must be ≥ 0.01."))
+    q < 5 || throw(ArgumentError("q must be < 5."))
+    d > 0 || throw(ArgumentError("d must be > 0."))
     clabels = labels(obj)
 
     # the fundamental and its harmonics below the Nyquist frequency
