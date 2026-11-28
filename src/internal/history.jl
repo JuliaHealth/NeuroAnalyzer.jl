@@ -1,8 +1,8 @@
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # processing history (obj.history): one entry per call, written as Julia code, e.g.
 #   filter(obj; ch=["Fp1", "Fp2"], fprototype=:butterworth, ftype=:lp, cutoff=30, …)
 # so that the history can be exported as a script (export_history())
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # values that are stored in the history (as Julia code, `repr`)
 _hist_ok(v)::Bool =

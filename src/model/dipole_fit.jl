@@ -1,11 +1,11 @@
 export dipole_fit
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Draft: single equivalent current dipole fit, homogeneous spherical head.
 # Coordinates: NeuroAnalyzer uses RAS (x=right, y=anterior, z=superior).
 # Forward model: Brody series for the surface potential of a dipole in a
 # homogeneous conducting sphere (Neumann BC), electrodes projected onto sphere.
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 """
     _fit_sphere(P)

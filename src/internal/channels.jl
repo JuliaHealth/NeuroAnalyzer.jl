@@ -81,16 +81,16 @@ end
 _ch_units(obj::NeuroAnalyzer.NEURO, ch::String)::String =
     _ch_units(obj.header.recording[:channel_type][_ch_idx(obj, ch)[1]])
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # data types sharing the EEG-like / MEG-like recording header schema
 # (per-channel :transducers, :gain / :coil_type, …; :lowpass, :highpass for all data types)
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 const _EEG_LIKE_DATA = ("eeg", "seeg", "ecog", "ieeg", "csd", "erp")
 const _MEG_LIKE_DATA = ("meg", "erf")
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # NIRS channel type list - defined once to avoid repetition
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 const _NIRS_TYPES = [
     "nirs_od", "nirs_dmean", "nirs_dvar", "nirs_dskew", "nirs_mua", "nirs_musp",
     "nirs_hbo", "nirs_hbr", "nirs_hbt", "nirs_h2o", "nirs_lipid", "nirs_bfi",
@@ -105,14 +105,14 @@ const _CH_TYPE_GROUPS = Dict(
     "sensors" => ["accel", "magfld", "orient", "angvel"],
 )
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # channel types present in an object
 #
 # An object may contain channels of several modalities (e.g. EEG recorded with NIRS):
 # functions for a modality check that the object contains channels of its type(s), not the
 # data type of the object (`datatype()` describes the recording; "erp", "erf", "mep", ...
 # also describe its state)
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # EEG-like channel types (per-channel :gain, :transducers; :reference)
 const _EEG_LIKE_TYPES = ["eeg", "ecog", "seeg", "ieeg", "csd"]
@@ -143,13 +143,13 @@ function _check_chtype(
     )
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # per-channel fields of the recording header
 #
 # Fields are handled by their presence (not by the data type of the object), so that objects
 # with channels of several modalities keep all of them consistent: a field present in the
 # header has one value per channel; channels of other types get the default value.
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # per-channel vector fields (besides :label, :channel_type, :unit, :bad_channel, :lowpass,
 # :highpass, :notch) and their default values

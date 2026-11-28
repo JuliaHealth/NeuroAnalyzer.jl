@@ -9,7 +9,7 @@ module NeuroAnalyzer
 VERSION >= v"1.11.0" ||
     throw(ArgumentError("NeuroAnalyzer requires Julia 1.11.0 or above."))
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # set constants
 
@@ -90,7 +90,7 @@ const fiducial_points = (
 )
 const PATH = normpath(joinpath(@__DIR__, ".."))
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # preferences, resources and plugins are set in __init__() (at load time, not at precompilation)
 
@@ -102,7 +102,7 @@ colors = true
 res_path = ""
 plugins_path = ""
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # load dependencies
 
@@ -196,7 +196,7 @@ import LinearAlgebra: normalize, reflect!
 import StatsKit.StatsBase: entropy, sem, standardize, trim, trim!, zscore
 import Wavelets: downsample, upsample
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Gtk4 modifiers
 
@@ -204,9 +204,9 @@ const mask_shift = Gtk4.ModifierType_SHIFT_MASK
 const mask_ctrl = Gtk4.ModifierType_CONTROL_MASK
 const mask_alt = Gtk4.ModifierType_ALT_MASK
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helpers
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 """Planar interpolation methods (`imethod`): ScatteredInterpolation.jl, NaturalNeighbours.jl and spherical spline."""
 const _IMETHODS = [:sh, :mq, :imq, :tp, :nn, :ga, :sib, :sib1, :lap, :far, :hiy, :tri, :sph]
@@ -267,7 +267,7 @@ function _style_axis!(ax)
     return ax
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # define structures
 
@@ -333,7 +333,7 @@ DIPOLE(pos::NTuple{3, Real}, q::NTuple{3, Real}) = DIPOLE(
     1.0,
 )
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # load NA functions
 
@@ -475,6 +475,7 @@ include("edit/create.jl")
 include("edit/delete_channel.jl")
 include("edit/reorder_channel.jl")
 include("edit/delete_epoch.jl")
+include("edit/equalize_epochs.jl")
 include("edit/delete_optode.jl")
 include("edit/reject.jl")
 include("edit/epoch.jl")
@@ -693,7 +694,7 @@ include("study/average.jl")
 include("study/stats.jl")
 include("study/plot.jl")
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # code in __init__() runs every time the package is loaded
 # top-level code runs only once, when the package is precompiled

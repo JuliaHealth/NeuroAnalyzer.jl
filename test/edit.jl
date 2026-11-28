@@ -160,6 +160,49 @@ keep_epoch!(e10_tmp; ep = 1:2)
 @test length(e10.time_pts) == 25600
 @test length(e10_tmp.time_pts) == 5120 # 2 × 2560
 
+@info "Test: equalize_epochs()"
+# 10 epochs: "a" × 6, "b" × 3, no condition × 1 (onsets 0, 10, …, 90 s)
+e_eq = deepcopy(e10)
+e_eq.epochs[!, :condition] = ["a", "a", "b", "a", "a", "b", "a", "b", "a", ""]
+using Random
+e_r = equalize_epochs(e_eq; rng = Random.Xoshiro(1))
+@test nepochs(e_r) == 7 # 3 "a" + 3 "b" + 1 without a condition
+@test count(==("a"), e_r.epochs.condition) == 3
+@test count(==("b"), e_r.epochs.condition) == 3
+@test count(isempty, e_r.epochs.condition) == 1
+# reproducible with the same random number generator
+@test e_r.epochs.onset == equalize_epochs(e_eq; rng = Random.Xoshiro(1)).epochs.onset
+@test startswith(e_r.history[end], "equalize_epochs(")
+# the input is not modified
+@test nepochs(e_eq) == 10
+# :mintime: "b" at 20, 50, 70 s → the "a" epochs nearest in time: 10 (or 30), 40 (or 60), 80 s
+e_t = equalize_epochs(e_eq; method = :mintime)
+a_on = e_t.epochs.onset[e_t.epochs.condition .== "a"]
+@test length(a_on) == 3
+@test all(minimum(abs.(a_on .- b)) == 10 for b in [20.0, 50.0, 70.0])
+# order-preserving matching that minimizes the sum of onset differences
+tbl = DataFrame(source = fill("x", 6), onset = [0.0, 1.0, 2.0, 10.0, 11.0, 19.0])
+@test NeuroAnalyzer._mintime_match(tbl, [4], [1, 2, 3, 5, 6]) == [5]
+@test NeuroAnalyzer._mintime_match(tbl, [1, 4], [2, 3, 5, 6]) == [2, 5]
+# epochs of another source recording are not matched
+tbl.source[5] = "y"
+@test NeuroAnalyzer._mintime_match(tbl, [4], [1, 2, 3, 5, 6]) == [3]
+# rejected epochs are neither counted nor deleted
+e_rj = deepcopy(e_eq)
+e_rj.epochs[1, :reject] = true
+e_rj = equalize_epochs(e_rj; rng = Random.Xoshiro(2))
+@test count(==("a"), e_rj.epochs.condition) == 4 # 3 + the rejected one
+@test e_rj.epochs.reject[1]
+# selected conditions; already equal: unchanged
+e_c = deepcopy(e_eq)
+equalize_epochs!(e_c; condition = ["a", "b"], method = :mintime)
+@test nepochs(e_c) == 7
+@test nepochs(equalize_epochs(e_t)) == nepochs(e_t)
+@test_throws ArgumentError equalize_epochs(e_eq; condition = ["a"])
+@test_throws ArgumentError equalize_epochs(e_eq; condition = ["a", "x"])
+@test_throws ArgumentError equalize_epochs(e_eq; method = :x)
+@test_throws ArgumentError equalize_epochs(average_epochs(e_eq))
+
 @info "Test: channel_reject()"
 bc = channel_reject(e10; ch = ["Fp1", "Fp2"], method = [:flat, :amp])
 @test bc isa Vector{Bool}

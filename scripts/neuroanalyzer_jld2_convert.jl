@@ -27,9 +27,9 @@ using NeuroAnalyzer
 using JLD2
 using DataFrames
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # JLD2 upgrade paths of the NeuroAnalyzer types
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # a NEURO object read from a file as a NamedTuple of its fields; objects saved before
 # v0.26.12 have no `epochs` field (the default epoch table is created)
@@ -55,9 +55,9 @@ function JLD2.rconvert(::Type{NeuroAnalyzer.HEADER}, nt::NamedTuple)::NeuroAnaly
     return NeuroAnalyzer.HEADER(nt.subject, nt.recording, notes)
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # loaders
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 """
     load_neuro_jld2(file_name)
@@ -143,9 +143,9 @@ function load_study_jld2(file_name::String)::NeuroAnalyzer.STUDY
     )
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # conversion
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # :neuro, :study (JLD2 files), :new (already in the HDF5 format of v0.26.12), :other
 function jld2_kind(file_name::String)::Symbol

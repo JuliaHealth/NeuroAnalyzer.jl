@@ -1,10 +1,10 @@
 export pcacomp
 export npca
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helper: Z-score standardize each column of a matrix in-place
 # constant columns (zero variance) are replaced with zeros
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function _zstd_columns!(m::Matrix{Float64})
     for col in axes(m, 2)
         if length(unique(m[:, col])) > 1
@@ -16,9 +16,9 @@ function _zstd_columns!(m::Matrix{Float64})
     return
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helper: fit a PCA model, dispatching on the zstd flag
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function _fit_pca(m::Matrix{Float64}, n::Int64, zstd::Bool)
     kwargs = zstd ? (maxoutdim = n, pratio = 1, mean = 0) : (maxoutdim = n, pratio = 1)
     return MultivariateStats.fit(PCA, Matrix(m'); kwargs...)

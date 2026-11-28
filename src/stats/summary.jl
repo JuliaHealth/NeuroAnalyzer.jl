@@ -1,8 +1,8 @@
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helper: compute all summary statistics for one clean vector
 # returns a NamedTuple matching the shared column layout used by all methods
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # (exact values; rounding is done only when the table is printed)
 function _summary_stats(x_clean::Vector{Float64}, n_total::Int64)
     ms = n_total - length(x_clean)
@@ -18,9 +18,9 @@ function _summary_stats(x_clean::Vector{Float64}, n_total::Int64)
     return (; ms, m, v, s, mn, q1, me, q3, mx, mo)
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helpers shared by the matrix and varargs methods
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 """Build the shared summary DataFrame, calling `get_data(idx)` per group."""
 function _build_summary_df(get_data::Function, g::Vector{String})::DataFrame

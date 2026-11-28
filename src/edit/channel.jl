@@ -14,9 +14,9 @@ export append_channel!
 export insert_channel
 export insert_channel!
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helpers
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # resolve a channel name that must match exactly one channel
 function _single_channel(obj::NeuroAnalyzer.NEURO, ch::String)::Int64

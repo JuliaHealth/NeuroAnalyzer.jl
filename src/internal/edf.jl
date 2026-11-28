@@ -1,8 +1,8 @@
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # shared helpers for record-based formats (EDF/EDF+, BDF/BDF+, Alice 4 EDF, GDF),
 # for channel units read from file headers (also used by BrainVision) and for
 # converting non-integer sampling rates (NeuroAnalyzer stores integer rates)
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # relative tolerance below which a sampling rate is treated as an integer
 # (rates estimated from time stamps, e.g. 256.0016 Hz, are not resampled)

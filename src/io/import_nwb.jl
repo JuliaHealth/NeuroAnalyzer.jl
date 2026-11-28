@@ -296,9 +296,9 @@ function _nwb_datetime(t::String)::Tuple{String, String}
     return (Dates.format(dt, "yyyy-mm-dd"), Dates.format(dt, "HH:MM:SS"))
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # electrodes
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 """
     _nwb_electrodes(f, table, rows; <keyword arguments>)
@@ -429,9 +429,9 @@ function _nwb_resample(x::AbstractMatrix, ts::Vector{Float64}, fs::Real)::Matrix
     return out
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # metadata
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # recording date and time, subject ID, device and header notes (pairs) of an NWB file
 function _nwb_metadata(f::HDF5.File)::NamedTuple
@@ -471,9 +471,9 @@ function _nwb_metadata(f::HDF5.File)::NamedTuple
     return (date = date, time = time, subject_id = subj, device = device, notes = notes)
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # events
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # value of an extra marker column (ragged values joined)
 _nwb_cell(v) = v isa AbstractVector ? join(string.(v), ",") : v isa NamedTuple ? string(v) : v

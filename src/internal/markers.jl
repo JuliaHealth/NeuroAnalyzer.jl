@@ -168,7 +168,7 @@ function _remap_markers(markers::DataFrame, fs::Int64, f::Function)::DataFrame
     return m[keep, :]
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # marker channels: every marker holds a vector of channel labels (`channel` column,
 # `Vector{String}`); an empty vector means that the marker applies to all channels
 
@@ -321,7 +321,7 @@ function _markers_map_channels!(markers::DataFrame, m::Dict{String, Vector{Strin
     return count(drop)
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # marker types: `type` is the kind of marker, `value` its code or condition (used by `epoch()`)
 
 """Standard marker types (the `type` column of `obj.markers`)."""
@@ -399,7 +399,7 @@ function _fiff_an_desc(type::String, value::String)::String
     return isempty(value) ? type : value
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # extra marker columns: a markers table has the 5 fixed columns (`type`, `start`, `length`,
 # `value`, `channel`) followed by optional extra columns (e.g. `trial_type`, `response_time`
 # from BIDS events.tsv); rows added by NeuroAnalyzer get `missing` in the extra columns

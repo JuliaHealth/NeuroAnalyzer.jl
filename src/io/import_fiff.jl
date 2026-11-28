@@ -2,9 +2,9 @@ export load_fiff
 export import_fiff
 export import_locs_fiff
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helpers
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # all decoded values of a tag, optionally restricted to a block type and/or block instance
 # fiff_object entries: (index, tag, block, data, instance)

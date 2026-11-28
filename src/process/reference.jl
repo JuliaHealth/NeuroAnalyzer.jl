@@ -15,9 +15,9 @@ export reference_custom!
 export reference_rest
 export reference_rest!
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helpers
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # indices (into obj.data) of EEG channels, in data order
 function _eeg_ch_idx(obj::NeuroAnalyzer.NEURO)::Vector{Int64}
@@ -403,9 +403,9 @@ function reference_avg!(
     return nothing
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helper: auricular/mastoid reference, shared by reference_a and reference_m
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function _reference_paired!(
     obj::NeuroAnalyzer.NEURO,
     r1::String,
@@ -616,10 +616,10 @@ function reference_m!(
     return nothing
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # internal helper: shared nearest-neighbor Laplacian core
 # used by both reference_plap and reference_slap
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 function _laplacian_reference(
     obj::NeuroAnalyzer.NEURO;
     nn::Int64,
@@ -817,9 +817,9 @@ function reference_slap!(
     return nothing
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # REST (reference electrode standardization technique)
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # n points spread evenly over the unit sphere (Fibonacci lattice)
 function _fibonacci_sphere(n::Int64)::Matrix{Float64}

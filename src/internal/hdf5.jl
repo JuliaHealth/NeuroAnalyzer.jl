@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # HDF5 encoding of Julia values (save_neuro(), load_neuro())
 #
 # values of HDF5 native types are written as plain datasets: numbers, Bool, String and
@@ -29,7 +29,7 @@
 #
 # member names are the keys or column names with "%" and "/" escaped as "%25" and "%2F"
 # ("" → "%", "." → "%2E")
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # element types written natively
 const _H5_NATIVE = Union{

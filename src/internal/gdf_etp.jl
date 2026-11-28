@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # GDF event type code lookup table.
 #
 # Source: BioSig eventcodes.txt (biosig 3.9.5, table © 2004-2015 Alois Schlögl),
@@ -11,7 +11,7 @@
 # official table. Commented code lines (e.g. "#0x8502 ecg:P-wave-end") are kept
 # in a separate table of reserved names, used only for codes not in the official
 # table.
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 const _GDF_EVENTCODES_FILE = joinpath(@__DIR__, "eventcodes.txt")
 include_dependency(_GDF_EVENTCODES_FILE)
 

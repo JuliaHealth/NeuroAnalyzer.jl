@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # FIFF (Elekta/MEGIN Neuromag Functional Image File Format) low-level writer
 #
 # All FIFF data are big-endian. Tag header = 4 × Int32: kind, type, size, next.
@@ -7,7 +7,7 @@
 # rebuild it by scanning the file.
 #
 # Reference implementation used for cross-checking: MNE-Python (mne/_fiff/write.py).
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # FIFF data types (FIFFT_*)
 const _FIFFT_VOID = 0

@@ -1,4 +1,4 @@
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # NWB (Neurodata Without Borders 2.x) on HDF5: reading and writing of the NWB building blocks,
 # used by import_nwb() and export_nwb(); shares the HDF5 helpers of src/internal/hdf5.jl
 #
@@ -15,7 +15,7 @@
 # - Bool values: 8-bit enumeration FALSE = 0, TRUE = 1 (as written by h5py/pynwb)
 # - array dimensions: NWB stores (time, channels); HDF5 row-major order is read by HDF5.jl in
 #   reverse, i.e. as (channels, time)
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # compression filters of HDF5 (decoded by HDF5.jl without plugins): deflate (gzip), shuffle,
 # Fletcher32 checksum, scale-offset, N-bit, SZIP
@@ -281,9 +281,9 @@ function _nwb_series(f::HDF5.File, g::HDF5.Group; scaled::Bool = true)::NamedTup
     )
 end
 
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # writing
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # random UUID (version 4), the `object_id` of NWB objects
 function _nwb_uuid()::String
