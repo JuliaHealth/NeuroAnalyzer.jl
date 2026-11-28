@@ -61,7 +61,7 @@ end
 @test NeuroAnalyzer._hdf5_flavor(
     joinpath(testfiles_path, "nirs", "fnirs-test-snirf.snirf"),
 ) === :snirf
-@test NeuroAnalyzer._hdf5_flavor(joinpath(testfiles_path, "eeg", "eeg.hdf5")) === nothing
+@test NeuroAnalyzer._hdf5_flavor(joinpath(testfiles_path, "eeg", "eeg.hdf")) === nothing
 @test NeuroAnalyzer._hdf5_flavor(joinpath(testfiles_path, "locs", "locs.ced")) === nothing
 @test NeuroAnalyzer._sibling_hint(joinpath(testfiles_path, "eeg", "eeg-test-bv.vmrk")) ==
       " Did you mean $(joinpath(testfiles_path, "eeg", "eeg-test-bv.vhdr"))?"
@@ -938,9 +938,18 @@ r = keep_epoch(keep_channel(e10; ch = ["Fp1", "Cz", "O2"]); ep = [2, 4])
 @test size(load_neuro(f; ep = 3).data) == (nchannels(e10), epoch_len(e10), 1)
 @test_throws ArgumentError load_neuro(f; ep = 1000)
 @test_throws ArgumentError load_neuro(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
-# file shipped with the test data: an EEG object saved with JLD2 by an old version of
-# NeuroAnalyzer → clear error
-@test_throws "not supported" load_neuro(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
+# file shipped with the test data: NEURO object saved in the current HDF5 layout
+e_hdf = load_neuro(joinpath(testfiles_path, "eeg", "eeg.hdf"))
+@test nchannels(e_hdf) == 24
+@test sr(e_hdf) == 256
+@test NeuroAnalyzer._neuro_format_version(joinpath(testfiles_path, "eeg", "eeg.hdf")) == 1
+# root layout of files saved with JLD2 by NeuroAnalyzer before v0.26.12 → clear error
+f_jld2 = joinpath(tmp, "legacy_jld2.hdf")
+NeuroAnalyzer.HDF5.h5open(f_jld2, "w") do h
+    NeuroAnalyzer.HDF5.create_group(h, "_types")
+    h["single_stored_object"] = zeros(UInt8, 1)
+end
+@test_throws "not supported" load_neuro(f_jld2)
 
 @info "Test: export_csv()"
 f = joinpath(tmp, "eeg.csv")

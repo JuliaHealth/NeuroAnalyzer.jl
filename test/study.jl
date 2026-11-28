@@ -294,7 +294,13 @@ s8 = load_study(sf)
 @test isequal(s8.measures, st.measures)
 @test typeof(s8.measures[:tf]) == typeof(st.measures[:tf])
 @test eltype.(eachcol(s8.design)) == eltype.(eachcol(st.design))
-@test_throws "not supported" load_study(joinpath(testfiles_path, "eeg", "eeg.hdf5"))
+# root layout of files saved with JLD2 by NeuroAnalyzer before v0.26.12 → clear error
+f_jld2 = joinpath(root, "legacy_jld2.hdf")
+NeuroAnalyzer.HDF5.h5open(f_jld2, "w") do h
+    NeuroAnalyzer.HDF5.create_group(h, "_types")
+    h["single_stored_object"] = zeros(UInt8, 1)
+end
+@test_throws "not supported" load_study(f_jld2)
 # measures are still up to date
 nh = length(s8.history)
 study_measure!(s8, :psd; ch = "all", flim = (0, 40))
