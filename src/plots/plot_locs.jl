@@ -337,6 +337,8 @@ function plot_locs(
     # (resample_cmap needs ≥ 2 colors)
     cmap = _trace_colors(ch_n; mono = mono)
     sch_set = Set(sch)
+    # colored markers: no outline in the medium size
+    sw_color = ps === :m ? 0 : sw
 
     for (i, idx) in enumerate(ch)
         if !isnothing(ch_colors)
@@ -345,7 +347,7 @@ function plot_locs(
                 loc_y[i];
                 markersize  = marker_size,
                 color       = ch_colors[i],
-                strokewidth = sw,
+                strokewidth = sw_color,
                 strokecolor = :black,
             )
         elseif idx in sch_set
@@ -356,7 +358,7 @@ function plot_locs(
                 color       = mono ? :gray : cmap[i],
                 colormap    = pal,
                 colorrange  = 1:ch_n,
-                strokewidth = sw,
+                strokewidth = sw_color,
                 strokecolor = :black,
             )
         else
