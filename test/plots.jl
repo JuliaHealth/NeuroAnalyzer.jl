@@ -298,6 +298,17 @@ xc, lags = xcov(e10, e10; ch1 = "Fp1", ch2 = "Fp2")
 p = plot_xac(xc[1, :, 1], lags)
 @test p isa GLMakie.Figure
 
+@info "Test: plot_acf()"
+p = plot_acf(e10; ch = ["Fz", "O2"], xlim = 0.2)
+@test p isa GLMakie.Figure
+p = plot_acf(e10; ch = "eeg", ep = 1:3, markers = [:acw50, :acwe, :acw0], mono = true, leg = false)
+@test p isa GLMakie.Figure
+p = plot_acf(e10; ch = "Fz", markers = Symbol[])
+@test p isa GLMakie.Figure
+@test_throws ArgumentError plot_acf(e10; ch = "Fz", markers = [:tau])
+@test_throws ArgumentError plot_acf(e10; ch = "Fz", ep = 100)
+@test_throws ArgumentError plot_acf(e10; ch = "Fz", l = 0)
+
 @info "Test: plot_histogram()"
 stats = rand(2, 100)
 p = plot_histogram(stats[1, :], 0.8)

@@ -424,6 +424,32 @@ ac, l = acor(e10; ch = "all", method = :stat)
 @test size(ac) == (24, 69, 10)
 @test length(l) == 69
 
+@info "Test: acw()"
+# interpolated crossings and area up to the zero crossing
+r_t = [1.0, 0.6, 0.2, -0.2]
+l_t = [0.0, 1.0, 2.0, 3.0]
+@test NeuroAnalyzer._acw(r_t, l_t, 0.5) ≈ 1.25
+@test NeuroAnalyzer._acw(r_t, l_t, 0) ≈ 2.5
+@test NeuroAnalyzer._acw_auc(r_t, l_t) ≈ 1.25
+# level not reached
+@test isnan(NeuroAnalyzer._acw([1.0, 0.9, 0.8], [0.0, 1.0, 2.0], 0))
+@test isnan(NeuroAnalyzer._acw_auc([1.0, 0.9, 0.8], [0.0, 1.0, 2.0]))
+# 5 Hz sine: the ACF first reaches 0 at 1 / (4 * 5) = 50 ms
+t_s = (0:2559) ./ 256
+r_s = NeuroAnalyzer._acor(sin.(2π * 5 .* t_s); l = 256)[257:end]
+@test NeuroAnalyzer._acw(r_s, (0:256) ./ 256, 0) ≈ 0.05 atol = 0.002
+a = acw(e10; ch = "all")
+@test size(a.acw50) == (24, 10)
+@test size(a.acw0) == (24, 10)
+@test size(a.acwe) == (24, 10)
+@test size(a.auc) == (24, 10)
+# ACW-50 ≤ ACW-e ≤ ACW-0 (where reached within the maximum lag)
+ok = .!isnan.(a.acw0)
+@test any(ok)
+@test all(a.acw50[ok] .<= a.acwe[ok] .<= a.acw0[ok])
+@test size(acw(e10; ch = "Fp1", l = 0.5).acw0) == (1, 10)
+@test_throws ArgumentError acw(e10; ch = "all", l = 0)
+
 @info "Test: ispc()"
 iv, ia, sd, pd, s1p, s2p = NeuroAnalyzer._ispc(v1, v2)
 @test iv ≈ 0.61259928523
