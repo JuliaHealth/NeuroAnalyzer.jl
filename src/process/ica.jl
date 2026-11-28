@@ -100,7 +100,13 @@ end
 """
     ica_decompose(obj; <keyword arguments>)
 
-Decompose selected channels of a NEURO object into Independent Components (ICs) using the FastICA algorithm. Sorts components by variance explained.
+Decompose selected channels of a NEURO object into Independent Components (ICs). Sorts components by variance explained.
+
+Methods:
+
+- `:fastica` (default): FastICA (MultivariateStats), neg-entropy approximation with the nonlinearity `f`
+- `:amica`: AMICA (Adaptive Mixture ICA): the AMICA program installed by the user (e.g. `amica15ub`, from the AMICA plugin of EEGLAB or https://github.com/sccn/amica) is run on the signal (written to a temporary file, with the default parameters of `runamica15()` of EEGLAB) and its output is read (see `import_amica()`); the components of model 1 are returned
+- `:infomax`: extended Infomax (as `runica()` of EEGLAB, the default of EEGLAB and the decomposition ICLabel was trained on): natural-gradient learning on random blocks of samples after PCA reduction (if `n` < number of channels) and sphering; with `extended = true`, components with sub-Gaussian (e.g. line noise) and super-Gaussian (e.g. eye blinks) distributions are separated; `extended = false`: logistic Infomax (super-Gaussian sources only)
 
 # Arguments
 
@@ -108,9 +114,15 @@ Decompose selected channels of a NEURO object into Independent Components (ICs) 
 - `ch::Union{String, Vector{String}, Regex}`: channel name(s)
 - `exclude_bad_channels::Bool=NeuroAnalyzer.exclude_bad_channels`: if `true`, channels marked as bad are not used (default: the `exclude_bad_channels` preference, see `set_exclude_bad_channels()`)
 - `n::Union{Nothing, Int64}=nothing`: number of independent components to extract; default: the number of selected channels
-- `iter::Int=100`: max iterations per tolerance level
-- `f::Symbol=:tanh`: nonlinear function for neg-entropy approximation (`:tanh` or `:gaus`)
-- `rng::Int64=42`: seed for random initialization in FastICA
+- `method::Symbol=:fastica`: ICA algorithm: `:fastica`, `:infomax` or `:amica`
+- `iter::Union{Nothing, Int64}=nothing`: `:fastica`: maximum number of iterations per tolerance level (default: 100); `:infomax`: maximum number of training steps (passes through the data; default: 512); `:amica`: maximum number of iterations (default: 2000)
+- `f::Symbol=:tanh`: nonlinear function for neg-entropy approximation (`:tanh` or `:gaus`) (`:fastica`)
+- `extended::Bool=true`: extended Infomax (sub- and super-Gaussian sources) (`:infomax`)
+- `rng::Int64=42`: seed for the random initialization (`:fastica`) or the random order of the samples (`:infomax`)
+- `amica::String="amica15ub"`: AMICA program: name in the `PATH` or path (`:amica`)
+- `amica_models::Int64=1`: number of ICA models (`:amica`)
+- `amica_threads::Int64=Sys.CPU_THREADS`: number of threads (`:amica`)
+- `amica_outdir::Union{Nothing, String}=nothing`: folder for the AMICA output, kept (e.g. for `import_amica()` of other models); default: a temporary folder, deleted (`:amica`)
 
 # Returns
 
@@ -119,14 +131,26 @@ Named tuple:
 - `ic::Matrix{Float64}`: independent components, shape (n, samples)
 - `ic_mw::Matrix{Float64}`: mixing matrix (component weights at the channels), shape (channels, n)
 - `ic_var::Vector{Float64}`: variance explained by each component
+
+# References
+
+1. Hyvärinen A, Oja E. Independent component analysis: algorithms and applications. Neural Netw. 2000;13(4-5):411-430.
+2. Lee TW, Girolami M, Sejnowski TJ. Independent component analysis using an extended infomax algorithm for mixed subgaussian and supergaussian sources. Neural Comput. 1999;11(2):417-441.
+3. Palmer JA, Kreutz-Delgado K, Makeig S. AMICA: An Adaptive Mixture of Independent Component Analyzers with Shared Components. Technical report, Swartz Center for Computational Neuroscience, UCSD; 2011.
 """
 function ica_decompose(
     obj::NeuroAnalyzer.NEURO;
     ch::Union{String, Vector{String}, Regex},
     n::Union{Nothing, Int64} = nothing,
-    iter::Int64 = 100,
+    method::Symbol = :fastica,
+    iter::Union{Nothing, Int64} = nothing,
     f::Symbol = :tanh,
+    extended::Bool = true,
     rng::Int64 = 42,
+    amica::String = "amica15ub",
+    amica_models::Int64 = 1,
+    amica_threads::Int64 = Sys.CPU_THREADS,
+    amica_outdir::Union{Nothing, String} = nothing,
     exclude_bad_channels::Bool = NeuroAnalyzer.exclude_bad_channels,
 )::@NamedTuple{
     ic::Matrix{Float64},
@@ -134,6 +158,7 @@ function ica_decompose(
     ic_var::Vector{Float64},
 }
     # validate
+    _check_var(method, [:fastica, :infomax, :amica], "method")
     nepochs(obj) == 1 ||
         throw(ArgumentError("ica_decompose() must be applied to continuous object."))
     signal_len(obj) / sr(obj) <= 10 &&
@@ -144,36 +169,79 @@ function ica_decompose(
     length(ch) >= 2 || throw(ArgumentError("At least 2 channels must be selected."))
     isnothing(n) && (n = length(ch))
 
+    # Infomax and AMICA need full-rank data (e.g. average reference: rank = number of channels - 1)
+    if method in (:infomax, :amica)
+        r = _data_rank(@view(obj.data[ch, :, 1]))
+        if n > r
+            _warn("Data rank ($r) < number of components ($n): n reduced to $r.")
+            n = r
+        end
+    end
+
     # perform decomposition on the selected slice
-    ica_data =
-        _ica_decompose(@view(obj.data[ch, :, 1]); n = n, iter = iter, f = f, rng = rng)
+    ica_data = if method === :fastica
+        _ica_decompose(
+            @view(obj.data[ch, :, 1]);
+            n = n,
+            iter = something(iter, 100),
+            f = f,
+            rng = rng,
+        )
+    elseif method === :infomax
+        _ica_infomax(
+            @view(obj.data[ch, :, 1]);
+            n = n,
+            iter = something(iter, 512),
+            extended = extended,
+            rng = rng,
+        )
+    else
+        _ica_amica(
+            @view(obj.data[ch, :, 1]);
+            n = n,
+            iter = something(iter, 2000),
+            amica = amica,
+            models = amica_models,
+            threads = amica_threads,
+            outdir = amica_outdir,
+        )
+    end
     ic = ica_data.ic
     ic_mw = ica_data.ic_mw
 
-    # calculate Variance Accounted For (VAF) per component (components are mean-free)
-    d = obj.data[ch, :, 1]
+    return _ica_vaf_sort(obj.data[ch, :, 1], ic, ic_mw)
+end
+
+# variance accounted for (VAF, %) by each component of a decomposition of the signal `s`
+# (channels × samples): 100 × (1 - var(s - component back-projection) / var(s)) of the
+# demeaned signal; the components are sorted by decreasing VAF
+function _ica_vaf_sort(
+    s::AbstractMatrix,
+    ic::AbstractMatrix,
+    ic_mw::AbstractMatrix,
+)::@NamedTuple{
+    ic::Matrix{Float64},
+    ic_mw::Matrix{Float64},
+    ic_var::Vector{Float64},
+}
+    d = Matrix{Float64}(s)
     d .-= mean(d; dims = 2)
     total_var = var(d)
+    n = size(ic, 1)
     ic_var = Vector{Float64}(undef, n)
-
     for idx = 1:n
         # reconstruct signal using only the i-th component
         ic_back = @views ic_mw[:, idx] * ic[idx, :]'
-        # VAF formula: 100 * (1 - var(residual) / var(original))
         ic_var[idx] = 100.0 * (1.0 - var(d .- ic_back) / total_var)
     end
 
     # sort components by descending variance
     p = sortperm(ic_var; rev = true)
-    ic = ic[p, :]
-    ic_var = ic_var[p]
-    ic_mw = ic_mw[:, p]
-
     for i = 1:n
-        _info("Component $(lpad(i, 2)): VAF = $(round(ic_var[i], digits = 2))%")
+        _info("Component $(lpad(i, 2)): VAF = $(round(ic_var[p[i]], digits = 2))%")
     end
 
-    return (; ic, ic_mw, ic_var)
+    return (; ic = Matrix{Float64}(ic[p, :]), ic_mw = Matrix{Float64}(ic_mw[:, p]), ic_var = ic_var[p])
 end
 
 """

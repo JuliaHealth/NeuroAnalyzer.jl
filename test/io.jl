@@ -131,6 +131,43 @@ a4 = import_alice4(joinpath(tmp, "alice4.edf"))
 )
 @test_throws ArgumentError import_alice4(joinpath(tmp, "no_such_file.edf"))
 
+@info "Test: import_amica()"
+# AMICA output folders (raw little-endian Float64) written from known matrices
+e_am = import_edf(joinpath(testfiles_path, "eeg", "eeg-test-edf.edf"))
+e_am = keep_channel(e_am; ch = ["Fp1", "Fp2", "F3", "F4"])
+x_am = e_am.data[:, :, 1]
+mn_am = vec(sum(x_am; dims = 2) ./ size(x_am, 2))
+rng_am = NeuroAnalyzer.Random.MersenneTwister(3)
+function amica_out(dir, w, s, gm)
+    mkpath(dir)
+    for (f, v) in (("W", w), ("S", s), ("mean", mn_am), ("gm", gm))
+        write(joinpath(dir, f), htol.(vec(Float64.(v))))
+    end
+    return dir
+end
+s_am = randn(rng_am, 4, 4)
+w_am = cat(randn(rng_am, 4, 4), randn(rng_am, 4, 4); dims = 3)
+d_am = amica_out(joinpath(tmp, "amicaout"), w_am, s_am, [0.6, 0.4])
+for m in 1:2
+    a = import_amica(e_am; ch = "all", path = d_am, model = m)
+    @test size(a.ic) == (4, size(x_am, 2)) && size(a.ic_mw) == (4, 4)
+    @test issorted(a.ic_var; rev = true)
+    # the components are those of model m (in VAF order) and reconstruct the data
+    ic_ref = w_am[:, :, m] * s_am * (x_am .- mn_am)
+    @test all(any(isapprox(a.ic[i, :], ic_ref[j, :]) for j in 1:4) for i in 1:4)
+    @test a.ic_mw * a.ic ≈ x_am .- mn_am
+end
+# PCA reduction: 3 components of 4 channels
+d_am3 = amica_out(joinpath(tmp, "amicaout3"), randn(rng_am, 3, 3), s_am, [1.0])
+a = import_amica(e_am; ch = "all", path = d_am3)
+@test size(a.ic) == (3, size(x_am, 2)) && size(a.ic_mw) == (4, 3)
+@test_throws ArgumentError import_amica(e_am; ch = "all", path = d_am, model = 3)
+@test_throws ArgumentError import_amica(e_am; ch = ["Fp1", "Fp2"], path = d_am)
+@test_throws ArgumentError import_amica(e_am; ch = "all", path = joinpath(tmp, "no_such_dir"))
+@test_throws ArgumentError import_amica(e_am; ch = "all", path = tmp)
+write(joinpath(tmp, "amicaout", "S"), zeros(UInt8, 12))
+@test_throws ArgumentError import_amica(e_am; ch = "all", path = d_am)
+
 @info "Test: import_edf_annotations()"
 # annotation-only EDF+: one "EDF Annotations" signal, data record duration 0
 function edf_annotations_file(f, recs)

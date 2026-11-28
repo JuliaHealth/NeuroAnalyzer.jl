@@ -1231,6 +1231,80 @@ e_tmp = ica_remove(
 )
 @test e_tmp.data ≈ eeg.data
 
+@info "Test: ica_decompose(method = :infomax)"
+# known sources: 2 super-Gaussian (Laplace), 1 sub-Gaussian (uniform), 1 sinusoid (sub-Gaussian),
+# mixed into 6 channels
+rng_ica = NeuroAnalyzer.Random.MersenneTwister(7)
+n_ica = 20_000
+lap_ica() = (u = rand(rng_ica, n_ica) .- 0.5; -sign.(u) .* log.(1 .- 2 .* abs.(u)))
+src_ica = permutedims(hcat(lap_ica(), lap_ica(), rand(rng_ica, n_ica) .- 0.5,
+                           sin.(2π * 50 .* (0:(n_ica - 1)) ./ 500)))
+x_ica = randn(rng_ica, 6, 4) * src_ica
+best_r(ic) = [maximum(abs(NeuroAnalyzer.Statistics.cor(ic[i, :], src_ica[j, :])) for i in axes(ic, 1)) for j in 1:4]
+# extended Infomax separates sub- and super-Gaussian sources (PCA reduction 6 → 4)
+r_ica = NeuroAnalyzer._ica_infomax(x_ica; n = 4)
+@test size(r_ica.ic) == (4, n_ica) && size(r_ica.ic_mw) == (6, 4)
+@test all(best_r(r_ica.ic) .> 0.99)
+# the components reconstruct the (demeaned) data
+@test r_ica.ic_mw * r_ica.ic ≈ x_ica .- NeuroAnalyzer.Statistics.mean(x_ica; dims = 2)
+# logistic Infomax separates only the super-Gaussian sources
+r_ica = NeuroAnalyzer._ica_infomax(x_ica; n = 4, extended = false)
+@test all(best_r(r_ica.ic)[1:2] .> 0.99) && minimum(best_r(r_ica.ic)[3:4]) < 0.9
+# reproducible
+@test NeuroAnalyzer._ica_infomax(x_ica; n = 4).ic == NeuroAnalyzer._ica_infomax(x_ica; n = 4).ic
+# rank: 6 channels mixing 4 sources
+@test NeuroAnalyzer._data_rank(x_ica) == 4
+@test_throws ArgumentError NeuroAnalyzer._ica_infomax(x_ica; n = 5)
+ica_data = ica_decompose(eeg; ch = "all", n = 5, method = :infomax, iter = 10)
+@test size(ica_data.ic) == (5, 308480) && size(ica_data.ic_mw) == (24, 5)
+@test issorted(ica_data.ic_var; rev = true)
+# rank-deficient data: the number of components is reduced to the rank
+e_rk = keep_channel(eeg; ch = ["Fp1", "Fp2", "F3"])
+e_rk.data[3, :, 1] = e_rk.data[1, :, 1] .+ e_rk.data[2, :, 1]
+ica_data = ica_decompose(e_rk; ch = "all", method = :infomax, iter = 10)
+@test size(ica_data.ic, 1) == 2
+@test_throws ArgumentError ica_decompose(eeg; ch = "all", n = 5, method = :x)
+
+@info "Test: ica_decompose(method = :amica)"
+@test_throws ArgumentError ica_decompose(
+    e_rk;
+    ch = "all",
+    method = :amica,
+    amica = "no_such_amica_program",
+)
+# the AMICA program must be installed by the user: tested if amica15ub is in the PATH
+if isnothing(Sys.which("amica15ub"))
+    @info "amica15ub not found: AMICA run not tested"
+else
+    e_am = create_object(; data_type = "eeg")
+    e_am.header.recording[:sampling_rate] = 500
+    for c in 1:6
+        append_channel!(
+            e_am;
+            data = reshape(x_ica[c, :], 1, n_ica, 1),
+            label = "E$c",
+            type = "eeg",
+            unit = "μV",
+        )
+    end
+    create_time!(e_am; fs = 500)
+    am_dir = joinpath(mktempdir(), "amicaout")
+    ica_data = ica_decompose(
+        e_am;
+        ch = "all",
+        n = 4,
+        method = :amica,
+        iter = 300,
+        amica_threads = 2,
+        amica_outdir = am_dir,
+    )
+    @test size(ica_data.ic) == (4, n_ica) && size(ica_data.ic_mw) == (6, 4)
+    @test all(best_r(ica_data.ic) .> 0.98)
+    # the AMICA output is kept and gives the same components with import_amica()
+    @test isfile(joinpath(am_dir, "W"))
+    @test import_amica(e_am; ch = "all", path = am_dir).ic ≈ ica_data.ic
+end
+
 @info "Test: ica_remove()"
 ica_data = ica_decompose(eeg; ch = "all", n = 5, iter = 10)
 eeg_tmp =
