@@ -80,7 +80,7 @@ function plot_erp(
         GLMakie.vlines!(
             ax,
             rt;
-            linewidth = 3,
+            linewidth = 1.5,
             color = :black,
         )
     end
@@ -219,7 +219,7 @@ function plot_erp(
 
     # plot response time if provided
     if !isnothing(rt) && t[1] <= rt / 1000 <= t[end]
-        GLMakie.vlines!(ax, rt; linewidth = 3, color = :black)
+        GLMakie.vlines!(ax, rt; linewidth = 1.5, color = :black)
     end
 
     # add legend if requested (outside the plot; not drawn if it does not fit)
@@ -358,7 +358,7 @@ function plot_erp_topo(
 
         # plot response time if provided
         if !isnothing(rt) && t[1] <= rt / 1000 <= t[end]
-            GLMakie.vlines!(ax, rt; linewidth = 3, color = :black)
+            GLMakie.vlines!(ax, rt; linewidth = 1.5, color = :black)
         end
 
         # draw black box around the entire figure
@@ -644,7 +644,7 @@ function plot_gfp(
 
     # plot response time if provided
     if !isnothing(rt) && t[1] <= rt / 1000 <= t[end]
-        GLMakie.vlines!(ax, rt; linewidth = 3, color = :black)
+        GLMakie.vlines!(ax, rt; linewidth = 1.5, color = :black)
     end
 
     return fig

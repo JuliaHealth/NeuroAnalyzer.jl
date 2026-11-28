@@ -879,7 +879,7 @@ ax = axes_of(p)[1]
 @test any(d -> [q[1] for q in d] ≈ tg .* 1000, line_data(ax))
 @test any(d -> [q[1] for q in d] ≈ tg .* 1000, line_data(axes_of(plot_erp(tg, g))[1]))
 # response time (in milliseconds) between two samples is drawn at its time; outside the epoch it is not
-rt_vl(p) = [only(v[1][]) for v in axes_of(p)[1].scene.plots if v isa VLines && v.linewidth[] == 3]
+rt_vl(p) = [only(v[1][]) for v in axes_of(p)[1].scene.plots if v isa VLines && v.linewidth[] == 1.5]
 @test rt_vl(plot_erp(tg, g; rt = 333)) == [333]
 @test rt_vl(plot_gfp(tg, g; rt = 333)) == [333]
 @test isempty(rt_vl(plot_erp(tg, g; rt = 2000)))
