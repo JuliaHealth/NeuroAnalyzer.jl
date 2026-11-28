@@ -40,6 +40,13 @@ p = plot_locs(
 e10_erp = average_epochs(e10)
 p = plot_erp(e10_erp; ch = "Fp1", gui = false)
 @test p isa GLMakie.Figure
+# the time axis is in milliseconds
+@test NeuroAnalyzer._main_axis(p).xlabel[] == "Time [ms]"
+@test maximum(first.(only(filter(x -> x isa Lines, NeuroAnalyzer._main_axis(p).scene.plots))[1][])) ≈
+      1000 * e10_erp.epoch_time[end]
+p = plot_erp(e10_erp; ch = "Fp1", tm = 200, peaks = false, gui = false)
+@test only(only(filter(x -> x isa VLines && x.linewidth[] == 0.5,
+                        NeuroAnalyzer._main_axis(p).scene.plots))[1][]) ≈ 200 atol = 1000 / sr(e10_erp)
 p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], avg = true, gui = false)
 @test p isa GLMakie.Figure
 p = plot_erp(e10_erp; ch = ["Fp1", "Fp2"], avg = false, gui = false)
@@ -383,10 +390,13 @@ s, f, t = eros_data.s, eros_data.f, eros_data.t
 p = plot_eros(s, f, t; tm = 1000)
 @test p isa GLMakie.Figure
 ax_e = p.content[1]
-@test ax_e.xlabel[] == "Time [s]"
-# the time marker is drawn at its exact time (1000 ms = 1 s)
+@test ax_e.xlabel[] == "Time [ms]"
+# the time marker is drawn at its exact time (the time axis is in milliseconds)
 vl_e = only(filter(x -> x isa VLines, ax_e.scene.plots))
-@test only(vl_e[1][]) == 1.0
+@test only(vl_e[1][]) == 1000.0
+# the spectrogram is drawn on the millisecond axis
+hm_e = only(filter(x -> x isa Heatmap, ax_e.scene.plots))
+@test extrema(hm_e[1][]) .≈ extrema(t .* 1000) |> all
 # the color range ignores values outside flim (e.g. -300 dB above a low-pass cutoff)
 sp_c = randn(41, 21, 1)
 sp_c[31:end, :, 1] .= -300
@@ -506,6 +516,10 @@ c = plot2canvas(p)
 @info "Test: plot_mep()"
 mep = import_duomag(joinpath(testfiles_path, "mep", "mep-duomag.m"))
 p = plot_mep(mep; ch = "MEP1")
+# the time axis is in milliseconds
+@test NeuroAnalyzer._main_axis(p).xlabel[] == "Time [ms]"
+@test maximum(first.(only(filter(x -> x isa Lines, NeuroAnalyzer._main_axis(p).scene.plots))[1][])) ≈
+      1000 * mep.epoch_time[end]
 @test p isa GLMakie.Figure
 p = plot_mep(mep; ch = ["MEP1", "MEP2"], avg = true)
 @test p isa GLMakie.Figure
@@ -855,10 +869,20 @@ p = plot_ep(e10; ch = ["Fp1", "Fp2"], ep = 2, gui = false)
 @info "Test: plot_gfp() / plot_erp_stack() / plot_erp_topo()"
 tg = collect(0.0:0.01:1.0)
 g = sin.(2π .* tg) .^ 2
-p = plot_gfp(tg, g; title = "GFP test", xlabel = "Time [s]", ylabel = "GFP")
+p = plot_gfp(tg, g; title = "GFP test", xlabel = "Time [ms]", ylabel = "GFP")
 ax = axes_of(p)[1]
-@test ax.title[] == "GFP test" && ax.xlabel[] == "Time [s]"
+@test ax.title[] == "GFP test" && ax.xlabel[] == "Time [ms]"
 @test any(d -> [q[2] for q in d] ≈ g, line_data(ax))
+# time in seconds is displayed in milliseconds
+@test any(d -> [q[1] for q in d] ≈ tg .* 1000, line_data(ax))
+@test any(d -> [q[1] for q in d] ≈ tg .* 1000, line_data(axes_of(plot_erp(tg, g))[1]))
+# response time (in milliseconds) between two samples is drawn at its time; outside the epoch it is not
+rt_vl(p) = [only(v[1][]) for v in axes_of(p)[1].scene.plots if v isa VLines && v.linewidth[] == 1.5]
+@test rt_vl(plot_erp(tg, g; rt = 333)) == [333]
+@test rt_vl(plot_gfp(tg, g; rt = 333)) == [333]
+@test isempty(rt_vl(plot_erp(tg, g; rt = 2000)))
+p = plot_erp_stack(tg, repeat(g', 3); rt = [333, 505, 2000])
+@test sort([first(l[1][])[1] for l in axes_of(p)[1].scene.plots if l isa Lines]) == [333, 505]
 # row i of the matrix must be drawn at y = i (the row labelled clabels[i])
 s_st = repeat([1.0, 2.0, 3.0], 1, length(tg))
 p = plot_erp_stack(tg, s_st; clabels = ["a", "b", "c"])

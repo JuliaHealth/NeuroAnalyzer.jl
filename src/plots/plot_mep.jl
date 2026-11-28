@@ -8,7 +8,7 @@ Plot a single-channel Motor Evoked Potential (MEP) waveform with customizable vi
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: vector of time points in seconds
+- `t::Union{AbstractVector, AbstractRange}`: vector of time points in seconds (the time axis is displayed in milliseconds)
 - `s::AbstractVector`: signal amplitude values
 - `xlabel::String=""`: x-axis label
 - `ylabel::String=""`: y-axis label
@@ -56,7 +56,7 @@ function plot_mep(
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :gray, linestyle = :dash, linewidth = 2)
 
-    GLMakie.lines!(ax, t, s; color = :black, linewidth = 1)
+    GLMakie.lines!(ax, t .* 1000, s; color = :black, linewidth = 1)
 
     return fig
 end
@@ -68,7 +68,7 @@ Plot multi-channel Motor Evoked Potentials (MEPs) with customizable visualizatio
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: vector of time points in seconds
+- `t::Union{AbstractVector, AbstractRange}`: vector of time points in seconds (the time axis is displayed in milliseconds)
 - `s::AbstractMatrix`: signal amplitude values, shape (channel, samples)
 - `clabels::Vector{String}=string.(1:size(s, 1))`: channel labels (default: auto-generated)
 - `xlabel::String=""`: x-axis label
@@ -138,14 +138,14 @@ function plot_mep(
         s_u = msci95_data.ul
         s_l = msci95_data.ll
         # draw 95% CI
-        GLMakie.band!(ax, t, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
+        GLMakie.band!(ax, t .* 1000, s_u, s_l; alpha = 0.25, color = :grey, strokewidth = 0.5)
         # draw mean
-        GLMakie.lines!(ax, t, s_m; color = :black, linewidth = 2)
+        GLMakie.lines!(ax, t .* 1000, s_m; color = :black, linewidth = 2)
     else
         cmap = _trace_colors(ch_n; mono = mono)
         for idx = 1:ch_n
             GLMakie.lines!(
-                ax, t, s[idx, :];
+                ax, t .* 1000, s[idx, :];
                 color     = cmap[idx],
                 colormap  = pal,
                 linewidth = 1,
@@ -157,7 +157,7 @@ function plot_mep(
         # draw averaged channels
         if avg
             s_avg = mean(s; dims = 1)[:]
-            GLMakie.lines!(ax, t, s_avg; color = :black, linewidth = 2)
+            GLMakie.lines!(ax, t .* 1000, s_avg; color = :black, linewidth = 2)
         end
 
         # add legend if requested (outside the plot; not drawn if it does not fit)
@@ -174,7 +174,7 @@ Plot Motor Evoked Potentials (MEPs) stacked by channels or epochs with customiza
 
 # Arguments
 
-- `t::Union{AbstractVector, AbstractRange}`: vector of time points in seconds
+- `t::Union{AbstractVector, AbstractRange}`: vector of time points in seconds (the time axis is displayed in milliseconds)
 - `s::AbstractMatrix`: signal amplitude values, shape (channel, samples)
 - `clabels::Vector{String}=string.(1:size(s, 1))`: channel labels (default: auto-generated)
 - `xlabel::String=""`: x-axis label
@@ -244,7 +244,7 @@ function plot_mep_stack(
     ax.yticklabelsize = ytick_size  # conditional, overwrite _style_axis!
 
     # heatmap!(x, y, z) expects z of shape (length(x), length(y)): row i of s at y = i
-    hm = GLMakie.heatmap!(ax, t, axes(s, 1), permutedims(s); colormap = pal)
+    hm = GLMakie.heatmap!(ax, t .* 1000, axes(s, 1), permutedims(s); colormap = pal)
 
     # draw zero line if requested
     zl && GLMakie.vlines!(ax, 0; color = :white, linestyle = :dash, linewidth = 2)
@@ -336,7 +336,7 @@ function plot_mep(
     if length(ch) == 1
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
-            "Time [s]", "Amplitude [$units]",
+            "Time [ms]", "Amplitude [$units]",
             "MEP amplitude, channel: $(clabels[1])",
         )
         fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt,
@@ -345,7 +345,7 @@ function plot_mep(
     elseif type === :normal
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
-            "Time [s]", "Amplitude [$units]",
+            "Time [ms]", "Amplitude [$units]",
             "MEP amplitude, $(length(ch)) channels",
         )
         fig = plot_mep(t, s; xlabel = xl, ylabel = yl, title = tt,
@@ -355,7 +355,7 @@ function plot_mep(
     elseif type === :stack
         xl, yl, tt = NeuroAnalyzer._set_defaults(
             xlabel, ylabel, title,
-            "Time [s]", "",
+            "Time [ms]", "",
             "MEP amplitude, $(length(ch)) channels",
         )
         cb_title == "default" && (cb_title = "Amplitude [$units]")
@@ -376,13 +376,13 @@ function plot_mep(
                 )
             end
             GLMakie.scatter!(
-                fig[1, 1], t[pp[ch, 1]][1], obj.data[ch, pp[ch, 1], 1][1];
+                fig[1, 1], t[pp[ch, 1]][1] * 1000, obj.data[ch, pp[ch, 1], 1][1];
                 marker     = :xcross,
                 color      = mono ? :black : :red,
                 markersize = 15,
             )
             GLMakie.scatter!(
-                fig[1, 1], t[pp[ch, 2]][1], obj.data[ch, pp[ch, 2], 1][1];
+                fig[1, 1], t[pp[ch, 2]][1] * 1000, obj.data[ch, pp[ch, 2], 1][1];
                 marker     = :xcross,
                 color      = mono ? :black : :blue,
                 markersize = 15,
@@ -402,13 +402,13 @@ function plot_mep(
             obj_tmp.data = reshape(mep_tmp, 1, :, 1)
             pp = mep_peaks(obj_tmp)
             GLMakie.scatter!(
-                fig[1, 1], t[pp[1, 1]], mep_tmp[pp[1, 1]];
+                fig[1, 1], t[pp[1, 1]] * 1000, mep_tmp[pp[1, 1]];
                 marker     = :xcross,
                 color      = mono ? :black : :red,
                 markersize = 15,
             )
             GLMakie.scatter!(
-                fig[1, 1], t[pp[1, 2]], mep_tmp[pp[1, 2]];
+                fig[1, 1], t[pp[1, 2]] * 1000, mep_tmp[pp[1, 2]];
                 marker     = :xcross,
                 color      = mono ? :black : :blue,
                 markersize = 15,

@@ -14,7 +14,7 @@ Plot an Event-Related Oscillations (ERO) spectrogram with customizable visualiza
 
 - `sp::AbstractArray`: ERO spectrogram power values, shape (frequency, time, powers)
 - `sf::AbstractVector`: vector of frequency values in Hz
-- `st::AbstractVector`: vector of time values in seconds
+- `st::AbstractVector`: vector of time values in seconds (the time axis is displayed in milliseconds)
 - `db::Bool=true`: whether to display power values in decibels
 - `frq::Symbol=:lin`: frequency scaling (`:lin` for linear, `:log` for logarithmic)
 - `flim::Tuple{Real, Real}=(f[1], f[end])`: frequency limits for the plot
@@ -82,8 +82,11 @@ function plot_eros(
         end
     end
 
-    # time markers in seconds (a new local variable — do not mutate the input)
-    tm_s = if !isnothing(tm)
+    # time is displayed in milliseconds
+    st_ms = st .* 1000
+
+    # time markers in milliseconds (a new local variable — do not mutate the input)
+    tm_ms = if !isnothing(tm)
         markers = tm isa Int64 ? [tm] : tm
         for val in markers
             val / 1000 >= st[1] || throw(
@@ -97,7 +100,7 @@ function plot_eros(
                 ),
             )
         end
-        [val / 1000 for val in markers]
+        Float64.(markers)
     else
         Float64[]
     end
@@ -123,7 +126,7 @@ function plot_eros(
         return ax
     end
 
-    # time markers (in seconds)
+    # time markers (in milliseconds)
     function _draw_markers!(fig, pos, tms)
         for tmx in tms
             GLMakie.vlines!(fig[pos...], [tmx]; color = :black, linewidth = 1)
@@ -144,7 +147,7 @@ function plot_eros(
         # set default values
         xl, yl, tt = _set_defaults(
             xlabel, ylabel, title,
-            "Time [s]", "Frequency [Hz]", "Averaged spectrograms of epochs",
+            "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of epochs",
         )
 
         # prepare plot
@@ -154,22 +157,22 @@ function plot_eros(
         # create axis with customizable properties
         ax = _draw_axis(fig, (1, 1), xl, yl, tt)
         hm = GLMakie.heatmap!(
-            ax, st, sf[fr], sp[fr, :, 1]';
+            ax, st_ms, sf[fr], sp[fr, :, 1]';
             colormap = pal, colorrange = _crange(sp[fr_c, :, 1]),
         )
         cb && GLMakie.Colorbar(fig[1, 2], hm; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
-        _draw_markers!(fig, (1, 1), tm_s)
+        _draw_markers!(fig, (1, 1), tm_ms)
 
     else
 
         # set default values
         xl1, yl1, tt1 = _set_defaults(
             xlabel, ylabel, title,
-            "Time [s]", "Frequency [Hz]", "ERP spectrogram",
+            "Time [ms]", "Frequency [Hz]", "ERP spectrogram",
         )
         xl2, yl2, tt2 = _set_defaults(
             xlabel, ylabel, title,
-            "Time [s]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs",
+            "Time [ms]", "Frequency [Hz]", "Averaged spectrograms of ERP epochs",
         )
 
         # prepare plot
@@ -179,22 +182,22 @@ function plot_eros(
         # create axis with customizable properties
         ax1 = _draw_axis(fig, (1, 1), xl1, yl1, tt1)
         hm1 = GLMakie.heatmap!(
-            ax1, st, sf[fr], sp[fr, :, 1]';
+            ax1, st_ms, sf[fr], sp[fr, :, 1]';
             colormap = pal, colorrange = _crange(sp[fr_c, :, 1]),
         )
         cb && GLMakie.Colorbar(fig[1, 2], hm1; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
         GLMakie.vlines!(ax1, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
-        _draw_markers!(fig, (1, 1), tm_s)
+        _draw_markers!(fig, (1, 1), tm_ms)
 
         # create axis with customizable properties
         ax2 = _draw_axis(fig, (2, 1), xl2, yl2, tt2)
         hm2 = GLMakie.heatmap!(
-            ax2, st, sf[fr], sp[fr, :, 2]';
+            ax2, st_ms, sf[fr], sp[fr, :, 2]';
             colormap = pal, colorrange = _crange(sp[fr_c, :, 2]),
         )
         cb && GLMakie.Colorbar(fig[2, 2], hm2; label = cb_title, labelsize = 16, ticks = _cb_tickfun())
         GLMakie.vlines!(ax2, [0]; linestyle = :dash, linewidth = 0.5, color = :black)
-        _draw_markers!(fig, (2, 1), tm_s)
+        _draw_markers!(fig, (2, 1), tm_ms)
     end
 
     return fig
