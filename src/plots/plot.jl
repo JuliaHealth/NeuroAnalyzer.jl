@@ -13,7 +13,7 @@ Plot signal from a NEURO object.
 - `ep::Int64=1`: first epoch to display
 - `seg::Tuple{Real, Real}=(0, 10)`: segment (from, to) in seconds to display, default is 10 seconds or less if single epoch is shorter
 - `tm::Union{Nothing, Int64, Vector{Int64}}=nothing`: time markers (in milliseconds) for vertical lines, useful for adding topoplots at these time points (for ERP/ERF)
-- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time(s) for each epoch; if provided, the response time line will be plotted over the `:stack` plot (for ERP/ERF)
+- `rt::Union{Nothing, Real, AbstractVector}=nothing`: response time (in milliseconds; for ERP/ERF, see `plot_erp()`): a single value is drawn as a vertical line, a vector (one value per epoch) over the stacked epochs (`:stack`); values outside the epoch time range are not plotted
 - `xlabel::String="default"`: x-axis label
 - `ylabel::String="default"`: y-axis label
 - `title::String="default"`: plot title

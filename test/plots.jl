@@ -396,7 +396,9 @@ vl_e = only(filter(x -> x isa VLines, ax_e.scene.plots))
 @test only(vl_e[1][]) == 1000.0
 # the spectrogram is drawn on the millisecond axis
 hm_e = only(filter(x -> x isa Heatmap, ax_e.scene.plots))
-@test extrema(hm_e[1][]) .≈ extrema(t .* 1000) |> all
+# (heatmap cell edges: half a time step beyond the first and the last time point)
+dt_e = 1000 * (t[2] - t[1])
+@test all(extrema(hm_e[1][]) .≈ (1000 * t[1] - dt_e / 2, 1000 * t[end] + dt_e / 2))
 # the color range ignores values outside flim (e.g. -300 dB above a low-pass cutoff)
 sp_c = randn(41, 21, 1)
 sp_c[31:end, :, 1] .= -300
@@ -877,7 +879,7 @@ ax = axes_of(p)[1]
 @test any(d -> [q[1] for q in d] ≈ tg .* 1000, line_data(ax))
 @test any(d -> [q[1] for q in d] ≈ tg .* 1000, line_data(axes_of(plot_erp(tg, g))[1]))
 # response time (in milliseconds) between two samples is drawn at its time; outside the epoch it is not
-rt_vl(p) = [only(v[1][]) for v in axes_of(p)[1].scene.plots if v isa VLines && v.linewidth[] == 1.5]
+rt_vl(p) = [only(v[1][]) for v in axes_of(p)[1].scene.plots if v isa VLines && v.linewidth[] == 3]
 @test rt_vl(plot_erp(tg, g; rt = 333)) == [333]
 @test rt_vl(plot_gfp(tg, g; rt = 333)) == [333]
 @test isempty(rt_vl(plot_erp(tg, g; rt = 2000)))
