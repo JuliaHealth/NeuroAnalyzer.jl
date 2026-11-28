@@ -147,7 +147,7 @@ function plot_topo(
         !occursin("\n", title) && title !== "" && (title *= "\n")
     elseif ps === :m
         plot_size = (300, 300)
-        marker_size = length(ch) > 64 ? 2 : length(ch) > 32 ? 3 : 4
+        marker_size = length(ch) > 64 ? 5 : length(ch) > 32 ? 6 : 8
         iter = 256
         font_size = 10
         label_size = length(ch) > 64 ? 5 : length(ch) > 32 ? 6 : 8
@@ -156,7 +156,7 @@ function plot_topo(
         sw = 2
     elseif ps === :s
         plot_size   = (100, 100)
-        marker_size = length(ch) > 64 ? 2 : 3
+        marker_size = length(ch) > 64 ? 4 : length(ch) > 32 ? 5 : 6
         iter        = 128
         font_size   = 5
         label_size  = 4

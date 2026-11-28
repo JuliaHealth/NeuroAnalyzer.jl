@@ -1,6 +1,6 @@
 using Test
 using DataFrames
-using Statistics
+using StatsKit # re-exports Statistics (not a dependency of NeuroAnalyzer)
 using GLMakie
 using Random
 
